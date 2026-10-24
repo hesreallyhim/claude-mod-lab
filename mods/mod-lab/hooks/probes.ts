@@ -503,109 +503,109 @@ function probe(
 }
 
 export const PROBES: readonly LabProbe[] = [
-  probe('session.cwd', 'read', 'The directory the session runs in.', sessionCwd),
-  probe('session.root', 'read', "The session's project root; a shell cd does not move it.", sessionRoot),
-  probe('session.id', 'read', 'Identifies this session; the transcript file is named after it.', sessionId),
-  probe('session.model', 'read', 'The model the conversation itself runs on, the one /model reports.', sessionModel),
-  probe('session.turns', 'read', 'How many prompts the person has sent this session.', sessionTurns),
-  probe('session.version', 'read', 'The engine version, its release and its build time.', sessionVersion),
-  probe('session.repo', 'read', 'The git repository the session runs in, or null.', sessionRepo),
-  probe('session.surfaces', 'read', 'Every surface the session draws on.', sessionSurfaces),
-  probe('session.usage', 'read', 'Context fill, rate limits and cost, as the status line has them.', sessionUsage, [
+  probe('session.cwd', 'read', 'Returns the current working directory.', sessionCwd),
+  probe('session.root', 'read', 'Returns the project root directory.', sessionRoot),
+  probe('session.id', 'read', 'Returns the ID of the current session.', sessionId),
+  probe('session.model', 'read', 'Returns the model used for this conversation.', sessionModel),
+  probe('session.turns', 'read', 'Returns the number of user prompts in this session.', sessionTurns),
+  probe('session.version', 'read', 'Returns the Claude Code version and build information.', sessionVersion),
+  probe('session.repo', 'read', 'Returns information about the current Git repository.', sessionRepo),
+  probe('session.surfaces', 'read', 'Lists the active clients for this session.', sessionSurfaces),
+  probe('session.usage', 'read', 'Returns context usage, rate limits, and cost information.', sessionUsage, [
     choice('breakdown', ['none', 'summary'], 'summary adds a per-category estimate'),
   ]),
-  probe('session.messages', 'read', 'The newest transcript messages as { role, text, toolUses }.', sessionMessages, [
+  probe('session.messages', 'read', 'Shows recent messages with text previews and tool names.', sessionMessages, [
     number('count', 5, 'how many of the newest messages to show'),
   ]),
-  probe('clock.now', 'read', 'Milliseconds since the epoch, through the host.', clockNow),
-  probe('clock.sleep', 'read', "Waits; the only $ call whose wait counts against the hook's budget.", clockSleep, [
+  probe('clock.now', 'read', 'Returns the current time as a timestamp and an ISO date.', clockNow),
+  probe('clock.sleep', 'read', 'Pauses for the selected duration and reports the elapsed time.', clockSleep, [
     number('ms', 500, 'how long to sleep, at most 5000'),
   ]),
-  probe('clock.after', 'read', 'A one-shot timer; the callback runs in the mod when it fires.', clockAfter, [
+  probe('clock.after', 'read', 'Sets a timer and reports when its callback runs.', clockAfter, [
     number('ms', 1000, 'how long until it fires, at most 5000'),
   ]),
-  probe('store.keys', 'read', "Every key in the lab's store, which outlives the session.", storeKeys),
-  probe('store.get', 'read', 'One value from the store; undefined when unset.', storeGet, [
+  probe('store.keys', 'read', 'Lists keys in the persistent mod-lab store.', storeKeys),
+  probe('store.get', 'read', 'Reads a value from the persistent store.', storeGet, [
     text('key', 'greeting', 'the key to read'),
   ]),
-  probe('store.set', 'write', 'Stores a value; the text is parsed as JSON when it parses.', storeSet, [
+  probe('store.set', 'write', 'Saves a JSON value or plain text to the persistent store.', storeSet, [
     text('key', 'greeting', 'the key to write'),
     text('value', '{"hello":"world"}', 'JSON, or plain text'),
   ]),
-  probe('store.delete', 'write', 'Removes a key from the store.', storeDelete, [text('key', 'greeting', 'the key to remove')]),
-  probe('store.roundtrip', 'write', 'What JSON storage does to a Date, an undefined field and a Set.', storeRoundtrip),
-  probe('state.get', 'read', "The lab's counter in $.state, with the version it stands at.", stateGet),
-  probe('state.set', 'write', 'Increments the counter, writing only if the version is unchanged.', stateSet),
-  probe('state.stale', 'write', 'A write with an outdated ifVersion, which is refused.', stateStale),
-  probe('ui.toast', 'ui', 'A toast over the transcript; never reaches the model.', uiToast, [
+  probe('store.delete', 'write', 'Deletes a key from the persistent store.', storeDelete, [text('key', 'greeting', 'the key to remove')]),
+  probe('store.roundtrip', 'write', 'Saves and reloads sample values to demonstrate JSON serialization.', storeRoundtrip),
+  probe('state.get', 'read', 'Reads the mod-lab counter and its version.', stateGet),
+  probe('state.set', 'write', 'Increments the counter if its version still matches.', stateSet),
+  probe('state.stale', 'write', 'Demonstrates a rejected write using an outdated state version.', stateStale),
+  probe('ui.toast', 'ui', 'Displays a temporary notification in the client.', uiToast, [
     text('text', 'Hello from mod-lab', 'the toast text'),
   ]),
-  probe('ui.status', 'ui', "Pins the lab's status line under the prompt; empty text clears it.", uiStatus, [
+  probe('ui.status', 'ui', 'Sets or clears the mod-lab status line.', uiStatus, [
     text('text', 'mod-lab was here', 'the status text, or empty to clear'),
   ]),
-  probe('ui.log', 'ui', 'A dim line in the transcript that the model does not read.', uiLog, [
+  probe('ui.log', 'ui', 'Displays a log message for the user without adding it to model context.', uiLog, [
     text('text', 'A line from mod-lab', 'the line'),
   ]),
-  probe('ui.notify', 'ui', "A native notification through the person's own channel.", uiNotify, [
+  probe('ui.notify', 'ui', 'Sends a notification using the configured notification channel.', uiNotify, [
     text('text', 'mod-lab says hello', 'the notification body'),
   ]),
-  probe('ui.ask', 'dialog', "Asks in the engine's AskUserQuestion dialog and answers the label chosen.", uiAsk, [
+  probe('ui.ask', 'dialog', 'Displays a question with multiple choices and returns the selected answer.', uiAsk, [
     text('question', 'Which do you prefer?', 'the question'),
     text('options', 'Tea, Coffee', '2 to 4 labels, comma separated'),
   ]),
-  probe('ui.panes', 'read', "The lab's own open panes, as the engine records them.", uiPanes),
-  probe('ui.copy', 'write', "Puts text on the surface's clipboard.", uiCopy, [text('text', 'copied by mod-lab', 'the text')]),
-  probe('ui.selection', 'read', 'The text last highlighted with the mouse (fullscreen only).', uiSelection),
-  probe('prompt.read', 'read', 'The prompt box as it stands: draft text and cursor.', promptRead),
-  probe('prompt.fill', 'ui', 'Puts text in the prompt box as a draft.', promptFill, [
+  probe('ui.panes', 'read', 'Lists open mod-lab panes.', uiPanes),
+  probe('ui.copy', 'write', 'Copies text to the clipboard.', uiCopy, [text('text', 'copied by mod-lab', 'the text')]),
+  probe('ui.selection', 'read', 'Returns the selected text in fullscreen mode.', uiSelection),
+  probe('prompt.read', 'read', 'Returns the draft prompt and cursor position.', promptRead),
+  probe('prompt.fill', 'ui', 'Inserts, appends, or replaces text in the prompt box.', promptFill, [
     text('text', 'drafted by mod-lab', 'the text'),
     choice('mode', ['append', 'replace', 'insert'], 'where it goes relative to the draft'),
   ]),
-  probe('prompt.suggest', 'ui', 'A dim suggestion in an empty prompt box, taken with Tab.', promptSuggest, [
+  probe('prompt.suggest', 'ui', 'Displays a prompt suggestion that the user can accept with Tab.', promptSuggest, [
     text('text', 'explain what the last probe returned', 'the suggestion'),
   ]),
-  probe('prompt.compose', 'read', "The system prompt's sections, composed without sending.", promptCompose),
-  probe('tool.list', 'read', 'The list of tools available to the model.', toolList),
-  probe('tool.check', 'read', 'The permission decision for a call, without running it.', toolCheck, [
+  probe('prompt.compose', 'read', 'Lists system prompt sections with their scope and character count.', promptCompose),
+  probe('tool.list', 'read', 'Lists the tools available to the model.', toolList),
+  probe('tool.check', 'read', 'Checks whether a tool call is permitted without executing it.', toolCheck, [
     choice('call', ['Read README.md', 'Bash ls', 'Bash rm -rf build'], 'which call to ask about'),
   ]),
-  probe('tool.call', 'tool', 'Runs the Read tool through every hook and the permission check.', toolCall, [
+  probe('tool.call', 'tool', 'Reads the selected file using the Read tool.', toolCall, [
     text('file_path', 'README.md', 'the file to read'),
   ]),
-  probe('command.list', 'read', 'Every slash command available in this session right now.', commandList),
-  probe('config.list', 'read', 'The rows of the /config menu with their values.', configList),
-  probe('agent.list', 'read', "The session's subagents and teammates.", agentList),
-  probe('fs.list', 'read', 'A directory listing; a relative path is under the working directory.', fsList, [
+  probe('command.list', 'read', 'Lists available slash commands and their sources.', commandList),
+  probe('config.list', 'read', 'Lists configuration options and their current values.', configList),
+  probe('agent.list', 'read', 'Lists subagents and teammates in this session.', agentList),
+  probe('fs.list', 'read', 'Lists files and subdirectories at the selected path.', fsList, [
     text('path', '.', 'the directory'),
   ]),
-  probe('fs.exists', 'read', 'Whether a path exists.', fsExists, [text('path', 'README.md', 'the path')]),
-  probe('fs.stat', 'read', 'Kind, size and times, and with resolve the real path.', fsStat, [
+  probe('fs.exists', 'read', 'Checks whether a file or directory exists.', fsExists, [text('path', 'README.md', 'the path')]),
+  probe('fs.stat', 'read', 'Returns file metadata and the resolved path.', fsStat, [
     text('path', 'README.md', 'the path'),
   ]),
-  probe('fs.read', 'read', "A file's text; reads over 4 MiB reject.", fsRead, [text('path', 'README.md', 'the file')]),
-  probe('fs.ancestors', 'read', 'Instruction files in the directories above, found as CLAUDE.md is.', fsAncestors, [
+  probe('fs.read', 'read', 'Reads a text file and returns its length and a preview.', fsRead, [text('path', 'README.md', 'the file')]),
+  probe('fs.ancestors', 'read', 'Finds files with the selected name in ancestor directories.', fsAncestors, [
     text('name', 'CLAUDE.md', 'the file name to look for'),
   ]),
-  probe('fs.write', 'write', 'Writes a file under ~/.claude-mod-lab/scratch/, creating directories.', fsWrite, [
+  probe('fs.write', 'write', 'Writes and reads back a file in ~/.claude-mod-lab/scratch/.', fsWrite, [
     text('name', 'note.txt', 'the file name'),
     text('text', 'written by mod-lab', 'the content'),
   ]),
-  probe('env.get', 'read', "A variable of the engine's environment; names must be literals.", envGet, [
+  probe('env.get', 'read', 'Reads the selected environment variable.', envGet, [
     choice('name', ['HOME', 'SHELL', 'TERM', 'PATH', 'CLAUDE_CONFIG_DIR'], 'the variable'),
   ]),
-  probe('settings.read', 'read', 'The merged settings or one source, shown as keys and kinds.', settingsRead, [
+  probe('settings.read', 'read', 'Lists setting names and value types from the selected source.', settingsRead, [
     choice('source', ['merged', 'user', 'project', 'local', 'flag', 'policy'], 'which settings'),
   ]),
-  probe('process.run', 'read', 'Runs a host command by argv (no shell) and waits for it.', processRun, [
+  probe('process.run', 'read', 'Runs the selected command without a shell and waits for completion.', processRun, [
     choice('argv', ['uname -a', 'git status --short', 'node --version'], 'which command'),
   ]),
-  probe('process.spawn', 'read', "Starts a host command by argv (no shell) and keeps each piece of its output with when it came.", processSpawn, [
+  probe('process.spawn', 'read', 'Runs the selected command and records output chunks with timestamps.', processSpawn, [
     choice('argv', SPAWN_CHOICES, 'which command'),
   ]),
-  probe('http.fetch', 'network', 'A request through the host, not the mod.', httpFetch, [
+  probe('http.fetch', 'network', 'Sends an HTTP request from the host.', httpFetch, [
     text('url', 'https://example.com', 'an https URL'),
   ]),
-  probe('model.complete', 'spend', "One completion on the session's client: no tools, no history.", modelComplete, [
+  probe('model.complete', 'spend', 'Requests a model response without conversation history or tools.', modelComplete, [
     text('prompt', 'Say hello in five words.', 'the prompt'),
     choice('model', ['haiku', 'sonnet', 'opus'], 'which model, by alias'),
     text('prefix', '', 'text sent before the prompt, the part a cache can keep'),
@@ -613,17 +613,17 @@ export const PROBES: readonly LabProbe[] = [
     text('system', '', 'a system prompt'),
     choice('effort', ['default', 'low', 'medium', 'high', 'xhigh', 'max'], 'how hard the model thinks; default leaves it to the model'),
   ]),
-  probe('model.classify', 'spend', 'Picks one of the labels for the text.', modelClassify, [
+  probe('model.classify', 'spend', 'Asks a model to classify text using the supplied labels.', modelClassify, [
     text('text', 'The build fails when the cache is cold.', 'what to classify'),
     text('labels', 'bug, feature, question', 'comma separated'),
   ]),
-  probe('model.fork', 'spend', "One question over the session's own transcript, served from its cache.", modelFork, [
+  probe('model.fork', 'spend', 'Asks a model a question using the current conversation context.', modelFork, [
     text('prompt', 'In one line, what are we working on?', 'the question'),
   ]),
-  probe('audio.speak', 'ui', "Speaks with the platform's synthesizer.", audioSpeak, [
+  probe('audio.speak', 'ui', 'Reads text aloud using system text-to-speech.', audioSpeak, [
     text('text', 'Hello from mod-lab', 'what to say'),
   ]),
-  probe('plugin.info', 'read', "This plugin's name and folder: plain data, no dispatch.", pluginInfo),
+  probe('plugin.info', 'read', 'Returns the plugin name and directory.', pluginInfo),
 ]
 
 export function findProbe(id: string): LabProbe | undefined {
