@@ -1,5 +1,8 @@
 {
   "name": "redact",
   "version": "0.1.0",
-  "description": "A challenge: redact before it is stored"
+  "description": "A challenge: redact before it is stored",
+  "author": {
+    "name": "Really Him"
+  }
 }

@@ -35,4 +35,4 @@ The bridge's hello carries the bridge protocol's number (`BRIDGE_PROTOCOL` in `l
 | `e2e.mjs`, `e2e-page.mjs` | end-to-end checks against a headless session |
 | `test/` | unit tests: `npm run test:web` |
 
-The protocol is described in [docs/design.md](../docs/design.md#bridge-protocol).
+The bridge protocol is implemented in [lib/hub.mjs](lib/hub.mjs).

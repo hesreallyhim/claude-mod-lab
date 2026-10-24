@@ -1,5 +1,8 @@
 {
   "name": "errand",
   "version": "0.1.0",
-  "description": "A challenge: an agent only the mod starts"
+  "description": "A challenge: an agent only the mod starts",
+  "author": {
+    "name": "Really Him"
+  }
 }

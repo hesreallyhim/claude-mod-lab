@@ -1,5 +1,8 @@
 {
   "name": "snake",
   "version": "0.1.0",
-  "description": "A game of snake in a pane, played in a Client, the best score kept by the hooks module"
+  "description": "A game of snake in a pane, played in a Client, the best score kept by the hooks module",
+  "author": {
+    "name": "Really Him"
+  }
 }

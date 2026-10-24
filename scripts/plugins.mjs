@@ -2,7 +2,7 @@
 // scratch-mod, which the marketplace leaves out because it comes as a copy to
 // edit. With an action it runs claude over them:
 //
-//   node scripts/plugins.mjs validate   the marketplace file, then each plugin (npm run validate)
+//   node scripts/plugins.mjs validate   strictly validate the marketplace and every plugin, including lessons (npm run validate)
 //   node scripts/plugins.mjs test       `claude plugin test` on each mod, the plugins with a
 //                                       hooks module (npm run test:mods); mod-bootstrap, a skill,
 //                                       has tests of its own (npm run test:plugins)
@@ -37,7 +37,7 @@ export const isMod = dir => existsSync(join(dir, 'hooks', 'hooks.json'))
 function validate(dirs) {
   const failed = []
   for (const dir of ['.', ...dirs]) {
-    const result = spawnSync('claude', ['plugin', 'validate', dir], { cwd: REPO, encoding: 'utf8' })
+    const result = spawnSync('claude', ['plugin', 'validate', dir, '--strict'], { cwd: REPO, encoding: 'utf8' })
     if (result.error) throw result.error
     if (result.status === 0) console.log(`ok   ${dir}`)
     else {
@@ -67,7 +67,12 @@ if (isMain) {
     console.error('Usage: node scripts/plugins.mjs validate|test [folder...]')
     process.exit(2)
   }
-  const dirs = given.length > 0 ? given.map(dir => relative(REPO, resolve(dir))) : plugins().map(one => one.dir)
+  const lessonDirs = action === 'validate' ? (await import('../learn/lib/lessons.mjs')).loadLessons(join(REPO, 'learn')).flatMap(lesson =>
+    ['starter', 'solution'].map(part => join(lesson.dir, part))
+      .filter(dir => existsSync(join(dir, '.claude-plugin', 'plugin.json')))
+      .map(dir => relative(REPO, dir)),
+  ) : []
+  const dirs = given.length > 0 ? given.map(dir => relative(REPO, resolve(dir))) : [...plugins().map(one => one.dir), ...lessonDirs]
   const failed = actions[action](dirs)
   if (failed.length > 0) {
     console.error(`\n${action} failed for ${failed.length}: ${failed.join(', ')}`)

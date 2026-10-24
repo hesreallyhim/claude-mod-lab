@@ -32,6 +32,7 @@ What a contributor runs, as npm scripts:
 | Script | What it does |
 | --- | --- |
 | `npm run check` | validate and type-check every mod and lesson, run all tests, check every lesson's solution, and check the web app's formatting, lint, types, coverage and line limit |
+| `npm run validate` | strictly validate the marketplace and every plugin manifest, including lesson starters and solutions |
 | `npm run e2e` | the server and a headless session, checked end to end |
 | `npm run e2e-page` | the same through the page, in the installed Google Chrome |
 | `npm run explorer` | the explorer's server on its own, for development |

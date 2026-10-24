@@ -16,5 +16,8 @@
       "description": "A call that takes longer than this is marked slow on the status line and in the pane",
       "default": 5
     }
+  },
+  "author": {
+    "name": "Really Him"
   }
 }

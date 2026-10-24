@@ -250,7 +250,7 @@ These are explanations and extension ideas, not additional checker steps:
 
 So JSONL is a durable basis for restoring a conversation, but does not guarantee exact reproduction of every past model input. A changed attachment hook can change how a restored record is rendered. Mods are trusted executable code; these hooks affect more than presentation.
 
-If you try an append-rewrite extension, scope it to synthetic lesson markers. A plugin's own API calls skip its own matching hook, so do not assume its Note button will pass through a `session.append` hook in the same plugin. The [redact challenge](../../challenges/6-redact) covers append rewrites with a separate caller. The [note/notice guide](../../../docs/note-and-notice.md) expands the visibility distinctions.
+If you try an append-rewrite extension, scope it to synthetic lesson markers. A plugin's own API calls skip its own matching hook, so do not assume its Note button will pass through a `session.append` hook in the same plugin. The [redact challenge](../../challenges/6-redact) covers append rewrites with a separate caller.
 
 ## What you made
 

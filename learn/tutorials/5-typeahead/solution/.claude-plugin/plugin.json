@@ -2,5 +2,10 @@
   "name": "typeahead",
   "version": "0.1.0",
   "description": "Paints /mod-lab commands as they are typed, completes probe ids, and attaches #probe answers for the model",
-  "dependencies": ["mod-lab"]
+  "dependencies": [
+    "mod-lab"
+  ],
+  "author": {
+    "name": "Really Him"
+  }
 }

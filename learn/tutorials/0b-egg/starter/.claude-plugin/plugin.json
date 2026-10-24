@@ -2,5 +2,8 @@
   "name": "egg",
   "version": "0.1.0",
   "description": "An egg timer above the prompt",
-  "types": "./types/index.d.ts"
+  "types": "./types/index.d.ts",
+  "author": {
+    "name": "Really Him"
+  }
 }

@@ -1,5 +1,8 @@
 {
   "name": "scrub",
   "version": "0.1.0",
-  "description": "A challenge: redact a stream as it passes"
+  "description": "A challenge: redact a stream as it passes",
+  "author": {
+    "name": "Really Him"
+  }
 }

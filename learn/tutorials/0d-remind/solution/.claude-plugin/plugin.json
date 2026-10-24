@@ -1,5 +1,8 @@
 {
   "name": "remind",
   "version": "0.1.0",
-  "description": "Reminders Claude can set for you: said aloud when they go off, and passed back to Claude to remind you"
+  "description": "Reminders Claude can set for you: said aloud when they go off, and passed back to Claude to remind you",
+  "author": {
+    "name": "Really Him"
+  }
 }

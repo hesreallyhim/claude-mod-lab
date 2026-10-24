@@ -301,8 +301,6 @@ npx claude-mod-lab@alpha run
 
 `/snake` opens the pane. Click the board: the game starts, and the board has the keys. Steer with the arrows; Escape gives the keys back to the prompt. When the game ends, the best score under the board is the hooks module's, and it is there again in the next session, from `$.store`. Save a change to `board.tsx` while the pane is open: the board loads again, its state gone.
 
-Then try it in the desktop app, with the folder named in `CLAUDE_CODE_PLUGIN_DIRS` as [docs/desktop.md](../../../docs/desktop.md) describes: `/snake` there runs the same surface module, drawn with the desktop's elements.
-
 <details>
 <summary>Once it works: what crosses, and what stays</summary>
 

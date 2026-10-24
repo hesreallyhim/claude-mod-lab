@@ -1,5 +1,8 @@
 {
   "name": "receipt",
   "version": "0.1.0",
-  "description": "A challenge: a tool the model can call"
+  "description": "A challenge: a tool the model can call",
+  "author": {
+    "name": "Really Him"
+  }
 }
