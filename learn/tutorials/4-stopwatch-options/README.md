@@ -7,7 +7,7 @@ This tutorial gives the stopwatch of tutorials [1](../1-stopwatch) and [3](../3-
 You work in `workshop/stopwatch`, the mod of stopwatch-pane. If the folder is not there, the first check copies stopwatch-pane's finished mod into it. Then:
 
 ```sh
-npx claude-mod-lab@alpha learn stopwatch-options
+npx claude-mod-lab learn stopwatch-options
 ```
 
 The checks pass your mod its options the way a session does, from the test's `test(name, { options }, body)`, and stand in for the `/config` menu with hooks of their own.
@@ -176,7 +176,7 @@ The count belongs to the option rather than to the pane: Reset empties the total
 ## 5. Set it in /config
 
 ```sh
-npx claude-mod-lab@alpha run --model haiku
+npx claude-mod-lab run --model haiku
 ```
 
 1. `/config`, and type `stopwatch` to find its two rows, the manifest's titles followed by the plugin's name: "Tools to leave out · stopwatch" and "Slow after, in seconds · stopwatch  5". Enter on a row opens it: type the value, move down to Save and press Enter. Set Slow after to 900: the row reads 600 afterwards. Set it to 0: the guard's reason, "slow after takes a number of seconds above 0", shows in yellow on the panel's top edge, and the row keeps 600.

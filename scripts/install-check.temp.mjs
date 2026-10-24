@@ -89,7 +89,7 @@ function registry(tarball) {
         integrity: `sha512-${createHash('sha512').update(bytes).digest('base64')}`,
       }
       const version = { ...manifest, _id: `${manifest.name}@${manifest.version}`, dist }
-      const body = { name: manifest.name, 'dist-tags': { latest: manifest.version }, versions: { [manifest.version]: version } }
+      const body = { name: manifest.name, 'dist-tags': { [manifest.publishConfig?.tag ?? 'latest']: manifest.version }, versions: { [manifest.version]: version } }
       return res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(body))
     }
     if (at === path) return res.writeHead(200, { 'content-type': 'application/octet-stream' }).end(bytes)

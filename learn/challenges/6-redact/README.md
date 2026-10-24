@@ -3,7 +3,7 @@
 The starter takes API keys out of what the person types, at `prompt.submit`. Keys still reach the conversation: a file the model reads, a command's output, a hook's context, the model's own reply. Each of those is a row the conversation keeps, which the model reads on every later request and the transcript keeps on disk. Redact keys in every row, on its way to being stored, and leave everything else as it came.
 
 ```sh
-npx claude-mod-lab@alpha learn redact
+npx claude-mod-lab learn redact
 ```
 
 The first run copies the [starter](starter) to `workshop/redact/`; edit it there. A key is any of:
@@ -28,7 +28,7 @@ A row without a key is stored exactly as it came, things that only look like a k
 
 ```sh
 printf 'API_KEY=sk-ant-api03-k9Qw2Xc7Vb1Nm4Lp8Rt5Yz3Hj6Gf0Dd\n' > /tmp/creds.txt
-npx claude-mod-lab@alpha run --model haiku
+npx claude-mod-lab run --model haiku
 ```
 
 Ask the model to read `/tmp/creds.txt` and say what `API_KEY` is set to. It answers that the value shows as `[redacted]`: the row holding the file's text was redacted before the model read it. The explorer's Conversation X-ray shows that row, marked as rewritten beneath the lab.

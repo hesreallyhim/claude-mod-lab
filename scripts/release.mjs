@@ -16,7 +16,7 @@
 //    ({name}--v{version}), on that commit; all but mod-lab-bridge, which
 //    `npm run bridge-lock` tags once its lockfile names the published package.
 //
-// A plugin's last release is its newest {name}--v<x.y.z> tag. The guard
+// A plugin's last release is its newest {name}--v<version> tag, including prereleases. The guard
 // refuses: a plugin changed since that tag whose version did not rise, which
 // `claude plugin update` would not offer; a version below its tag's; a
 // coupled part out of step with the package, the bridge's dependency
@@ -35,13 +35,14 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { compare, inc, valid } from 'semver'
 
 import { BRIDGE_DIR, bridgeDependency, setBridgeDependency } from './bridge-deps.mjs'
 import { plugins } from './plugins.mjs'
 
 const REPO = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const COUPLED = ['mod-lab', 'mod-lab-bridge', 'mod-lab-target', 'mod-lab-keys']
-const SEMVER = /^(\d+)\.(\d+)\.(\d+)$/
+const isVersion = version => valid(version) === version
 
 function run(file, args, { quiet = false } = {}) {
   const result = spawnSync(file, args, { cwd: REPO, encoding: 'utf8', stdio: quiet ? 'pipe' : 'inherit' })
@@ -58,15 +59,7 @@ function must(what, file, args, options) {
 
 const git = (...args) => must(`git ${args[0]}`, 'git', args, { quiet: true }).trim()
 
-/** Negative, zero or positive as `a` is below, equal to or above `b`. */
-function compare(a, b) {
-  const [x, y] = [SEMVER.exec(a), SEMVER.exec(b)]
-  if (x === null || y === null) throw new Error(`not a version: ${x === null ? a : b}`)
-  for (let i = 1; i <= 3; i += 1) if (Number(x[i]) !== Number(y[i])) return Number(x[i]) - Number(y[i])
-  return 0
-}
-
-const patch = version => version.replace(SEMVER, (_, major, minor, fix) => `${major}.${minor}.${Number(fix) + 1}`)
+const patch = version => inc(version, 'patch')
 
 const manifestPath = dir => join(REPO, dir, '.claude-plugin', 'plugin.json')
 const versionOf = dir => JSON.parse(readFileSync(manifestPath(dir), 'utf8')).version
@@ -84,7 +77,7 @@ function lastRelease(name) {
   const versions = git('tag', '--list', `${prefix}*`)
     .split('\n')
     .map(tag => tag.slice(prefix.length))
-    .filter(version => SEMVER.test(version))
+    .filter(isVersion)
     .sort(compare)
   const version = versions.at(-1)
   return version === undefined ? null : { tag: `${prefix}${version}`, version }
@@ -181,8 +174,8 @@ function main(args) {
   const isDry = args.includes('--dry-run')
   const allPlugins = args.includes('--all-plugins')
   const [version, ...extra] = args.filter(arg => arg !== '--dry-run' && arg !== '--all-plugins')
-  if (version === undefined || extra.length > 0 || !SEMVER.test(version)) {
-    console.error('Usage: npm run release -- <x.y.z> [--all-plugins] [--dry-run]')
+  if (version === undefined || extra.length > 0 || !isVersion(version)) {
+    console.error('Usage: npm run release -- <version, e.g. 0.2.0-beta.1> [--all-plugins] [--dry-run]')
     return 2
   }
   if (!isDry && git('status', '--porcelain', '--untracked-files=no') !== '') {

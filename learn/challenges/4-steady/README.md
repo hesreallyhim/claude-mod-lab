@@ -3,7 +3,7 @@
 The starter tells the model which git branch it is on by adding a section to the system prompt. The section names the time it checked, and the branch can change, so the system prompt reads differently on every request. This defeats prompt caching: the system prompt opens every request, and the API's prompt cache matches requests from their start, so a system prompt that changes leaves nothing after it to be read from the cache, the whole conversation included. Tell the model the branch with each prompt instead, and keep the system prompt the same from one request to the next.
 
 ```sh
-npx claude-mod-lab@alpha learn steady
+npx claude-mod-lab learn steady
 ```
 
 The first run copies the [starter](starter) to `workshop/steady/`; edit it there.

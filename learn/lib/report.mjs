@@ -140,7 +140,7 @@ function when(at) {
 export function formatList(lessons, progress, paint) {
   const width = Math.max(...lessons.map(lesson => lesson.id.length))
   const titleWidth = Math.max(...lessons.map(lesson => lesson.title.length))
-  const lines = [paint.bold('Lessons'), paint.dim("A lesson's page in the explorer checks your mod as you save; npx claude-mod-lab@alpha learn <name> --once checks it here.")]
+  const lines = [paint.bold('Lessons'), paint.dim("A lesson's page in the explorer checks your mod as you save; npx claude-mod-lab learn <name> --once checks it here.")]
   for (const kind of ['tutorial', 'challenge']) {
     const ofKind = lessons.filter(lesson => lesson.kind === kind)
     if (ofKind.length === 0) continue

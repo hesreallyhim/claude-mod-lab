@@ -334,7 +334,7 @@ export function probesHint(state) {
   return el(
     'p',
     { class: 'hint' },
-    'Run npx claude-mod-lab@alpha run in your project to start Claude Code with the lab and connect a session. If the lab is installed from its marketplace, a plain claude session can connect too.',
+    'Run npx claude-mod-lab run in your project to start Claude Code with the lab and connect a session. If the lab is installed from its marketplace, a plain claude session can connect too.',
   )
 }
 

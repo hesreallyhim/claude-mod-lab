@@ -132,7 +132,7 @@ export function createBuildApi({
   function componentProblem(component, project, inspection) {
     if (suppliedToSession(component, project)) return null
     if (component.directory === componentFolder(project))
-      return 'This folder is loaded by the lab launcher. Start a session with npx claude-mod-lab@alpha run in this project to use these mods.'
+      return 'This folder is loaded by the lab launcher. Start a session with npx claude-mod-lab run in this project to use these mods.'
     const copy = inspection.copies.find(one => one.name === component.name || one.id.split('@')[0] === component.name)
     return inspection.problem ?? (copy === undefined ? null : skillsCopyNote(copy))
   }

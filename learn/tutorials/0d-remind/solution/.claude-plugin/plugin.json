@@ -1,6 +1,6 @@
 {
   "name": "remind",
-  "version": "0.2.0",
+  "version": "0.2.0-beta.1",
   "description": "Reminders Claude can set for you: said aloud when they go off, and passed back to Claude to remind you",
   "author": {
     "name": "Really Him"

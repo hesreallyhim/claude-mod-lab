@@ -5,7 +5,7 @@ import { isAbsolute } from 'node:path'
 import { isWorkspace } from './roots.mjs'
 
 export const LESSON_SETUP =
-  'Create a lesson workspace with npx claude-mod-lab@alpha init-lessons <directory>, then connect it with npx claude-mod-lab@alpha run <directory>.'
+  'Create a lesson workspace with npx claude-mod-lab init-lessons <directory>, then connect it with npx claude-mod-lab run <directory>.'
 
 function directory(path) {
   if (typeof path !== 'string' || !isAbsolute(path)) return null
@@ -42,7 +42,7 @@ export function createWorkspaceContext({ hub, workspace, lessonWorkspace = null 
   function requireProject(expected) {
     const current = snapshot().project
     if (current === null)
-      throw new Error('Connect a session with npx claude-mod-lab@alpha run <project> before adding a component.')
+      throw new Error('Connect a session with npx claude-mod-lab run <project> before adding a component.')
     if (current === directory(homedir()))
       throw new Error(
         'Choose a project folder before adding components; the home folder contains globally loaded skills.',

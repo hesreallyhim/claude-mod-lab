@@ -18,7 +18,7 @@ score 0  best 3  click the board to start
 This tutorial assumes [stopwatch-pane](../3-stopwatch-pane): a pane, `ui.render` and the elements of a surface. In a terminal of its own:
 
 ```sh
-npx claude-mod-lab@alpha learn snake
+npx claude-mod-lab learn snake
 ```
 
 You build the mod in `workshop/snake/`. The terminal and the desktop app draw a `Client`; VS Code and mobile do not. The checks mount the pane as a surface would and act on the board through the test kit's `Client` acts: `advance` moves the board's frame clock, `pointer` and `key` hand it a click and a key, and `post` posts as the board does.
@@ -296,7 +296,7 @@ A `ui.message` hook that answers `{ props }` hands the posting board its next pr
 ## 6. Play it
 
 ```sh
-npx claude-mod-lab@alpha run
+npx claude-mod-lab run
 ```
 
 `/snake` opens the pane. Click the board: the game starts, and the board has the keys. Steer with the arrows; Escape gives the keys back to the prompt. When the game ends, the best score under the board is the hooks module's, and it is there again in the next session, from `$.store`. Save a change to `board.tsx` while the pane is open: the board loads again, its state gone.

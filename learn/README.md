@@ -33,15 +33,15 @@ Take the tutorials in order; the challenges assume them and stand alone after th
 Initialize a dedicated lesson workspace once, then start a session there:
 
 ```sh
-npx claude-mod-lab@alpha init-lessons ~/mod-lessons
-npx claude-mod-lab@alpha run ~/mod-lessons
+npx claude-mod-lab init-lessons ~/mod-lessons
+npx claude-mod-lab run ~/mod-lessons
 ```
 
 Run the checker commands below from that workspace. Browsing lessons in the explorer does not create files.
 
 ```sh
-npx claude-mod-lab@alpha learn             # the lessons, and how far you got in each
-npx claude-mod-lab@alpha learn tick        # check workshop/tick on every save
+npx claude-mod-lab learn             # the lessons, and how far you got in each
+npx claude-mod-lab learn tick        # check workshop/tick on every save
 ```
 
 You build in `workshop/<mod>/`; stopwatch-pane and stopwatch-options grow the stopwatch tutorial's mod, in the same folder. A lesson's first check copies its starter there, where it has one, and when the folder is missing, stopwatch-pane's copies the stopwatch tutorial's finished mod and stopwatch-options' copies stopwatch-pane's. On every save the checker:
@@ -51,14 +51,14 @@ You build in `workshop/<mod>/`; stopwatch-pane and stopwatch-options grow the st
 3. type-checks your module against the engine's declarations;
 4. lists the steps that pass, why the current one does not, and where its section in the README is.
 
-The explorer (`npx claude-mod-lab@alpha`) has the lessons too, under Lessons: each README drawn with a button beside every `/mod-lab` command in it, which runs that command in the connected session, and a button that runs the checker on your folder.
+The explorer (`npx claude-mod-lab`) has the lessons too, under Lessons: each README drawn with a button beside every `/mod-lab` command in it, which runs that command in the connected session, and a button that runs the checker on your folder.
 
 `node learn/check.mjs <lesson> --dir <folder>` checks any folder, and `node learn/check.mjs --help` lists the options.
 
 The checks stand in for the engine with hooks of their own, so they cannot catch everything a session would. The live steps of a tutorial are done in a session, with your mod loaded beneath the lab so its traces and intercepts show your hooks:
 
 ```sh
-npx claude-mod-lab@alpha run
+npx claude-mod-lab run
 ```
 
 ## Tests of your own

@@ -19,7 +19,7 @@ It covers what drawing takes: a `.tsx` module, `$.ui.open` and the `ui.render` h
 You work in `workshop/stopwatch`, the mod from the stopwatch tutorial, so finish that first. If the folder is not there, the first check copies the stopwatch tutorial's finished mod into it. Then:
 
 ```sh
-npx claude-mod-lab@alpha learn stopwatch-pane
+npx claude-mod-lab learn stopwatch-pane
 ```
 
 ## 1. A pane to draw in
@@ -251,7 +251,7 @@ A command can carry escape sequences, the bytes a terminal reads as colors or a 
 ## 6. Watch it live
 
 ```sh
-npx claude-mod-lab@alpha run
+npx claude-mod-lab run
 ```
 
 1. `/stopwatch pane`. It answers "Opened the stopwatch pane.", and in the fullscreen terminal the pane docks at the right of the transcript, with a ✕ to close it.

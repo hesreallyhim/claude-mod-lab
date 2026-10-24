@@ -37,13 +37,13 @@ Use a dedicated lesson workspace and Claude Code **2.1.310 or later**. This less
 From your lesson workspace, run:
 
 ```sh
-npx claude-mod-lab@alpha learn session-lens
+npx claude-mod-lab learn session-lens
 ```
 
 Or choose **Start from the lesson's starter** on this lesson's Explorer page. Both routes create `workshop/session-lens/` and a source-only reference in `solutions/session-lens/`. The reference is not registered as a second plugin. In another terminal, start the workspace session:
 
 ```sh
-npx claude-mod-lab@alpha run
+npx claude-mod-lab run
 ```
 
 Edit `workshop/session-lens/hooks/register.tsx`. Saving reloads the mod; its temporary pane readings reset. Appended conversation rows are separate from those readings. Most exercises make no model request. **Ask Claude** deliberately starts one and uses your session's selected model and quota.

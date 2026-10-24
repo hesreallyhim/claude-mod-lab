@@ -2,7 +2,7 @@
 // tagging are stand-ins; no registry, user configuration or real tags are used.
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { test } from 'node:test'
@@ -21,12 +21,14 @@ function fixture(t, { lessonVersion = '0.0.5' } = {}) {
   const repo = join(temp, 'repo')
   const tools = join(temp, 'tools')
   mkdirSync(repo)
+  symlinkSync(join(SOURCE, '..', 'node_modules'), join(repo, 'node_modules'), 'dir')
   mkdirSync(tools)
   const write = (file, value) => {
     const dest = join(repo, file)
     mkdirSync(dirname(dest), { recursive: true })
     writeFileSync(dest, typeof value === 'string' ? value : JSON.stringify(value, null, 2) + '\n')
   }
+  write('.gitignore', 'node_modules/\n')
   mkdirSync(join(repo, 'scripts'))
   for (const file of ['release.mjs', 'bridge-deps.mjs', 'plugins.mjs']) copyFileSync(join(SOURCE, file), join(repo, 'scripts', file))
   write('package.json', { name: 'claude-mod-lab', version: '0.1.0', private: true })
@@ -142,4 +144,55 @@ test('without --all-plugins, independent plugins retain patch-release behavior a
   assert.equal(manifest('mods/scratch-mod').version, '0.1.0')
   assert.equal(manifest(LESSONS[0]).version, '0.0.5')
   assert.equal(manifest(LESSONS[1]).version, '0.1.0')
+})
+
+test('prereleases advance numerically, repeat safely, and promote to stable without allowing downgrades', t => {
+  const { repo, git, release, manifest } = fixture(t)
+  for (const version of ['0.2.0-beta.1', '0.2.0-beta.2', '0.2.0-beta.10']) {
+    const result = release(version, '--all-plugins')
+    assert.equal(result.status, 0, result.stdout + result.stderr)
+    for (const dir of ALL_DIRS) assert.equal(manifest(dir).version, version, dir)
+    assert.equal(json(join(repo, 'mods/mod-lab-bridge/package.json')).dependencies['claude-mod-lab'], version)
+  }
+  const beforeRepeat = git('rev-parse', 'HEAD')
+  const repeat = release('0.2.0-beta.10', '--all-plugins')
+  assert.equal(repeat.status, 0, repeat.stdout + repeat.stderr)
+  assert.equal(git('rev-parse', 'HEAD'), beforeRepeat)
+  const olderBeta = release('0.2.0-beta.2', '--all-plugins')
+  assert.equal(olderBeta.status, 1)
+  assert.match(olderBeta.stderr, /0\.2\.0-beta\.10, above 0\.2\.0-beta\.2/)
+  assert.equal(git('status', '--porcelain'), '')
+  const stable = release('0.2.0', '--all-plugins')
+  assert.equal(stable.status, 0, stable.stdout + stable.stderr)
+  const backToBeta = release('0.2.0-beta.11', '--all-plugins')
+  assert.equal(backToBeta.status, 1)
+  assert.match(backToBeta.stderr, /0\.2\.0, above 0\.2\.0-beta\.11/)
+  assert.equal(git('status', '--porcelain'), '')
+})
+
+test('independent prerelease plugins patch to stable using their newest prerelease tag', t => {
+  const { git, release, manifest, write } = fixture(t)
+  const first = release('0.2.0-beta.10', '--all-plugins')
+  assert.equal(first.status, 0, first.stdout + first.stderr)
+  // This older tag sorts after beta.10 lexically, but must not be selected.
+  git('tag', 'gallery-mod--v0.2.0-beta.2')
+  write('mods/gallery-mod/README.md', 'Changed since beta.10.\n')
+  git('add', '.')
+  git('commit', '--quiet', '-m', 'change prerelease gallery')
+  const result = release('0.2.0-beta.11')
+  assert.equal(result.status, 0, result.stdout + result.stderr)
+  assert.match(result.stdout, /changed since gallery-mod--v0\.2\.0-beta\.10/)
+  assert.equal(manifest('mods/gallery-mod').version, '0.2.0')
+  assert.ok(git('tag', '--list').includes('gallery-mod--v0.2.0'))
+})
+
+test('invalid and noncanonical versions fail before changing the fixture', t => {
+  const { git, release } = fixture(t)
+  for (const version of ['0.2', '0.02.0', '0.2.0-beta.01', '0.2.0-beta..1', 'v0.2.0']) {
+    const result = release(version, '--all-plugins')
+    assert.equal(result.status, 2, version)
+    assert.match(result.stderr, /Usage:/)
+    assert.equal(git('status', '--porcelain'), '')
+    assert.equal(git('tag', '--list'), '')
+  }
 })

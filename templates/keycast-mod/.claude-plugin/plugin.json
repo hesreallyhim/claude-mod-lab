@@ -1,6 +1,6 @@
 {
   "name": "keycast-mod",
-  "version": "0.2.0",
+  "version": "0.2.0-beta.1",
   "description": "The keys you press in the prompt box, drawn above it as you press them, for screen recordings and pairing",
   "author": {
     "name": "Really Him"

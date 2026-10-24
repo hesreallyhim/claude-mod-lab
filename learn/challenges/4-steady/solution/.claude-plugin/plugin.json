@@ -1,6 +1,6 @@
 {
   "name": "steady",
-  "version": "0.2.0",
+  "version": "0.2.0-beta.1",
   "description": "A challenge: tell the model the branch without changing the system prompt",
   "author": {
     "name": "Really Him"

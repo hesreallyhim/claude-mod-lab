@@ -3,7 +3,7 @@
 The starter gives the model a tool, `total`, that adds up a list of items, each with a unit price and a quantity. In a session it does not work. Make it work: registered so the model sees it from the start, answered with the total as text, and refusing what it cannot add up, with a reason the model can act on.
 
 ```sh
-npx claude-mod-lab@alpha learn receipt
+npx claude-mod-lab learn receipt
 ```
 
 The first run copies the [starter](starter) to `workshop/receipt/`; edit it there.

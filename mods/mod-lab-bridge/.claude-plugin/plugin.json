@@ -1,6 +1,6 @@
 {
   "name": "mod-lab-bridge",
-  "version": "0.2.0",
+  "version": "0.2.0-beta.1",
   "description": "Serves the mod-lab explorer page from this session and connects it: runs the probes it asks for and forwards runs and traces",
   "license": "MIT",
   "author": { "name": "Really Him" },

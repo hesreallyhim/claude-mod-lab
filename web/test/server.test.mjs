@@ -385,7 +385,7 @@ test('a bridge with another protocol number is refused with the reason, which th
   })
   assert.equal(hello.status, 409)
   const { error } = await hello.json()
-  assert.match(error, /update the explorer with npx claude-mod-lab@alpha/)
+  assert.match(error, /update the explorer with npx claude-mod-lab/)
   const state = await (await fetch(`${server.url}/api/state`, { headers: pageHeaders() })).json()
   assert.equal(state.mismatch.message, error)
 })

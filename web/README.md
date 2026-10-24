@@ -1,6 +1,6 @@
 # web
 
-The explorer: `server.mjs` serves the page in `public/`, builds the `$` reference from the engine's local declarations, and connects to the session through mod-lab-bridge. `npx claude-mod-lab@alpha` opens or starts a standalone explorer. `npx claude-mod-lab@alpha run [project]` starts Claude Code with the lab and connects it automatically; if no shared explorer is available, the bridge's MCP server hosts one for that session.
+The explorer: `server.mjs` serves the page in `public/`, builds the `$` reference from the engine's local declarations, and connects to the session through mod-lab-bridge. `npx claude-mod-lab` opens or starts a standalone explorer. `npx claude-mod-lab run [project]` starts Claude Code with the lab and connects it automatically; if no shared explorer is available, the bridge's MCP server hosts one for that session.
 
 The package root is read-only. The explorer's runtime files are per-user; its startup directory is not a write destination. Explicit project actions such as Add to session target the connected session's project. Lessons, Sandbox and Workshop require an initialized lesson workspace selected by `run <lesson-directory>`. Browsing lesson material creates no files. Each mutation carries the destination shown by its page, and a changed session or workspace makes an old request fail before writing.
 
@@ -16,7 +16,7 @@ The bridge greeting names the selected lesson workspace independently of the ses
 
 Without `MOD_LAB_TYPES` the server looks for the declarations in this order (`lib/types-path.mjs`):
 
-1. `.claude-plugin/types/claude-code/index.d.ts` beside the plugins the session loaded: mod-lab's folder, which the bridge's hello reports from `$.lab.root()`, then the bridge's own. Before a session connects, beside the package's `mods/mod-lab` and `mods/mod-lab-bridge`, which `npx claude-mod-lab@alpha run` loads.
+1. `.claude-plugin/types/claude-code/index.d.ts` beside the plugins the session loaded: mod-lab's folder, which the bridge's hello reports from `$.lab.root()`, then the bridge's own. Before a session connects, beside the package's `mods/mod-lab` and `mods/mod-lab-bridge`, which `npx claude-mod-lab run` loads.
 2. The same file in each folder of `<project>/.claude/skills/`, by name.
 3. The plugin-authoring skill's copy under the temp folder (`/tmp/claude-<uid>/bundled-skills/<version>/`) for the session's Claude Code version, or, before a session connects, for the version `claude --version` answers.
 

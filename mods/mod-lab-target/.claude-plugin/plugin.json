@@ -1,6 +1,6 @@
 {
   "name": "mod-lab-target",
-  "version": "0.2.0",
+  "version": "0.2.0-beta.1",
   "description": "A companion to mod-lab whose hooks fail on request, so /mod-lab verify can check what a failed hook leaves standing",
   "license": "MIT",
   "author": { "name": "Really Him" }

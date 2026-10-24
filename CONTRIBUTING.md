@@ -12,7 +12,7 @@ For lessons, create a separate workspace with `npx claude-mod-lab init-lessons <
 
 ## Commands
 
-What a person runs, in a clone or from the package. In a clone, the unversioned `npx claude-mod-lab` command uses the local package. Outside a clone, use `npx claude-mod-lab@alpha` for the alpha release.
+What a person runs, in a clone or from the package. In a clone, `npx claude-mod-lab` uses the local package. Outside a clone, it selects the default npm release.
 
 | Command | What it does |
 | --- | --- |
@@ -85,21 +85,23 @@ The GIFs and screenshots in `docs/media/` come from two scripts kept for retakin
 
 Releases are cut from `main`, whose head is what the marketplace serves; work happens on `develop`. A plugin's version lives in its `plugin.json` only, never also in its entry in `marketplace.json`. The npm package, mod-lab, mod-lab-bridge, mod-lab-target and mod-lab-keys share one version and move together, since the bridge protocol couples them. The templates, gallery-mod, scratch-mod, mod-bootstrap and mod-authoring-notes bump only when they change. A plugin that changed without a higher version is not offered by `claude plugin update`.
 
-For the initial alpha, use `--all-plugins` to give every shipped plugin manifest a fresh version, including lesson starters and solutions. This is an optional exception for replacing previously cached development versions; ordinary releases keep the default policy above. Preview the changes first:
+For the initial beta, use `--all-plugins` to give every shipped plugin manifest a fresh version, including lesson starters and solutions. This is an optional exception for replacing previously cached development versions; ordinary releases keep the default policy above. Preview the changes first:
 
 ```sh
-npm run release -- 0.2.0 --all-plugins --dry-run
-npm run release -- 0.2.0 --all-plugins
+npm run release -- 0.2.0-beta.1 --all-plugins --dry-run
+npm run release -- 0.2.0-beta.1 --all-plugins
 ```
 
 The flag does not add lessons to the marketplace. Plugin tags still cover the marketplace plugins and scratch-mod; mod-lab-bridge waits for its published dependency lockfile.
+
+Prerelease versions are supported, including an initial npm release. Advance `0.2.0-beta.1` to `0.2.0-beta.2` for another beta, then to `0.2.0` when ready for a stable release. The package's `publishConfig.tag` is `latest` so the documented `npx claude-mod-lab` command works. The version suffix marks this release as a beta; the distribution tag chooses the default install. A beta on the public npm registry remains publicly downloadable.
 
 `claude plugin tag <folder>` tags each plugin that changed, as `<name>--v<version>`, after checking that its `plugin.json` and its marketplace entry agree; `--dry-run` shows the tag and the commands without making it.
 
 An installed mod-lab-bridge gets the explorer from the npm package: its own `package.json` names `claude-mod-lab` at the bridge's version, and Claude Code installs it from the bridge's lockfile when it installs the plugin. So a release goes in this order:
 
 1. `npm run release -- <version>` bumps the versions (the bridge's dependency included, dropping its old lockfile), commits, runs `pack-check`, and tags every changed plugin but the bridge.
-2. `npm publish <tarball> --tag alpha --access public`, using the tarball `pack-check` printed. The initial 0.2.0 release uses the `alpha` channel; do not publish it under `latest`. A plain `npm publish` from the repository folder is refused.
+2. `npm publish <tarball> --tag latest --access public`, using the tarball `pack-check` printed. Specify the tag explicitly for the initial `0.2.0-beta.1` prerelease; `latest` makes the unqualified install command resolve. A plain `npm publish` from the repository folder is refused.
 3. `npm run bridge-lock` writes the bridge's lockfile against the registry, checks it pins the published version with npm's integrity, commits it and tags the bridge.
 4. Once the npm package and bridge lockfile are ready, push `main`, which the marketplace serves, and the release tags to the release repository.
 

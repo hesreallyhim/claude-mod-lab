@@ -26,14 +26,14 @@ You start from a mod that already draws all of this. Its buttons do nothing yet,
 You need Claude Code 2.1.299 or later and Node 22 or later. Initialize a dedicated lesson workspace once, then open a terminal in it. The lesson files and progress stay in this folder.
 
 ```sh
-npx claude-mod-lab@alpha init-lessons my-mods
+npx claude-mod-lab init-lessons my-mods
 cd my-mods
 ```
 
 In that folder, start the checker:
 
 ```sh
-npx claude-mod-lab@alpha learn tick
+npx claude-mod-lab learn tick
 ```
 
 It copies the starter into `workshop/tick/`, then checks the folder every time you save a file in it: it lists the steps that pass, and says why the next one does not pass yet. Leave it running.
@@ -43,7 +43,7 @@ The lesson page’s “Start from the lesson’s starter” button copies the sa
 In a second terminal, in the same folder, start Claude Code with your mod loaded:
 
 ```sh
-npx claude-mod-lab@alpha run
+npx claude-mod-lab run
 ```
 
 The session loads your mod again each time you save, so you see each change as soon as you make it. Everything you will change is in `workshop/tick/hooks/register.tsx`; open it in your editor.

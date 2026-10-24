@@ -1,6 +1,6 @@
 {
   "name": "band-mod",
-  "version": "0.2.0",
+  "version": "0.2.0-beta.1",
   "description": "A line above the prompt: the session's tool calls and the last one",
   "author": {
     "name": "Really Him"

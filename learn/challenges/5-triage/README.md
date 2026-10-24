@@ -3,7 +3,7 @@
 The starter labels each prompt the person sends as `bug`, `feature` or `question`, by asking a model with a labelling guide, and adds the label to the prompt's context, where the main model reads it. It works. It also spends more than it needs to on every prompt, passes on whatever the model replied, and holds the prompt up when the call fails. Make it cheap and dependable.
 
 ```sh
-npx claude-mod-lab@alpha learn triage
+npx claude-mod-lab learn triage
 ```
 
 The first run copies the [starter](starter) to `workshop/triage/`; edit it there. The checks stand in for the model, so they spend nothing.
@@ -23,7 +23,7 @@ A call the model does not answer, or one that is refused, leaves the prompt as i
 ## 4. Score it in a session
 
 ```sh
-npx claude-mod-lab@alpha run --model haiku
+npx claude-mod-lab run --model haiku
 ```
 
 Send a few short prompts, then open the explorer's Model workbench. `triage`'s calls are listed with what each cost: the first writes the guide to the cache, and each after it within five minutes reads it, paying only for the prompt. The challenge's page in the explorer shows the average per label. `MODEL=haiku` keeps the session's own turns cheap too; each prompt is still a turn of the main model.

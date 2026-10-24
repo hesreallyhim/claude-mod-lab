@@ -1,6 +1,6 @@
 {
   "name": "claude-mod-lab",
-  "version": "0.2.0",
+  "version": "0.2.0-beta.1",
   "type": "module",
   "description": "A playground for learning the Claude Code mod API",
   "license": "MIT",
@@ -76,6 +76,11 @@
     "husky": "9.1.7",
     "lint-staged": "17.6.0",
     "playwright-core": "1.63.0",
-    "prettier": "3.9.9"
+    "prettier": "3.9.9",
+    "semver": "7.8.5"
+  },
+  "publishConfig": {
+    "tag": "latest",
+    "access": "public"
   }
 }

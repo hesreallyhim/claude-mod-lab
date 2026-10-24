@@ -5,7 +5,7 @@ A mod can define an agent type with `$.agent.register` and start an agent of it 
 It has two faults. The model is offered the type too, so it can send errands of its own, and every agent's answer comes back as an errand's, whatever type the agent was. Keep the type to the mod, and bring back its own agents' answers alone.
 
 ```sh
-npx claude-mod-lab@alpha learn errand
+npx claude-mod-lab learn errand
 ```
 
 The first run copies the [starter](starter) to `workshop/errand/`; edit it there.
@@ -25,7 +25,7 @@ The type is registered to read and report, on Haiku, with no tool that changes a
 ## 4. Run an errand
 
 ```sh
-npx claude-mod-lab@alpha run --model haiku
+npx claude-mod-lab run --model haiku
 ```
 
 ```

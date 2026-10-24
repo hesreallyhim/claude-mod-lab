@@ -135,7 +135,7 @@ async function initLessons(args) {
     const status = await pin(workspace)
     if (status !== 0) return status
   }
-  console.log(`Start a session: npx claude-mod-lab@alpha run ${JSON.stringify(shown(workspace))}`)
+  console.log(`Start a session: npx claude-mod-lab run ${JSON.stringify(shown(workspace))}`)
   return 0
 }
 
@@ -246,7 +246,7 @@ async function serve(args) {
   })
   console.log(`mod-lab explorer: ${asLocalhost(started.url)}`)
   const selection = options.port === undefined ? '' : ` --port ${options.port}`
-  console.log(`To connect a session, in your project: npx claude-mod-lab@alpha run${selection}`)
+  console.log(`To connect a session, in your project: npx claude-mod-lab run${selection}`)
   console.log('Ctrl-C stops the explorer. Opening pages does not create project files.')
   if (!options.noOpen) openBrowser(asLocalhost(started.url))
   await new Promise(resolve => {

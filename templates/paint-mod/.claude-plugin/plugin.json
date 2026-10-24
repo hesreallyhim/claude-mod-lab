@@ -1,6 +1,6 @@
 {
   "name": "paint-mod",
-  "version": "0.2.0",
+  "version": "0.2.0-beta.1",
   "description": "Paints slash commands in the prompt box as they are typed: a known one bold, an unknown one underlined, the rest of a partial one as ghost text",
   "author": {
     "name": "Really Him"

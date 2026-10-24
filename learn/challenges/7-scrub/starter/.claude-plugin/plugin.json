@@ -1,6 +1,6 @@
 {
   "name": "scrub",
-  "version": "0.2.0",
+  "version": "0.2.0-beta.1",
   "description": "A challenge: redact a stream as it passes",
   "author": {
     "name": "Really Him"
