@@ -1,0 +1,5 @@
+{
+  "name": "steady",
+  "version": "0.1.0",
+  "description": "A challenge: tell the model the branch without changing the system prompt"
+}

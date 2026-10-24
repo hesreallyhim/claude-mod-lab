@@ -1,0 +1,16 @@
+{
+  "name": "mod-lab-bridge",
+  "version": "0.1.0",
+  "description": "Serves the mod-lab explorer page from this session and connects it: runs the probes it asks for and forwards runs and traces",
+  "license": "MIT",
+  "author": { "name": "Really Him" },
+  "dependencies": ["mod-lab"],
+  "userConfig": {
+    "bridgeFile": {
+      "title": "Explorer bridge file",
+      "type": "string",
+      "description": "For tests and development: the bridge file of an explorer server started on its own, which writes its address and token there. When set, the bridge connects to that server instead of this session's explorer. A leading ~ is the home directory.",
+      "default": ""
+    }
+  }
+}

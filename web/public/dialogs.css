@@ -1,0 +1,259 @@
+/* A detail dialog is a reading surface: content first, technical metadata second. */
+dialog.detail {
+  width: min(960px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  color: var(--ink);
+  font: var(--size-body) / 1.6 var(--mono);
+  box-shadow: 0 16px 64px rgb(0 0 0 / 0.3);
+}
+
+dialog.detail[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+dialog.detail::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+
+dialog.detail > header {
+  position: relative;
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-4) 96px var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--bg);
+}
+
+dialog.detail > header .mark {
+  align-self: center;
+}
+
+dialog.detail .detail-title {
+  flex: 1 1 60%;
+  min-width: 0;
+  margin: 0;
+  font: 600 var(--size-lead) / 1.4 var(--mono);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+dialog.detail .detail-heading {
+  flex: 1 1 60%;
+  min-width: 0;
+}
+
+dialog.detail .detail-subtitle {
+  margin: var(--space-1) 0 0;
+  color: var(--muted);
+  font-size: var(--size-sm);
+}
+
+dialog.detail .close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-4);
+  min-height: 36px;
+  min-width: 36px;
+  padding: var(--space-1) var(--space-2);
+  font: 500 var(--size-sm) var(--mono);
+}
+
+.detail-body {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-5);
+  scrollbar-color: var(--line-strong) var(--panel);
+}
+
+.detail-body > section + section {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.detail-summary {
+  margin-bottom: var(--space-4) !important;
+  color: var(--muted);
+}
+
+.payload-block + .payload-block {
+  margin-top: var(--space-4);
+}
+
+.payload-label,
+.call-made h5 {
+  margin: var(--space-3) 0 var(--space-2);
+  font: 500 var(--size-sm) var(--mono);
+  color: var(--muted);
+}
+
+dialog.detail :is(.detail-secondary, .record-metadata) {
+  margin-top: var(--space-3);
+  font-size: var(--size-sm);
+}
+
+dialog.detail :is(.detail-secondary, .record-metadata) > summary {
+  min-height: var(--target);
+  padding: var(--space-2) 0;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.record-where code {
+  display: block;
+  margin-top: var(--space-1);
+}
+
+dialog.detail :is(h3, h4) {
+  margin: 0 0 var(--space-3);
+  font: 600 var(--size-md) / 1.4 var(--mono);
+  color: var(--ink);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+dialog.detail p {
+  margin: 0 0 var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+dialog.detail :is(.detail-text, .record-text) {
+  margin: 0;
+  padding: var(--space-3);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: none;
+  max-width: 78ch;
+  font: var(--size-body) / 1.65 var(--mono);
+  color: var(--ink);
+  tab-size: 2;
+}
+
+.detail-empty,
+.capture-note {
+  color: var(--muted);
+  font-size: var(--size-sm);
+}
+
+dialog.detail :is(.json-rows, details.json, pre.json-text) {
+  font-size: var(--size-sm);
+}
+
+dialog.detail pre.json-text {
+  max-height: none;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+dialog.detail .json-row {
+  padding-left: 0;
+}
+
+dialog.detail .json-row + .json-row {
+  margin-top: var(--space-1);
+}
+
+dialog.detail .json-key {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+dialog.detail details.json {
+  margin-top: var(--space-3);
+}
+
+dialog.detail details.json > summary {
+  display: list-item;
+  padding: var(--space-2) 0;
+  color: var(--accent);
+}
+
+table.links {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font: var(--size-sm) / 1.5 var(--mono);
+}
+
+table.links :is(td, th) {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+table.links th {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+table.links :is(td, th):first-child {
+  width: 28px;
+}
+
+table.links .who {
+  font-weight: 600;
+}
+
+table.links .num {
+  font-variant-numeric: tabular-nums;
+}
+
+table.links :is(.tier, .num) {
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  dialog.detail {
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+
+  dialog.detail > header {
+    padding-left: var(--space-3);
+  }
+
+  .detail-body {
+    padding: var(--space-3);
+  }
+
+  table.links,
+  table.links :is(tbody, tr, td) {
+    display: block;
+  }
+
+  table.links thead {
+    display: none;
+  }
+
+  table.links tr {
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  table.links td {
+    width: auto !important;
+    border: 0;
+    padding: var(--space-1) 0;
+  }
+
+  table.links td[data-label]::before {
+    content: attr(data-label) ': ';
+    color: var(--muted);
+    font-weight: 400;
+  }
+}

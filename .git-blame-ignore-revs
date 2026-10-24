@@ -1,0 +1,9 @@
+# Commits that only reformat, left out of git blame with
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# (GitHub reads this file on its own).
+
+# style: format web/ with Prettier
+cf30e2f6705a1f901365dc5bf9afbd18de374631
+
+# style: Prettier's second pass over web/public/keys.js
+05daccbf9dc5602814eedfad2fa6b67b4128e135

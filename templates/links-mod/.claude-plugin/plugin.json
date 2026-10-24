@@ -1,0 +1,10 @@
+{
+  "name": "links-mod",
+  "version": "0.1.0",
+  "description": "A Markdown in a pane whose links the mod answers itself",
+  "author": {
+    "name": "Really Him"
+  },
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

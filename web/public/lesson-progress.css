@@ -1,0 +1,73 @@
+/* Saved lesson checks, summarized as a compact, linked checklist. */
+.lesson-completion {
+  margin: var(--space-4) 0;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.completion-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+}
+
+.completion-head h2,
+.completion-head p {
+  margin: 0;
+  font-size: var(--size-sm);
+}
+
+body:not([data-area='api']) .page .lesson-completion .completion-head h2 {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: var(--size-sm);
+}
+
+.lesson-completion progress {
+  display: block;
+  width: 100%;
+  height: 6px;
+  margin: var(--space-2) 0 var(--space-3);
+  accent-color: var(--ok);
+}
+
+.completion-lessons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.completion-lessons a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--target);
+  padding: var(--space-0) var(--space-2);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--size-xs);
+  overflow-wrap: anywhere;
+}
+
+.completion-lessons a[data-state='complete'] {
+  border-color: var(--ok);
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.completion-lessons a[data-state='in progress'] {
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+.completion-key {
+  margin: var(--space-2) 0 0;
+  font-size: var(--size-xs);
+}

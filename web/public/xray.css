@@ -1,0 +1,198 @@
+/* The conversation uses the available column; only introductory prose keeps a reading measure. */
+.page.xray-page {
+  max-width: none;
+}
+
+.xray-summary {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(240px, 2fr);
+  gap: var(--space-2) var(--space-5);
+  margin-bottom: var(--space-5);
+  padding: var(--space-3) 0 var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.xray-summary section {
+  min-width: 0;
+}
+
+.xray-total {
+  grid-column: 1;
+  margin: 0;
+  font-size: var(--size-md);
+}
+
+.xray-summary > section:first-of-type {
+  grid-column: 1;
+}
+
+.xray-summary > section:last-child {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.xray-summary h3 {
+  margin: 0 0 var(--space-2);
+  color: var(--ink);
+  font-size: var(--size-sm);
+}
+
+.xray-summary table.xray-counts {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--size-sm);
+}
+
+.xray-counts :is(th, td) {
+  padding: var(--space-1) 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.xray-counts th {
+  font-weight: 400;
+  color: var(--muted);
+  text-align: left;
+}
+
+.xray-counts td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.xray-counts thead th:last-child {
+  text-align: right;
+}
+
+.page table.xray-rows {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+table.xray-rows :is(th, td) {
+  padding: var(--space-3) var(--space-2);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+
+table.xray-rows :is(th, td):first-child {
+  width: 12%;
+  padding-left: 0;
+}
+
+table.xray-rows :is(th, td):nth-child(2) {
+  width: 23%;
+}
+
+table.xray-rows :is(th, td):nth-child(3) {
+  width: 15%;
+}
+
+table.xray-rows :is(th, td):last-child {
+  padding-right: 0;
+}
+
+.xray-row-meta,
+.xray-content-meta {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--muted);
+  font-size: var(--size-xs);
+}
+
+.xray-source-kind {
+  display: block;
+  font-weight: 500;
+}
+
+table.xray-rows tbody tr {
+  cursor: pointer;
+}
+
+table.xray-rows tbody tr:is(:hover, :focus-within) {
+  background: var(--code-bg);
+}
+
+.xray-content-open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  font: var(--size-sm) / 1.6 var(--mono);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.xray-content-open:hover {
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink);
+}
+
+.xray-open-label {
+  display: block;
+  width: fit-content;
+  margin-top: var(--space-2);
+  color: var(--accent);
+  font-size: var(--size-xs);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .xray-summary {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+
+  .xray-summary > section:last-child {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .page table.xray-rows,
+  table.xray-rows tbody {
+    display: block;
+  }
+
+  table.xray-rows thead {
+    display: none;
+  }
+
+  table.xray-rows tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  table.xray-rows :is(td, th) {
+    width: auto !important;
+    border: 0;
+    padding: var(--space-1) 0;
+  }
+
+  table.xray-rows .xray-audience {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  table.xray-rows :is(.xray-source, .xray-content) {
+    grid-column: 1 / -1;
+  }
+
+  .xray-source::before {
+    content: 'Source: ';
+    color: var(--muted);
+  }
+
+  .xray-content-open {
+    margin-top: var(--space-2);
+  }
+}

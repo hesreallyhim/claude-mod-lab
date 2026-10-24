@@ -1,0 +1,11 @@
+{
+  "name": "mod-lab",
+  "version": "0.1.0",
+  "description": "Run calls on $ in a live session and see what each one dispatched and returned",
+  "license": "MIT",
+  "author": {
+    "name": "Really Him"
+  },
+  "types": "./types/index.d.ts",
+  "dependencies": ["mod-lab-keys", "mod-lab-target"]
+}

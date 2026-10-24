@@ -1,0 +1,12 @@
+{
+  "mod": "errand",
+  "title": "An agent only the mod starts",
+  "summary": "The starter registers an agent type and sends it errands from a command, then shows every agent's answer as an errand's. The model is offered the type too. Keep the type to the mod, and bring back its own agents' answers alone.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "Only the mod starts it", "checks": "checks/1-hidden.test.ts" },
+    { "title": "Only its own answers come back", "checks": "checks/2-own.test.ts", "calls": ["$.agent.list"] },
+    { "title": "Sent as asked", "checks": "checks/3-asked.test.ts" },
+    { "title": "Run an errand", "live": true }
+  ]
+}

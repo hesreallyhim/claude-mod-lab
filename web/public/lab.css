@@ -1,0 +1,526 @@
+/* The Mod API area (reference.js, tree.js, overview.js), on the console: the
+   reference's index in the left column, drawn like a directory listing; the
+   sheet every reference page is drawn on, set as a manual page (a header line,
+   the title, flags, then sections in capitals with their text indented); and
+   the area's first page with its readouts, figure and catalogue. The bench, the
+   terminal pane on the right where the session runs things, is bench.css.
+   Scoped to body[data-area='api']. */
+
+/* The index */
+
+body[data-area='api'] .layout {
+  grid-template-columns: 264px minmax(0, 1fr);
+}
+
+/* Under 1100px the columns stack (areas.css); the index's width set above would win over that, so it is undone here. */
+@media (max-width: 1100px) {
+  body[data-area='api'] .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+body[data-area='api'] #nav {
+  padding: 0;
+  background: var(--panel);
+  border-right: 1px solid var(--line-strong);
+}
+
+body[data-area='api'] .filter {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: var(--space-3) var(--space-3) var(--space-2);
+  background: var(--panel);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.filter-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-1);
+  font: 600 var(--size-xs) var(--mono);
+  color: var(--ink);
+}
+
+.filter-label::before {
+  content: '# ';
+  color: var(--prompt);
+  white-space: pre;
+}
+
+.filter-label .key {
+  margin-left: auto;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+kbd {
+  padding: 0 var(--space-1);
+  border: 1px solid var(--line-strong);
+  font: 600 var(--size-xs) var(--mono);
+  color: var(--ink);
+}
+
+/* The filter as a pager's search line: a slash, then what is typed. */
+.filter-line {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+}
+
+.filter-line:focus-within {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.filter-prompt {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-1) 0 var(--space-2);
+  font: 600 var(--size-md) var(--mono);
+  color: var(--prompt);
+}
+
+body[data-area='api'] #search {
+  margin: 0;
+  min-height: 32px;
+  padding-left: var(--space-1);
+  border: 0;
+  background: transparent;
+  caret-color: var(--prompt);
+}
+
+body[data-area='api'] #search:focus-visible {
+  outline: 0;
+}
+
+.filter-count {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: var(--space-2) 0 0;
+  font: var(--size-xs) var(--mono);
+  color: var(--muted);
+}
+
+body[data-area='api'] #tree {
+  padding: var(--space-1) var(--space-3) var(--space-6);
+}
+
+body[data-area='api'] #tree .group {
+  margin-bottom: var(--space-1);
+}
+
+body[data-area='api'] #tree .pages a {
+  font-weight: 500;
+}
+
+body[data-area='api'] #tree .pages a::before {
+  content: '>';
+  color: var(--muted);
+}
+
+/* A section of the index as a comment line. */
+.tree-section {
+  margin: var(--space-3) 0 var(--space-1);
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--line-strong);
+  font: 600 var(--size-xs) var(--mono);
+  color: var(--ink);
+}
+
+.tree-section::before {
+  content: '# ';
+  color: var(--prompt);
+  white-space: pre;
+}
+
+body[data-area='api'] #tree .group h3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: var(--space-2) 0 0;
+  padding: 0 var(--space-2);
+  font: 600 var(--size-sm) var(--mono);
+  color: var(--ink);
+}
+
+body[data-area='api'] #tree .group h3 .group-name::after {
+  content: '/';
+  color: var(--muted);
+}
+
+.group h3 .count {
+  font-weight: 400;
+  font-size: var(--size-xs);
+  color: var(--muted);
+}
+
+.group h3 .count::before {
+  content: '[';
+}
+
+.group h3 .count::after {
+  content: ']';
+}
+
+/* Members hang off their noun on a tree's branches, as a listing draws them. */
+body[data-area='api'] #tree .group a {
+  position: relative;
+  gap: var(--space-1);
+  padding-left: var(--space-6);
+}
+
+body[data-area='api'] #tree .group:not(.pages) a::before,
+body[data-area='api'] #tree .group:not(.pages) a::after {
+  content: '';
+  position: absolute;
+  left: var(--space-4);
+  border-color: var(--line-strong);
+  border-style: solid;
+  border-width: 0;
+}
+
+body[data-area='api'] #tree .group:not(.pages) a::before {
+  top: 0;
+  bottom: 0;
+  border-left-width: 1px;
+}
+
+body[data-area='api'] #tree .group:not(.pages) a:last-child::before {
+  bottom: 50%;
+}
+
+body[data-area='api'] #tree .group:not(.pages) a::after {
+  top: 50%;
+  width: var(--space-2);
+  border-top-width: 1px;
+}
+
+body[data-area='api'] #tree .group a:hover {
+  background: var(--code-bg);
+  text-decoration: none;
+}
+
+/* The current entry in reverse video, as a terminal shows a selection. */
+body[data-area='api'] #tree .group a.current {
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+body[data-area='api'] #tree .group a.current::before,
+body[data-area='api'] #tree .group a.current :is(.parens, .ns, .name),
+body[data-area='api'] #tree .group a.current .probe-mark::before {
+  color: inherit;
+}
+
+#tree .name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#tree .parens,
+#tree .ns {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* A member a probe calls is listed as ls lists an executable: in green, with a star. */
+#tree a:has(.probe-mark) .name {
+  color: var(--prompt);
+  font-weight: 600;
+}
+
+#tree .empty {
+  margin: var(--space-3) var(--space-2);
+  font-size: var(--size-sm);
+  color: var(--muted);
+}
+
+/* The run glyph: a member a probe calls can be run from its page. */
+.probe-mark {
+  display: inline-block;
+  flex: none;
+  vertical-align: baseline;
+}
+
+.probe-mark::before {
+  content: '*';
+  font: 600 var(--size-md) / 1 var(--mono);
+  color: var(--prompt);
+}
+
+/* The sheet: a manual page, beside the bench's pane when it has one. */
+
+body[data-area='api'] main {
+  padding: 0;
+}
+
+body[data-area='api'] .page.sheet {
+  max-width: none;
+  padding: var(--space-4) var(--space-6) var(--space-7);
+}
+
+body[data-area='api'] .page.sheet.single {
+  max-width: calc(var(--measure) + 2 * var(--space-6) + 200px);
+}
+
+body[data-area='api'] .page.sheet:has(> .sheet-body) {
+  padding: 0;
+}
+
+/* The header and footer lines of a manual page: its name and section, at both ends. */
+.man-line {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+  font: var(--size-xs) var(--mono);
+  color: var(--muted);
+}
+
+.man-line.foot {
+  margin: var(--space-6) 0 0;
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--line-strong);
+}
+
+.sheet-head {
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--rule) double var(--line-strong);
+}
+
+.kicker {
+  margin: 0;
+  font: 500 var(--size-xs) var(--mono);
+  color: var(--muted);
+}
+
+.kicker::before {
+  content: '// ';
+  white-space: pre;
+}
+
+.kicker code {
+  font-size: var(--size-xs);
+  color: var(--ink);
+}
+
+/* The title, as on every page with a head (pages.css). */
+body[data-area='api'] .page h1,
+.page-head h1,
+.lesson > h1 {
+  margin: 0 0 var(--space-2);
+  font: var(--size-vt-title) / 1 var(--display);
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+  text-shadow: var(--glow);
+}
+
+body[data-area='api'] .page h1 code {
+  font: inherit;
+}
+
+h1 .dim {
+  color: var(--muted);
+}
+
+/* The flags: what kind of thing it is, the event, the probe; each in brackets. */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--target);
+  font: 500 var(--size-sm) var(--mono);
+  color: var(--ink);
+}
+
+.tag::before {
+  content: '[';
+  color: var(--muted);
+}
+
+.tag::after {
+  content: ']';
+  color: var(--muted);
+}
+
+.tag code {
+  font-size: var(--size-sm);
+}
+
+.tag.what {
+  padding: 0 var(--space-2);
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+}
+
+.tag.what::before,
+.tag.what::after {
+  content: none;
+}
+
+.tag.probe {
+  color: var(--prompt);
+}
+
+.tag.intercept,
+.tag.streaming,
+.tag.deprecated {
+  color: var(--warn);
+}
+
+.tag.none {
+  color: var(--muted);
+}
+
+body[data-area='api'] .sheet-head .kind {
+  margin: 0 0 var(--space-1);
+  font-size: var(--size-body);
+  color: var(--muted);
+}
+
+body[data-area='api'] .page .cross {
+  margin: 0 0 var(--space-2);
+}
+
+/* The page and its pane, split as a terminal multiplexer splits a window. */
+.sheet-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(480px, 45%);
+  align-items: start;
+}
+
+.datasheet {
+  min-width: 0;
+  padding: var(--space-4) var(--space-6) var(--space-7);
+}
+
+@media (max-width: 1200px) {
+  .sheet-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* A box with its title set into its top edge, as a text interface draws a frame. */
+.formula,
+.framed {
+  position: relative;
+  margin: var(--space-4) 0 var(--space-5);
+  border: 1px solid var(--line-strong);
+}
+
+.formula figcaption,
+.framed > .frame-title {
+  position: absolute;
+  top: -0.75em;
+  left: var(--space-3);
+  padding: 0 var(--space-1);
+  background: var(--bg);
+  font: 600 var(--size-xs) / 1.5 var(--mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--ink);
+}
+
+.formula pre {
+  margin: 0;
+  padding: var(--space-4) var(--space-3) var(--space-3);
+  background: transparent;
+  font-size: var(--size-md);
+  white-space: pre-wrap;
+}
+
+.formula pre.signature.resolved {
+  border-left: 0;
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--line);
+}
+
+.formula dl.types {
+  margin: 0;
+  padding: var(--space-3);
+  gap: var(--space-1) var(--space-4);
+  align-items: baseline;
+}
+
+dl.types dt code {
+  color: var(--muted);
+}
+
+.formula pre + dl.types {
+  border-top: 1px dashed var(--line);
+}
+
+dl.types code {
+  padding: 0;
+  background: none;
+}
+
+dl.types dd code {
+  font-size: var(--size-md);
+}
+
+.doc p,
+.datasheet section p {
+  max-width: var(--measure);
+  margin: 0 0 var(--space-3);
+  font-size: var(--size-lead);
+  line-height: 1.6;
+}
+
+/* The manual's sections: the heading in capitals at the margin, the text indented beneath it. */
+.datasheet section {
+  margin-top: var(--space-5);
+}
+
+body[data-area='api'] .datasheet h2,
+body[data-area='api'] .overview h2 {
+  margin: 0 0 var(--space-2);
+  font: 600 var(--size-md) var(--mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--ink);
+}
+
+.datasheet section > :not(h2) {
+  margin-left: var(--space-6);
+}
+
+dl.params {
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-2) var(--space-4);
+}
+
+dl.params dt code {
+  font-weight: 600;
+  font-size: var(--size-md);
+  background: none;
+  color: var(--prompt);
+}
+
+dl.params dd p {
+  margin: 0;
+}
+
+.datasheet section pre {
+  font-size: var(--size-sm);
+  border-left: var(--rule) solid var(--line-strong);
+}

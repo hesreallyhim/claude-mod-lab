@@ -1,0 +1,30 @@
+{
+  "id": "remind",
+  "mod": "remind",
+  "title": "Reminders Claude can set",
+  "summary": "A tool of the mod's that Claude can already call: answer it, make the reminder go off for real, and hand it back to Claude, who reminds you in the conversation. A tool for the model and what it reads back, $.clock.after, and $.prompt.submit.",
+  "minVersion": "2.1.299",
+  "steps": [
+    {
+      "title": "Ask Claude"
+    },
+    {
+      "title": "Answer Claude",
+      "checks": "checks/2-answer.test.ts"
+    },
+    {
+      "title": "Make it go off",
+      "checks": "checks/3-later.test.ts",
+      "calls": [
+        "$.clock.after"
+      ]
+    },
+    {
+      "title": "Have Claude remind you",
+      "checks": "checks/4-claude.test.ts",
+      "calls": [
+        "$.prompt.submit"
+      ]
+    }
+  ]
+}

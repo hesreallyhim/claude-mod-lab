@@ -1,0 +1,10 @@
+{
+  "mod": "only-mine",
+  "title": "Answer your own calls",
+  "summary": "Make /where report /sandbox without changing what any other plugin's $.session.cwd() gets.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "Answer your own call", "checks": "checks/1-mine.test.ts", "calls": ["$.session.cwd"] },
+    { "title": "Leave everyone else's alone", "checks": "checks/2-others.test.ts" }
+  ]
+}

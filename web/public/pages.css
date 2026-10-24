@@ -1,0 +1,731 @@
+/* The terminal design's patterns on the pages outside the Mod API: the home
+   page, the Session area and the Build area. Each rule is written for a role
+   these pages share (a page's head, a section heading, a framed card, a
+   table's column heads, the feed), drawn as the Mod API's pages draw it
+   (lab.css, overview.css, bench.css), so the pages read as one console. The
+   page's own parts stay in style.css, patterns.css, keys.css and gallery.css. */
+
+/* A page's head: the kicker naming the area, the title, and the double rule
+   under it, as a Mod API sheet has (areas.js pageHead; the title is lab.css's). */
+.page-head .cross {
+  margin: 0;
+}
+
+/* A lesson's head: its line back to the lessons is the kicker, and the
+   README's own title the page's, over the same rule. */
+.lesson > .kicker {
+  margin-bottom: var(--space-2);
+  font-size: var(--size-sm);
+}
+
+.lesson > .kicker .quiet {
+  margin-top: var(--space-1);
+}
+
+.lesson > h1 {
+  margin: var(--space-4) 0 var(--space-5);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--rule) double var(--line-strong);
+}
+
+/* The Workshop page (workshop.js): what a mod's lesson says it does, under its switch. */
+table.workshop .effects {
+  color: var(--warn);
+}
+
+/* Section headings: capitals in ink at the margin over a dashed rule, as the
+   first page's (overview.css). A card's title is set in its edge instead. */
+body:not([data-area='api']) .page h2:not(.card h2) {
+  margin: var(--space-6) 0 var(--space-3);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px dashed var(--line-strong);
+  font: 600 var(--size-md) var(--mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--ink);
+}
+
+/* A heading under a section is a comment line, as the index's and the catalogue's are. */
+.lesson > h3 {
+  margin: var(--space-5) 0 var(--space-2);
+  font: 600 var(--size-sm) var(--mono);
+  color: var(--ink);
+}
+
+.lesson > h3::before {
+  content: '# ';
+  color: var(--prompt);
+  white-space: pre;
+}
+
+/* A framed box's title, set into its top edge as a text interface draws a
+   frame (lab.css .framed): a card's title, a technique's head, an editor's
+   file. Its ground is the paper above the edge and the box's own below it,
+   so the edge reads as broken where the title sits. */
+.card,
+.technique,
+.editor {
+  position: relative;
+}
+
+.card > :is(h2, h3):first-child,
+.technique > header,
+.editor > .muted:first-child {
+  position: absolute;
+  top: -0.75em;
+  left: var(--space-2);
+  z-index: 1;
+  margin: 0;
+  padding: 0 var(--space-1);
+  font: 600 var(--size-md) / 1.5 var(--mono);
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--ink);
+  background: linear-gradient(to bottom, var(--bg) 50%, var(--frame-ground, var(--panel)) 50%);
+}
+
+.card {
+  padding-top: var(--space-4);
+}
+
+.cards {
+  row-gap: var(--space-5);
+}
+
+.home .areas-grid {
+  row-gap: var(--space-5);
+}
+
+/* The home page's three cards: numbered, titled in the display face inside the card rather than in its edge, each ending on one thing to try. */
+.home .areas-grid {
+  counter-reset: home-card;
+}
+
+.home .card {
+  counter-increment: home-card;
+  padding: var(--space-4) var(--space-5) var(--space-4);
+}
+
+.home .card > h2:first-child {
+  position: static;
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  background: none;
+  font: var(--size-vt-card) / 1 var(--display);
+  text-shadow: var(--glow);
+}
+
+.home .card > h2:first-child::before {
+  content: counter(home-card) '. ';
+  color: var(--muted);
+}
+
+.home .card > h2:first-child a {
+  color: var(--ink);
+}
+
+.home .card > p {
+  margin: 0 0 var(--space-3);
+}
+
+.home .card ul {
+  margin: 0 0 var(--space-4);
+}
+
+.home .try {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--line-strong);
+}
+
+.home .try-label {
+  margin: 0 0 var(--space-1);
+  font: 600 var(--size-xs) var(--mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--prompt);
+}
+
+.home .try p {
+  margin: 0 0 var(--space-2);
+  font-size: var(--size-md);
+}
+
+.home .try .result:empty {
+  display: none;
+}
+
+/* Every lesson uses the same tracks; long identifiers wrap without moving the title. */
+ul.lessons {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+ul.lessons > li {
+  display: grid;
+  grid-template-columns: 18ch 10ch minmax(0, 1fr) 19ch;
+  column-gap: var(--space-3);
+  align-items: baseline;
+  padding: var(--space-2) 0;
+  border-bottom: 1px dashed var(--line);
+  overflow-wrap: anywhere;
+}
+
+ul.lessons > li > a {
+  font-weight: 600;
+}
+
+.lesson-description {
+  min-width: 0;
+}
+
+.lesson-title {
+  display: block;
+  font-weight: 500;
+}
+
+.lesson-description p {
+  margin: var(--space-1) 0 0;
+  color: var(--muted);
+  font-size: var(--size-sm);
+}
+
+.lesson-progress {
+  font-size: var(--size-sm);
+}
+
+.lesson-kind {
+  font: 500 var(--size-xs) var(--mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--muted);
+}
+
+ul.lessons > li.challenge .lesson-kind {
+  color: var(--warn);
+}
+
+@media (max-width: 1100px) {
+  ul.lessons > li {
+    grid-template-columns: minmax(0, 1fr) 12ch;
+    row-gap: var(--space-1);
+  }
+
+  ul.lessons > li > :is(.lesson-description, .lesson-progress) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* The anatomy of a Session or Build page (page.js): the lede, a framed box of
+   controls, readings under their headings, and the notes folded at the foot. */
+.page > .lede {
+  max-width: var(--measure);
+  margin: 0 0 var(--space-4);
+  line-height: 1.5;
+}
+
+.controls {
+  margin: var(--space-5) 0 var(--space-6);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  background: var(--panel);
+}
+
+/* The box's title sits in its edge; the section-heading rule above would pull it down onto its own line. */
+body:not([data-area='api']) .page .controls > h2.frame-title {
+  margin: 0;
+  padding: 0 var(--space-1);
+  border: 0;
+  background: linear-gradient(to bottom, var(--bg) 50%, var(--panel) 50%);
+  font: 600 var(--size-xs) / 1.5 var(--mono);
+  color: var(--ink);
+}
+
+.controls > p {
+  max-width: var(--measure);
+  margin: 0 0 var(--space-3);
+  color: var(--muted);
+}
+
+.lesson-setup pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* A form in the box is the box's own: no second frame. */
+.controls form.probe {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.controls .inline-form {
+  margin: 0 0 var(--space-2);
+}
+
+.controls > .result:not(:empty) {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--line);
+}
+
+.readings {
+  margin: 0 0 var(--space-6);
+}
+
+.readings-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin: var(--space-6) 0 var(--space-3);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px dashed var(--line-strong);
+}
+
+body:not([data-area='api']) .page .readings-head h2 {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.readings-head .readings-filter {
+  font: var(--size-sm) var(--mono);
+  color: var(--muted);
+}
+
+.readings-head .readings-filter select {
+  min-height: var(--target);
+  padding: 0 var(--space-1);
+}
+
+/* A heading within the readings, a comment line as the Mod API's sub-sections are. */
+.readings h3,
+.report h3 {
+  margin: var(--space-4) 0 var(--space-2);
+  font: 600 var(--size-sm) var(--mono);
+  color: var(--ink);
+}
+
+.readings h3::before,
+.report h3::before {
+  content: '# ';
+  color: var(--prompt);
+  white-space: pre;
+}
+
+.readings > p.muted:first-of-type,
+.readings-summary {
+  max-width: var(--measure);
+  margin: 0 0 var(--space-3);
+}
+
+/* The notes: folded at the foot, their summary set as a section heading. */
+details.notes {
+  max-width: var(--measure);
+  margin: var(--space-7) 0 0;
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--line-strong);
+}
+
+details.notes > summary {
+  list-style: none;
+  cursor: pointer;
+  font: 600 var(--size-sm) var(--mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--muted);
+}
+
+details.notes > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.notes > summary::before {
+  content: '+ ';
+  color: var(--prompt);
+}
+
+details.notes[open] > summary::before {
+  content: '- ';
+}
+
+details.notes > summary:hover {
+  color: var(--ink);
+}
+
+details.notes > p {
+  margin: var(--space-3) 0 0;
+  color: var(--muted);
+}
+
+/* Notes inside a section belong to it: closer, and without the rule the page's own notes carry. */
+.readings details.notes {
+  margin-top: var(--space-4);
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* A command's answer as a report (page.js reportView): headed blocks, each a table, items or paragraphs. */
+.answer.report {
+  white-space: normal;
+  font-size: var(--size-sm);
+  color: var(--ink);
+}
+
+.report .report-block + .report-block {
+  margin-top: var(--space-4);
+}
+
+.report .report-block > h3 {
+  margin-top: 0;
+}
+
+.report p {
+  max-width: var(--measure);
+  margin: 0 0 var(--space-1);
+}
+
+.report .items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) 0;
+  max-width: none;
+}
+
+.report .item {
+  padding: 0 var(--space-3) 0 0;
+}
+
+.report .item + .item {
+  padding-left: var(--space-3);
+  border-left: 1px dashed var(--line-strong);
+}
+
+.report table.facts {
+  width: 100%;
+  table-layout: auto;
+}
+
+.report table.facts td {
+  padding: var(--space-1) var(--space-3) var(--space-1) 0;
+  vertical-align: top;
+  border-bottom: 1px dashed var(--line);
+  overflow-wrap: anywhere;
+}
+
+.report table.facts td:first-child {
+  white-space: nowrap;
+}
+
+.result.brief .answer.report {
+  max-height: 1.8em;
+}
+
+/* The model calls (workbench.js): the input bar's legend, and the table's cells. */
+.calls-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0 0 var(--space-2);
+  font: var(--size-xs) var(--mono);
+  color: var(--muted);
+}
+
+.calls-legend .part {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: var(--space-1);
+  vertical-align: -1px;
+}
+
+table.calls td.input {
+  white-space: nowrap;
+}
+
+table.calls td.input .input-bar {
+  margin-right: var(--space-2);
+  vertical-align: middle;
+}
+
+table.calls td.num {
+  text-align: right;
+}
+
+table.calls tr.unsent td.sent {
+  color: var(--warn);
+}
+
+/* A table wider than its column scrolls sideways inside it, rather than widening the page. A report's
+   tables wrap their cells instead, so they are left as tables. */
+.page
+  :is(table.facts, table.rows, table.md, table.matrix, table.workshop):not(
+    .report-table,
+    .config-rows,
+    .xray-rows,
+    .xray-counts
+  ) {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* The line under the feed's tabs saying what the shown tab holds. */
+.feed-caption {
+  margin: calc(-1 * var(--space-1)) 0 var(--space-3);
+  font: var(--size-xs) / 1.5 var(--mono);
+  color: var(--muted);
+}
+
+.technique {
+  margin-bottom: var(--space-5);
+  padding-top: var(--space-5);
+}
+
+.technique > header {
+  gap: var(--space-2);
+}
+
+.technique > header h3 {
+  font: inherit;
+}
+
+.technique > header code {
+  font-weight: 400;
+  color: var(--prompt);
+}
+
+.sandbox .editor {
+  margin-top: var(--space-5);
+}
+
+.editor {
+  --frame-ground: var(--code-bg);
+}
+
+.editor > .muted:first-child code {
+  color: var(--ink);
+}
+
+/* The first line clears the title in the edge. */
+.editor > .muted:first-child + .editor-body {
+  padding-top: var(--space-2);
+}
+
+/* A row of controls that is not a form spaces them as a form's row does (style.css form.inline-form). */
+div.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-1) 0;
+}
+
+/* Column heads, as a listing's (ps, ls -l): capitals over a rule. The rows are split by dashed hairlines. */
+.page :is(thead th, table.md tr:first-child > th),
+#feed .census tr:first-child > th {
+  font: 600 var(--size-xs) var(--mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--muted);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+:is(table.rows, table.calls, table.pieces, table.matrix, .census table) td {
+  border-bottom: 1px dashed var(--line);
+}
+
+/* Lists: bullets as a listing's dashes, numbers in the muted ink. */
+body:not([data-area='api']) .page :is(ul:not([class]), ul.lessons) > li::marker {
+  content: '- ';
+  color: var(--muted);
+}
+
+body:not([data-area='api']) .page ol:not([class]) > li::marker {
+  color: var(--muted);
+}
+
+/* Code on a page sits in the well with a rule at its left, as a manual page's examples do (lab.css). */
+body:not([data-area='api']) :is(pre.md-code, .page > pre, .technique pre) {
+  border-left: var(--rule) solid var(--line-strong);
+}
+
+/* The Session area's feed is the session's runs and events, so it is a terminal pane as the bench is
+   (bench.css; it is a .term, so it takes the terminal's tokens, style.css), and its tabs are the pane's
+   title bar. */
+#feed {
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+#feed > .tabs {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0 calc(-1 * var(--space-3)) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--panel);
+}
+
+/* A checkbox in a framed form sits in the fields' column with its words after it, and takes no colon. */
+form.probe label.check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-left: calc(120px + var(--space-3));
+}
+
+form.probe label.check input {
+  width: auto;
+}
+
+form.probe label.check > span::after {
+  content: none;
+}
+
+/* The home page's notice at its foot: who makes it and where the declarations come from, in the prose measure under a hairline. */
+.home > footer.notice {
+  margin-top: var(--space-6);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--line);
+  max-width: 72ch;
+  font-size: var(--size-body);
+}
+.home > footer.notice p + p {
+  margin-top: var(--space-2);
+}
+
+/* The Mod API card's intercept state: the in-force line and its Clear, but not the "no intercept" line, which the button's text covers. */
+.home .try .no-intercept {
+  display: none;
+}
+
+/* The Mod API card's steps: a line each, the call on its own line, the in-force line between. */
+.home .try p.step-code {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+.home .try p.step-code code {
+  display: inline-block;
+  padding: var(--space-0) var(--space-1);
+  background: var(--code-bg);
+  overflow-wrap: anywhere;
+}
+
+/* The intercept as a word in the sentence: a button that reads as a link-like control. */
+.home .try p.step > button.quiet {
+  min-height: 0;
+  padding: 0 var(--space-1);
+  vertical-align: baseline;
+}
+
+/* The Build card's preview: the first lesson's pane as a framed box, its title in the edge, the drawing in the card's own ink. */
+.home .try figure.pane-preview {
+  position: relative;
+  margin: var(--space-2) 0 var(--space-3);
+  padding: var(--space-3) var(--space-3) var(--space-2);
+  border: 1px solid var(--line-strong);
+}
+
+.home .try figure.pane-preview figcaption {
+  position: absolute;
+  top: -0.75em;
+  left: var(--space-2);
+  padding: 0 var(--space-1);
+  background: var(--bg);
+  font: 600 var(--size-xs) / 1.5 var(--mono);
+  color: var(--muted);
+}
+
+.home .try figure.pane-preview pre {
+  margin: 0;
+  font: var(--size-xs) / 1.25 var(--mono);
+  color: var(--ink);
+  white-space: pre;
+  overflow-x: auto;
+}
+
+/* Settings keep their columns across owners. A narrow screen reads one setting at a time. */
+.page table.config-rows {
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+}
+
+table.config-rows :is(th, td) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+
+table.config-rows :is(th, td):first-child {
+  width: 40%;
+}
+
+table.config-rows :is(th, td):nth-child(2) {
+  width: 22%;
+}
+
+table.config-rows td > code,
+.config-key,
+.config-label,
+.config-lock {
+  display: block;
+}
+
+.config-key {
+  color: var(--ink);
+}
+
+.config-lock {
+  margin-top: var(--space-1);
+  color: var(--muted);
+  font-size: var(--size-xs);
+}
+
+.config-description,
+.config-options {
+  margin-top: var(--space-1);
+  font-size: var(--size-sm);
+}
+
+.config-options ul {
+  padding-left: var(--space-4);
+}
+
+.config-description p {
+  margin: var(--space-1) 0;
+}
+
+@media (max-width: 720px) {
+  .page table.config-rows,
+  table.config-rows :is(tbody, tr, td, th) {
+    display: block;
+  }
+
+  table.config-rows thead {
+    display: none;
+  }
+
+  table.config-rows tr {
+    padding: var(--space-3) 0;
+    border-bottom: 1px dashed var(--line);
+  }
+
+  table.config-rows :is(td, th) {
+    width: auto !important;
+    padding: var(--space-1) 0;
+    border: 0;
+  }
+
+  table.config-rows :is(td, th)::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted);
+    font-size: var(--size-xs);
+    text-transform: uppercase;
+  }
+}

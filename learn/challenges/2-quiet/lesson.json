@@ -1,0 +1,9 @@
+{
+  "mod": "quiet",
+  "title": "Quiet, please",
+  "summary": "/quiet on should hold the stretch reminders a timer raises, and the mod's own toast hook never sees them.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "Hold the reminders while quiet", "checks": "checks/1-quiet.test.ts" }
+  ]
+}

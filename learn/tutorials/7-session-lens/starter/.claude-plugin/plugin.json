@@ -1,0 +1,5 @@
+{
+  "name": "session-lens",
+  "version": "0.1.0",
+  "description": "Compare session notes, notices, saved JSONL, and model-message projections"
+}

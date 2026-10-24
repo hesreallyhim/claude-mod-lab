@@ -1,0 +1,13 @@
+{
+  "all": true,
+  "src": ["web"],
+  "include": ["web/**/*.js", "web/**/*.mjs"],
+  "exclude": ["web/test/**", "web/e2e*.mjs"],
+  "reporter": ["text", "text-summary"],
+  "reports-dir": "coverage",
+  "check-coverage": true,
+  "lines": 27,
+  "statements": 27,
+  "branches": 75,
+  "functions": 73
+}

@@ -1,0 +1,77 @@
+{
+  "name": "claude-mod-lab",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A playground for learning the Claude Code mod API",
+  "license": "MIT",
+  "author": "Really Him",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hesreallyhim/claude-mod-lab.git"
+  },
+  "bin": {
+    "claude-mod-lab": "bin/claude-mod-lab.mjs"
+  },
+  "files": [
+    "bin/",
+    "!bin/test/",
+    "web/",
+    "!web/test/",
+    "!web/e2e*.mjs",
+    "learn/",
+    "!learn/test/",
+    "templates/",
+    "mods/",
+    "!mods/mod-lab-bridge/package.json",
+    "!mods/mod-lab-bridge/package-lock.json",
+    "scripts/tsc.mjs",
+    "compat.json"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "check": "npm run sync-compat -- --check && npm run validate && npm run typecheck && npm test && npm run learn:solutions && npm run check:web && npm run lines",
+    "validate": "node scripts/plugins.mjs validate",
+    "typecheck": "node scripts/typecheck.mjs",
+    "test": "npm run test:mods && npm run test:web && npm run test:learn && npm run test:plugins && npm run test:bin",
+    "test:mods": "node scripts/plugins.mjs test",
+    "test:web": "node --test 'web/test/*.test.mjs'",
+    "test:learn": "node --test 'learn/test/*.test.mjs'",
+    "test:plugins": "node --test 'plugins/*/test/*.test.mjs'",
+    "test:bin": "node --test 'bin/test/*.test.mjs'",
+    "learn:solutions": "node learn/check.mjs --solutions",
+    "e2e": "node web/e2e.mjs",
+    "e2e-page": "node web/e2e-page.mjs",
+    "headless": "MOD_LAB_OPEN=1 node bin/claude-mod-lab.mjs run --new -p '/mod-lab explorer serve 590'",
+    "explorer": "node web/server.mjs",
+    "lint:web": "eslint web mods/mod-lab-bridge/explorer.mjs",
+    "format:web": "prettier --write web mods/mod-lab-bridge/explorer.mjs",
+    "typecheck:web": "tsc -p tsconfig.web.json && tsc -p tsconfig.web-node.json",
+    "coverage:web": "node scripts/coverage-web.mjs",
+    "check:web": "prettier --check web mods/mod-lab-bridge/explorer.mjs && npm run lint:web && npm run typecheck:web && npm run coverage:web",
+    "lines": "node scripts/line-limit.mjs",
+    "sync-compat": "node scripts/sync-compat.mjs",
+    "clean": "node scripts/clean.mjs",
+    "pack-check": "node scripts/pack-check.mjs",
+    "prepublishOnly": "node scripts/publish-guard.mjs",
+    "release": "node scripts/release.mjs",
+    "bridge-lock": "node scripts/bridge-lock.mjs"
+  },
+  "dependencies": {
+    "typescript": "6.0.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "22.20.5",
+    "c8": "12.0.0",
+    "eslint": "10.12.0",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "17.13.0",
+    "husky": "9.1.7",
+    "lint-staged": "17.6.0",
+    "playwright-core": "1.63.0",
+    "prettier": "3.9.9"
+  }
+}

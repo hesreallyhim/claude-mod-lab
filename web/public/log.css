@@ -1,0 +1,516 @@
+/* The log (view.js logRow, feed.js, intercepts.js): the rows the session's events and the calls intercepts
+   acted on are listed in, on the feed's tabs and the bench; the dialog a row opens; the intercepts in force
+   and the census over the Intercepted tab; and the legend under the feed. bench.css draws the pane these
+   rows sit in. */
+
+/* An entry of the log, wherever the session's events and the calls intercepts acted on are
+   listed: the feed's two tabs, the bench, an intercept's calls. Two lines that always fit: a mark whose shape
+   is the outcome, the event and who called it, the outcome word and the time; then the chain as a strip of
+   cells. The full input, answer and chain are a dialog, so nothing in the row is cut short. */
+details.trace > summary {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) max-content max-content;
+  column-gap: var(--space-2);
+  row-gap: var(--space-0);
+  align-items: baseline;
+  padding: var(--space-1) 0;
+  list-style: none;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+details.trace > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.trace > summary:hover {
+  background: var(--code-bg);
+}
+
+/* The marks: a run's reading, an event's kind, an intercept. Square cells, as the console draws them. */
+.mark {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  align-self: center;
+}
+
+.mark.dot {
+  background: var(--muted);
+}
+
+.mark.request {
+  background: var(--accent);
+}
+
+.mark.tool {
+  border: 1.5px solid var(--ink);
+}
+
+.mark.command {
+  height: 2px;
+  background: var(--ink);
+}
+
+.mark.ok {
+  background: var(--ok);
+}
+
+.mark.failed {
+  background: var(--bad);
+}
+
+.mark.ix {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--warn);
+}
+
+.mark.ix.acted {
+  background: var(--warn);
+}
+
+.row-name {
+  min-width: 0;
+  font-weight: 600;
+}
+
+.row-by {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.row-outcome {
+  font: 600 var(--size-xs) var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.row-outcome.muted {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.row-outcome.bad {
+  color: var(--bad);
+}
+
+.row-outcome.warn {
+  color: var(--warn);
+}
+
+.row-outcome.ok {
+  color: var(--ok);
+}
+
+details.trace .time,
+dialog.detail .time {
+  font: var(--size-xs) var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.row-what {
+  grid-column: 2 / -1;
+  font-size: var(--size-xs);
+  color: var(--muted);
+}
+
+.line2 {
+  grid-column: 2 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+details.trace .line2 {
+  flex-wrap: wrap;
+}
+
+.log-open-label {
+  margin-left: auto;
+  color: var(--accent);
+  font-size: var(--size-xs);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* The chain as a strip: the caller, a wire, a cell a hook. */
+.strip {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+}
+
+.strip i {
+  display: block;
+  flex: none;
+}
+
+.strip .from {
+  width: 5px;
+  height: 5px;
+  background: var(--muted);
+}
+
+.strip .w {
+  width: 7px;
+  height: 1px;
+  background: var(--line-strong);
+}
+
+.k {
+  display: inline-block;
+  width: 12px;
+  height: 10px;
+  border: 1.5px solid var(--ink);
+}
+
+.k.returned,
+.k.kept,
+.k.caught {
+  background: var(--ink);
+}
+
+.k.rejected {
+  border-color: var(--bad);
+  background: var(--bad);
+}
+
+.k.skipped,
+.k.expired {
+  border-style: dashed;
+  border-color: var(--muted);
+}
+
+.k.ix {
+  border: 2px solid var(--warn);
+}
+
+.k.ix.acted {
+  background: var(--warn);
+}
+
+.strip .ms {
+  margin-left: var(--space-2);
+  font: var(--size-xs) var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+/* The intercepts in force, at the top of the Intercepted tab: the event, what it does, the calls it has seen, and Clear. */
+.in-force-list:not(:empty) {
+  margin: 0 0 var(--space-4);
+}
+
+.force {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) max-content;
+  column-gap: var(--space-2);
+  row-gap: var(--space-0);
+  align-items: baseline;
+  margin-bottom: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--warn);
+  background: var(--warn-wash);
+}
+
+.force .mark {
+  align-self: center;
+}
+
+.force .rule {
+  grid-column: 2;
+  font-size: var(--size-xs);
+  color: var(--muted);
+}
+
+.force .tally {
+  grid-column: 3;
+  font: var(--size-xs) var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  text-align: right;
+}
+
+.force button.quiet {
+  min-height: var(--target);
+  padding: 0 var(--space-2);
+  font-size: var(--size-xs);
+}
+
+/* The census over the Intercepted tab: what the calls add up to, in the chrome's size. */
+#feed-body > .census:not(:empty) {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  border: 1px dashed var(--line-strong);
+  background: var(--panel);
+}
+
+.census-head {
+  margin: 0 0 var(--space-1);
+  font: 600 var(--size-xs) var(--mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--muted);
+}
+
+.census-event p {
+  margin: 0;
+  font-size: var(--size-sm);
+  color: var(--muted);
+}
+
+.census-event strong {
+  color: var(--ink);
+}
+
+.census-event + .census-event {
+  margin-top: var(--space-2);
+}
+
+.census-event table {
+  margin: var(--space-1) 0 0;
+}
+
+/* The legend under the feed: the marks and the strip's cells, folded. */
+#feed-legend {
+  margin-top: var(--space-5);
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--line-strong);
+  font: var(--size-xs) / 1.5 var(--mono);
+  color: var(--muted);
+}
+
+#feed-legend > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+#feed-legend > summary::-webkit-details-marker {
+  display: none;
+}
+
+#feed-legend > summary::before {
+  content: '+ ';
+  color: var(--prompt);
+}
+
+#feed-legend[open] > summary::before {
+  content: '- ';
+}
+
+#feed-legend dl {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: var(--space-2) var(--space-2);
+  align-items: center;
+  margin: var(--space-2) 0 0;
+}
+
+#feed-legend dt {
+  display: flex;
+  justify-content: center;
+}
+
+#feed-legend dd {
+  margin: 0;
+}
+
+/* A run's row: a short value or the error under its name, and where it was run from at the line's right. */
+.mark.notrun {
+  border: 1.5px solid var(--muted);
+}
+
+.line2 .more,
+.line2 .src {
+  font: var(--size-xs) var(--mono);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.line2 .src {
+  margin-left: auto;
+}
+
+.row-what .json-rows {
+  display: inline;
+}
+
+.row-what .json-row {
+  display: inline;
+  padding: 0;
+  border: 0;
+}
+
+.row-what .json-row + .json-row::before {
+  content: ' · ';
+  color: var(--muted);
+}
+
+/* In the dialog: each call the run made, its chain and its answer. */
+.call-made + .call-made {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--line);
+}
+
+.call-made .call {
+  margin: 0 0 var(--space-1);
+  font-weight: 600;
+}
+
+.call-made .call .json-inline {
+  font-weight: 400;
+}
+
+.call-made .call-answer {
+  margin: var(--space-1) 0 0;
+}
+
+dialog.detail .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* A turn: the prompt that started it, when, its requests and tool calls as a bar in time, and the counts; opened, its rows indented under it. */
+details.turn > summary {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) max-content;
+  column-gap: var(--space-2);
+  row-gap: var(--space-1);
+  align-items: baseline;
+  padding: var(--space-2) 0;
+  list-style: none;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+details.turn > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.turn > summary:hover {
+  background: var(--code-bg);
+}
+
+details.turn {
+  border-bottom: 1px solid var(--line);
+}
+
+.mark.prompt {
+  width: 3px;
+  height: 14px;
+  margin-left: 4px;
+  background: var(--accent);
+}
+
+details.turn > summary .row-name {
+  font-weight: 500;
+}
+
+.tl {
+  position: relative;
+  flex: 1;
+  min-width: 80px;
+  height: 7px;
+  background: var(--code-bg);
+}
+
+.tl span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.tl .req {
+  background: var(--accent);
+}
+
+.tl .tool {
+  border: 1.5px solid var(--ink);
+  background: var(--panel);
+}
+
+.counts {
+  font: var(--size-xs) var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.turn-rows {
+  margin: 0 0 var(--space-2) 5px;
+  padding-left: var(--space-3);
+  border-left: 1px dashed var(--line-strong);
+}
+
+.turn-rows details.trace {
+  border-bottom: 0;
+}
+
+/* The JSON view (view.js jsonTree): fields as a list, keys dim before their values, nested values under a guide line. */
+.json-rows {
+  font: var(--size-xs) / 1.6 var(--mono);
+}
+
+.json-row {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-2);
+  align-items: baseline;
+  overflow-wrap: anywhere;
+}
+
+.json-row > .json-key {
+  flex: none;
+  color: var(--muted);
+}
+
+.json-row > .json-key::after {
+  content: ':';
+}
+
+.json-rows.list > .json-row > .json-key {
+  color: var(--muted);
+}
+
+.json-nested {
+  flex-basis: 100%;
+  padding-left: var(--space-3);
+  border-left: 1px dashed var(--line-strong);
+}
+
+.json-count {
+  display: block;
+  color: var(--muted);
+}
+
+.json-nested > .json-count {
+  display: none;
+}
+
+details.json {
+  flex-basis: 100%;
+}
+
+details.json > summary {
+  color: var(--muted);
+  cursor: pointer;
+}
+
+details.json > .json-rows {
+  padding-left: var(--space-3);
+  border-left: 1px dashed var(--line-strong);
+}
+
+.json-string {
+  color: var(--ok);
+}
+
+.json-inline {
+  color: var(--ink);
+}

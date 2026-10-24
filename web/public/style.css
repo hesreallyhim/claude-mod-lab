@@ -1,0 +1,1527 @@
+/* The explorer's theme: the console. The reference is a manual printed on
+   pale console paper; whatever the live session does (the header's status
+   line, the bench, a run) is drawn on a terminal, which is dark in both
+   schemes. In the dark scheme the whole page is the console, phosphor on
+   black. One face for everything read, IBM Plex Mono, and VT323 for display:
+   titles, the brand, the readouts. The colours are the ANSI eight: green for
+   ok and the prompt, red, yellow, cyan for links, magenta for focus.
+   Every colour, type size, radius and space is a token here, each colour
+   with a value in both schemes; scripts/contrast.mjs checks the pairs the
+   pages use against WCAG AA, the terminal's as well as the paper's. */
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-latin-500-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'VT323';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/vt323-latin-400-normal.woff2') format('woff2');
+}
+
+:root {
+  /* Surfaces: the console paper, a sheet laid on it, and the well code and fields sit in. */
+  --bg: #eef0e8;
+  --panel: #f8f9f4;
+  --code-bg: #e2e6db;
+  --grid: #d3d9cc;
+  /* Ink: text, secondary text, hairlines, and the boundary a control needs (3:1). */
+  --ink: #111a13;
+  --muted: #4a5a4e;
+  --line: #cbd2c4;
+  --line-strong: #768478;
+  /* Cyan: links and the primary action; the text set on it. */
+  --accent: #005d78;
+  --accent-ink: #f8f9f4;
+  --accent-wash: #d6eaee;
+  /* Magenta: the focus ring. */
+  --focus: #b0127e;
+  /* Readings: green ok, red refused or failed, yellow an intervention (the intercept). */
+  --ok: #16692f;
+  --ok-wash: #dbeedd;
+  --bad: #b3201b;
+  --bad-wash: #f7dfdb;
+  --warn: #855200;
+  --warn-wash: #f5e7c4;
+  --hazard: #e8b21a;
+  --tape: #111a13;
+  /* The prompt: the green of a shell's $ and of an executable in ls. */
+  --prompt: #16692f;
+  /* The X-ray's readers and the workbench's cache bar. */
+  --reader-model-bg: #ece0f7;
+  --reader-model-ink: #4a2470;
+  --reader-person-bg: #fbebd3;
+  --reader-person-ink: #6f4310;
+  --written: #c4623f;
+
+  /* The terminal: the header's status line, the bench, and a run on the first page.
+     It is the same window in both schemes, so its colours are set once, here. */
+  --term-bg: #0a0f0c;
+  --term-panel: #101712;
+  --term-code-bg: #172019;
+  --term-grid: #142019;
+  --term-ink: #d0f2d7;
+  --term-muted: #8aa891;
+  --term-line: #22322a;
+  --term-line-strong: #648370;
+  --term-accent: #6ee0f5;
+  --term-accent-ink: #0a0f0c;
+  --term-accent-wash: #0f2e37;
+  --term-focus: #ff85d6;
+  --term-ok: #63f294;
+  --term-ok-wash: #0f2f1b;
+  --term-bad: #ff8a80;
+  --term-bad-wash: #3a1712;
+  --term-warn: #ffc85a;
+  --term-warn-wash: #33250a;
+  --term-hazard: #d9a21a;
+  --term-tape: #050706;
+  --term-prompt: #63f294;
+  /* Scan lines across the terminal, and the phosphor's glow on its display type: decorative, beneath every text. */
+  --term-scan: #0e1611;
+  --term-glow: 0 0 10px #63f29455;
+  --glow: none;
+  /* The faint lines of a terminal's screen, behind the bench and the feed: none on paper. */
+  --scan: transparent;
+
+  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  /* Prose is mono too: the page reads as a manual on a terminal. */
+  --prose: var(--mono);
+  --display: 'VT323', var(--mono);
+  /* The type scale, by role, so a size says what a text is for; no text is under 12px.
+       xs 12: labels, column heads, stamps and kickers, read in passing;
+       sm 13: the chrome, read at a glance: the header, the index, tabs, controls and forms;
+       md 14: code in a signature or a field, and section headings in capitals;
+       body 15: anything read as prose;
+       lead 16: a page's lede and a reference page's doc text, at a longer leading.
+     VT323 sets small for its size, so its roles have their own sizes; it carries titles and figures, never running text. */
+  --size-xs: 12px;
+  --size-sm: 13px;
+  --size-md: 14px;
+  --size-body: 15px;
+  --size-lead: 16px;
+  --size-h3: 16px;
+  --size-h2: 18px;
+  --size-h1: 22px;
+  --size-display: 28px;
+  --size-vt-brand: 24px;
+  --size-vt-card: 36px;
+  --size-vt-readout: 44px;
+  --size-vt-title: 52px;
+  --leading: 1.55;
+  --leading-tight: 1.15;
+  --tracking-label: 0.06em;
+  /* The measure of the manual: a terminal's columns. */
+  --measure: 72ch;
+
+  /* Corners: none. A terminal draws in square cells. */
+  --radius-sm: 0;
+  --radius: 0;
+  --radius-lg: 0;
+  --radius-round: 0;
+  --space-0: 2px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --bar-h: 44px;
+  --target: 24px;
+  --rule: 3px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #070a08;
+    --panel: #0c110e;
+    --code-bg: #141c16;
+    --grid: #142019;
+    --ink: #c6efce;
+    --muted: #82a08a;
+    --line: #1f2c24;
+    --line-strong: #5d7b67;
+    --accent: #62d9f0;
+    --accent-ink: #070a08;
+    --accent-wash: #0e2a31;
+    --focus: #ff7ad1;
+    --ok: #5cf08f;
+    --ok-wash: #0f2a19;
+    --bad: #ff7b72;
+    --bad-wash: #33150f;
+    --warn: #ffc14d;
+    --warn-wash: #2e2208;
+    --hazard: #d9a21a;
+    --tape: #050706;
+    --prompt: #5cf08f;
+    --glow: var(--term-glow);
+    --scan: var(--term-scan);
+    --reader-model-bg: #362649;
+    --reader-model-ink: #e2cdf7;
+    --reader-person-bg: #3a2a14;
+    --reader-person-ink: #f6d5a5;
+    --written: #e08a68;
+    color-scheme: dark;
+  }
+}
+
+/*
+ * A terminal window drawn on the page is a picture of a terminal, dark in either scheme: every token
+ * inside it is the terminal's, so a rule written for the paper draws there too. The header bar, the
+ * bench and the feed are the page's own and follow its scheme.
+ */
+.term.window {
+  --bg: var(--term-bg);
+  --panel: var(--term-panel);
+  --code-bg: var(--term-code-bg);
+  --grid: var(--term-grid);
+  --ink: var(--term-ink);
+  --muted: var(--term-muted);
+  --line: var(--term-line);
+  --line-strong: var(--term-line-strong);
+  --accent: var(--term-accent);
+  --accent-ink: var(--term-accent-ink);
+  --accent-wash: var(--term-accent-wash);
+  --focus: var(--term-focus);
+  --ok: var(--term-ok);
+  --ok-wash: var(--term-ok-wash);
+  --bad: var(--term-bad);
+  --bad-wash: var(--term-bad-wash);
+  --warn: var(--term-warn);
+  --warn-wash: var(--term-warn-wash);
+  --hazard: var(--term-hazard);
+  --tape: var(--term-tape);
+  --prompt: var(--term-prompt);
+  --glow: var(--term-glow);
+  --scan: var(--term-scan);
+  color-scheme: dark;
+  color: var(--ink);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: var(--size-body) / var(--leading) var(--prose);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* A link inside a sentence is underlined: the ink and the text are too close in colour to tell apart alone. */
+p a,
+dd a,
+li a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+code,
+pre {
+  font-family: var(--mono);
+  font-size: var(--size-sm);
+}
+
+p code,
+dd code,
+li code,
+.kind code {
+  font-size: 1em;
+  background: var(--code-bg);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-sm);
+}
+
+pre {
+  background: var(--code-bg);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  overflow-x: auto;
+  white-space: pre;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: var(--leading-tight);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.error {
+  color: var(--bad);
+  white-space: pre-wrap;
+}
+
+/* The header: a terminal's status line. The brand as the session name on the
+   prompt's green, the three areas as the windows, then the session's readouts,
+   each segment after a rule. */
+.bar {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  height: var(--bar-h);
+  padding: 0 var(--space-3) 0 0;
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font: var(--size-sm) var(--mono);
+}
+
+.bar > * {
+  display: inline-flex;
+  align-items: center;
+}
+
+.bar > #session {
+  padding: 0 var(--space-2);
+  border-left: 1px solid var(--line);
+}
+
+.brand {
+  gap: var(--space-2);
+  min-height: var(--target);
+  padding: 0 var(--space-2);
+  background: var(--prompt);
+  color: var(--bg);
+}
+
+.brand:hover {
+  text-decoration: none;
+}
+
+.brand svg {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  shape-rendering: crispEdges;
+}
+
+.brand-name {
+  font: var(--size-vt-brand) / 1 var(--display);
+  letter-spacing: 0;
+}
+
+.pill {
+  font-size: var(--size-xs);
+  padding: var(--space-0) var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60ch;
+}
+
+/* The session's state as a lamp before its text: a lit cell when connected, yellow when not polling, a hollow one otherwise. */
+#session {
+  position: relative;
+  flex: none;
+  gap: var(--space-2);
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 0;
+  max-width: none;
+  overflow: visible;
+  color: var(--ink);
+  cursor: default;
+}
+
+/* The lamp's tooltip separates readable values from their compact field labels. */
+#session .tip {
+  display: none;
+  position: absolute;
+  top: calc(100% - 1px);
+  right: 0;
+  z-index: 3;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(420px, calc(100vw - 2 * var(--space-2)));
+  max-height: 70vh;
+  overflow: auto;
+  padding: var(--space-4);
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  box-shadow: 0 8px 24px #0003;
+  color: var(--ink);
+  font-size: var(--size-sm);
+  line-height: var(--leading);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+#session .tip-heading {
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line);
+  font-size: var(--size-md);
+  font-weight: 600;
+}
+
+#session .tip-fact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+#session .tip-fact + .tip-fact {
+  margin-top: var(--space-3);
+}
+
+#session .tip-label {
+  color: var(--muted);
+  font-size: var(--size-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+@media (max-width: 760px) {
+  #session .tip {
+    right: auto;
+    left: var(--space-2);
+  }
+}
+
+#session:hover .tip,
+#session:focus-visible .tip {
+  display: flex;
+}
+
+#session .tip > :empty {
+  display: none;
+}
+
+#session::before {
+  content: '';
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--line-strong);
+}
+
+#session[data-state='on']::before {
+  border-color: var(--ok);
+  background: var(--ok);
+  box-shadow: 0 0 6px var(--ok);
+}
+
+#session[data-state='stale']::before {
+  border-color: var(--warn);
+  background: var(--warn);
+}
+
+#session[data-state='stale'] {
+  color: var(--warn);
+}
+
+#session[data-state='off'] {
+  color: var(--muted);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr) minmax(320px, 420px);
+  min-height: calc(100vh - var(--bar-h));
+}
+
+.layout > nav,
+.layout > aside {
+  border-right: 1px solid var(--line);
+  padding: var(--space-3);
+  overflow-y: auto;
+  max-height: calc(100vh - var(--bar-h));
+  position: sticky;
+  top: var(--bar-h);
+}
+
+.layout > aside {
+  border-right: 0;
+  border-left: 1px solid var(--line);
+  background: var(--panel);
+}
+
+#search {
+  width: 100%;
+  min-height: 34px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--ink);
+  font: var(--size-sm) var(--mono);
+  margin-bottom: var(--space-2);
+}
+
+.group {
+  margin-bottom: var(--space-3);
+}
+
+.group h3 {
+  font: 600 var(--size-xs) var(--mono);
+  color: var(--muted);
+  margin: var(--space-2) 0 var(--space-1);
+}
+
+.group a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--target);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  font: var(--size-sm) var(--mono);
+  color: var(--ink);
+}
+
+.group a.current {
+  background: var(--code-bg);
+  color: var(--accent);
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-round);
+  background: var(--ok);
+}
+
+main {
+  padding: var(--space-5) var(--space-6) var(--space-7);
+  min-width: 0;
+  outline: none;
+}
+
+.page {
+  max-width: 860px;
+}
+
+.page h1 {
+  font-size: var(--size-h1);
+  font-weight: 600;
+  margin: 0 0 var(--space-2);
+}
+
+.page h1 code {
+  font-size: 0.92em;
+}
+
+.page h2 {
+  font: 600 var(--size-sm) var(--mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--muted);
+  margin: var(--space-5) 0 var(--space-2);
+}
+
+.kind {
+  color: var(--muted);
+  margin-top: 0;
+}
+
+.signature.resolved {
+  border-left: 3px solid var(--line-strong);
+}
+
+.deprecated {
+  color: var(--warn);
+}
+
+.hint {
+  border: 1px dashed var(--line-strong);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--muted);
+}
+
+dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-1) var(--space-4);
+}
+
+dd {
+  margin: 0;
+}
+
+dd p {
+  margin: 0 0 var(--space-1);
+}
+
+a.type {
+  text-decoration: underline dotted;
+  text-underline-offset: 0.2em;
+}
+
+/* Forms that act on the session: a probe, an intercept, the workbench's. */
+form.probe {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-3) 0;
+  background: var(--panel);
+}
+
+.probe-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.probe-head strong {
+  font-family: var(--mono);
+}
+
+form.probe p {
+  margin: var(--space-1) 0 var(--space-3);
+}
+
+form.probe label {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: var(--space-0) var(--space-3);
+  align-items: center;
+  margin-bottom: var(--space-2);
+  font: var(--size-sm) var(--mono);
+}
+
+form.probe label small {
+  grid-column: 2;
+  font-size: var(--size-xs);
+}
+
+/* A field sits in the well, with the prompt's green caret. */
+input:not([type='checkbox'], [type='radio']),
+select,
+textarea {
+  font: var(--size-sm) var(--mono);
+  min-height: 30px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--code-bg);
+  color: var(--ink);
+  caret-color: var(--prompt);
+}
+
+::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--accent);
+}
+
+form.probe input,
+form.probe select {
+  font: var(--size-sm) var(--mono);
+}
+
+button {
+  font: 500 var(--size-sm) var(--mono);
+  min-height: 30px;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+}
+
+button:hover {
+  box-shadow: inset 0 0 0 1px var(--accent-ink);
+}
+
+.effect {
+  font: 500 var(--size-xs) var(--mono);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  color: var(--muted);
+}
+
+.effect.write,
+.effect.spend,
+.effect.tool,
+.effect.dialog,
+.effect.network {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+details > summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.result {
+  margin-top: var(--space-2);
+}
+
+/* Tabs as a terminal multiplexer's windows, as the header's areas are (areas.css): bordered cells, the selected one lit. */
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+}
+
+.tabs button {
+  min-height: 28px;
+  padding: 0 var(--space-2);
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line-strong);
+  font: 500 var(--size-sm) var(--mono);
+}
+
+.tabs button:hover {
+  background: var(--code-bg);
+  box-shadow: none;
+}
+
+.tabs button[aria-selected='true'] {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+/* A run: an entry in the log, its edge the reading. */
+article.run {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--ok);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+  background: var(--panel);
+}
+
+article.run.failed {
+  border-left-color: var(--bad);
+}
+
+article.run header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: baseline;
+  font-family: var(--mono);
+  font-size: var(--size-sm);
+}
+
+article.run .status {
+  font-weight: 600;
+}
+
+article.run.ok .status {
+  color: var(--ok);
+}
+
+article.run.failed .status {
+  color: var(--bad);
+}
+
+article.run h4 {
+  font: 600 var(--size-xs) var(--mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--muted);
+  margin: var(--space-2) 0 var(--space-1);
+}
+
+ol.dispatches {
+  margin: 0;
+  padding-left: var(--space-5);
+  font-size: var(--size-sm);
+}
+
+ol.dispatches li {
+  margin-bottom: var(--space-2);
+}
+
+.call {
+  font-family: var(--mono);
+  overflow-wrap: anywhere;
+}
+
+.chain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  margin: var(--space-1) 0;
+}
+
+.chain .link {
+  font: var(--size-xs) var(--mono);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--code-bg);
+}
+
+.chain .link.rejected,
+.chain .link.skipped,
+.chain .link.expired {
+  color: var(--bad);
+}
+
+.chain .link.intercept {
+  border-color: var(--warn);
+  background: var(--warn-wash);
+  color: var(--ink);
+}
+
+.chain .link .received {
+  color: var(--warn);
+}
+
+.census table {
+  border-collapse: collapse;
+  font: var(--size-xs) var(--mono);
+  margin: var(--space-1) 0 var(--space-3);
+}
+
+.census th,
+.census td {
+  text-align: left;
+  padding: var(--space-0) var(--space-2) var(--space-0) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.census th {
+  color: var(--muted);
+  font-weight: normal;
+}
+
+article.turn {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.timeline {
+  margin: var(--space-2) 0 var(--space-0);
+}
+
+.lane {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  align-items: center;
+  gap: var(--space-2);
+  font: var(--size-xs) var(--mono);
+  min-height: var(--target);
+  padding: var(--space-1) 0;
+}
+
+.lane-label {
+  overflow-wrap: anywhere;
+  color: var(--muted);
+}
+
+.track {
+  display: block;
+  position: relative;
+  height: 10px;
+  background: var(--code-bg);
+  border-radius: var(--radius-sm);
+}
+
+.track .segment {
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+}
+
+.lane.tool .segment {
+  background: var(--warn);
+}
+
+.axis {
+  display: flex;
+  justify-content: space-between;
+  margin-left: 228px;
+  font: var(--size-xs) var(--mono);
+  color: var(--muted);
+}
+
+.turn-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+}
+
+.turn-agent {
+  overflow-wrap: anywhere;
+  font-size: var(--size-xs);
+}
+
+.turn-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin: var(--space-3) 0;
+  font-size: var(--size-sm);
+}
+
+.turn-metrics dt {
+  color: var(--muted);
+  font-size: var(--size-xs);
+}
+
+.turn-metrics dd {
+  margin: var(--space-1) 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline-event {
+  border-top: 1px dashed var(--line);
+}
+
+.timeline-event > summary::-webkit-details-marker {
+  display: none;
+}
+
+.timeline-event .lane-label::before {
+  content: '+ ';
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.timeline-event[open] .lane-label::before {
+  content: '− ';
+}
+
+.timeline-event-detail {
+  padding: var(--space-3);
+  background: var(--code-bg);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 720px) {
+  .lane {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--space-2) 0;
+  }
+
+  .axis {
+    margin-left: 0;
+  }
+}
+
+table.facts {
+  border-collapse: collapse;
+  font: var(--size-sm) var(--mono);
+}
+
+table.facts th {
+  text-align: left;
+  vertical-align: top;
+  color: var(--muted);
+  font-weight: normal;
+  padding: var(--space-0) var(--space-3) var(--space-0) 0;
+  white-space: nowrap;
+}
+
+table.facts td {
+  padding: var(--space-0) 0;
+}
+
+.lesson h2 {
+  margin-top: var(--space-6);
+  text-transform: none;
+  letter-spacing: normal;
+  font: 600 var(--size-h3) var(--prose);
+  color: var(--ink);
+}
+
+.md-code-block {
+  position: relative;
+}
+
+pre.md-code {
+  background: var(--code-bg);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+
+.md-code-block button.copy {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  font-size: var(--size-xs);
+  min-height: var(--target);
+  padding: 0 var(--space-2);
+  background: var(--panel);
+  color: var(--muted);
+  border-color: var(--line-strong);
+}
+
+.md-code-block:hover button.copy,
+.md-code-block button.copy:focus-visible {
+  color: var(--ink);
+}
+
+table.md {
+  border-collapse: collapse;
+  margin: var(--space-2) 0;
+}
+
+table.md th,
+table.md td {
+  border: 1px solid var(--line);
+  padding: var(--space-1) var(--space-2);
+  text-align: left;
+  vertical-align: top;
+}
+
+details.md {
+  margin: var(--space-2) 0;
+}
+
+button.inline {
+  font-size: var(--size-xs);
+  min-height: var(--target);
+  padding: 0 var(--space-2);
+  margin-left: var(--space-0);
+}
+
+.inline-result {
+  font: var(--size-xs) var(--mono);
+  color: var(--muted);
+}
+
+.inline-result.ok {
+  color: var(--ok);
+}
+
+.inline-result.failed {
+  color: var(--bad);
+}
+
+details.inline-answer {
+  display: inline;
+}
+
+details.inline-answer[open] {
+  display: block;
+}
+
+details.inline-answer summary {
+  cursor: pointer;
+}
+
+details.inline-answer pre {
+  white-space: pre-wrap;
+  max-height: 24em;
+  overflow: auto;
+  margin: var(--space-1) 0;
+  color: var(--ink);
+}
+
+button.quiet {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+button.quiet:hover {
+  box-shadow: none;
+  background: var(--code-bg);
+}
+
+.answer {
+  white-space: pre-wrap;
+  font: var(--size-xs) var(--mono);
+}
+
+.chain .arrow {
+  color: var(--muted);
+}
+
+details.json {
+  font: var(--size-xs) var(--mono);
+}
+
+details.json summary {
+  display: inline;
+}
+
+.json-row {
+  padding-left: var(--space-4);
+  overflow-wrap: anywhere;
+}
+
+.json-key {
+  color: var(--muted);
+}
+
+.json-string {
+  color: var(--ok);
+}
+
+.json-number,
+.json-boolean {
+  color: var(--accent);
+}
+
+.json-null,
+.json-empty {
+  color: var(--muted);
+}
+
+.json-inline {
+  color: var(--ink);
+}
+
+pre.json-text {
+  margin: var(--space-0) 0 var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  max-height: 16em;
+  overflow: auto;
+  font-size: var(--size-xs);
+}
+
+details.trace {
+  border-bottom: 1px solid var(--line);
+  padding: var(--space-1) 0;
+  font: var(--size-sm) var(--mono);
+}
+
+details.trace summary {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+details.noun {
+  margin: var(--space-2) 0;
+}
+
+details.noun > summary {
+  font: 600 var(--size-sm) var(--mono);
+  color: var(--ink);
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .layout > nav,
+  .layout > aside {
+    position: static;
+    max-height: none;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+a.pill.spend {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a.pill.spend:empty {
+  display: none;
+}
+
+form.workbench textarea {
+  width: 100%;
+  font: var(--size-xs) var(--mono);
+}
+
+form.workbench label.check {
+  display: block;
+}
+
+table.calls td {
+  white-space: nowrap;
+  padding-right: var(--space-3);
+}
+
+table.calls tr.unsent td {
+  color: var(--muted);
+}
+
+.input-bar {
+  display: inline-flex;
+  width: 160px;
+  height: 8px;
+  background: var(--line);
+}
+
+:is(.input-bar, .calls-legend) .part.written {
+  background: var(--written);
+}
+
+:is(.input-bar, .calls-legend) .part.read {
+  background: var(--ok);
+}
+
+:is(.input-bar, .calls-legend) .part.new {
+  background: var(--muted);
+}
+
+article.run.agent.running {
+  border-left-color: var(--muted);
+}
+
+.turn header .loop {
+  color: var(--muted);
+}
+
+form .buttons {
+  display: flex;
+  gap: var(--space-2);
+}
+
+table.rows td {
+  white-space: nowrap;
+  padding-right: var(--space-3);
+}
+
+table.rows td.preview {
+  white-space: normal;
+}
+
+table.rows button.row-open {
+  font: inherit;
+}
+
+/* The row's record, read from the transcript file: each block's text in full, wrapped, and where the record is. */
+dialog.record pre.record-text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+dialog.record .record-where {
+  margin-bottom: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+.reader {
+  padding: 0 var(--space-1);
+  border-radius: var(--radius);
+  font: var(--size-xs) var(--mono);
+}
+
+.reader.model {
+  background: var(--reader-model-bg);
+  color: var(--reader-model-ink);
+}
+
+.reader.person {
+  background: var(--reader-person-bg);
+  color: var(--reader-person-ink);
+}
+
+.reader.both {
+  background: var(--line);
+  color: var(--ink);
+}
+
+.rewritten {
+  color: var(--bad);
+  font-size: var(--size-xs);
+}
+
+form.inline-form {
+  display: flex;
+  gap: var(--space-2);
+  margin: var(--space-1) 0;
+}
+
+form.inline-form input {
+  flex: 1;
+}
+
+/* A select is as wide as its longest option; in a row it may shrink, so the row stays in its column. */
+select {
+  max-width: 100%;
+}
+
+form.inline-form > * {
+  min-width: 0;
+}
+
+section.compactor input[type='number'] {
+  width: 5em;
+}
+
+article.compaction {
+  margin: var(--space-3) 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+
+article.compaction.skipped header {
+  color: var(--muted);
+}
+
+.strips {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-1) var(--space-2);
+  align-items: center;
+  margin: var(--space-2) 0;
+}
+
+.strip {
+  display: flex;
+  gap: 1px;
+  height: 14px;
+  min-width: 0;
+}
+
+.msg {
+  display: inline-block;
+  min-width: 2px;
+  height: 14px;
+}
+
+.legend .msg {
+  width: 12px;
+  height: 10px;
+  vertical-align: middle;
+}
+
+.msg.user {
+  background: var(--accent);
+}
+
+.msg.assistant {
+  background: var(--muted);
+}
+
+.msg.dropped {
+  opacity: 0.25;
+}
+
+.msg.built {
+  background: var(--warn);
+}
+
+ol.after {
+  font-size: var(--size-xs);
+}
+
+.track .segment.streamed {
+  display: flex;
+  align-items: flex-end;
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.segment.streamed > span,
+.sparkline > span {
+  flex: 1;
+  background: var(--accent);
+}
+
+.sparkline {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 1px;
+  width: 128px;
+  height: 16px;
+  vertical-align: middle;
+  background: var(--code-bg);
+}
+
+.stream-axis {
+  position: relative;
+  height: 18px;
+  margin: var(--space-2) 0 var(--space-0);
+  background: var(--code-bg);
+  border-radius: var(--radius-sm);
+}
+
+.stream-axis .tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+}
+
+.stream-axis .tick.stderr,
+table.pieces tr.stderr td:nth-child(2) {
+  background: var(--bad);
+}
+
+table.pieces tr.stderr td:nth-child(2) {
+  color: var(--panel);
+}
+
+.axis.flush {
+  margin-left: 0;
+}
+
+table.pieces td {
+  padding-right: var(--space-3);
+}
+
+.result.brief .answer {
+  max-height: 1.6em;
+  overflow: hidden;
+}
+
+.sandbox .editor {
+  margin: var(--space-3) 0;
+}
+
+.editor-body {
+  display: flex;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--code-bg);
+}
+
+.editor-body .gutter {
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  min-width: 3ch;
+  text-align: right;
+  color: var(--muted);
+  font: var(--size-xs) / 1.5 var(--mono);
+  overflow: hidden;
+  height: 24em;
+  user-select: none;
+}
+
+.editor-body textarea {
+  flex: 1;
+  height: 24em;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: var(--size-xs) / 1.5 var(--mono);
+  resize: vertical;
+  white-space: pre;
+  overflow: auto;
+}
+
+ul.tests {
+  list-style: none;
+  padding-left: 0;
+}
+
+ul.tests li.ok {
+  color: var(--ok);
+}
+
+/* Installed mods: scan identity and counts, then open the complete capability lists. */
+.mod-card .mod-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+}
+
+.mod-card {
+  overflow-wrap: anywhere;
+}
+
+.mod-status,
+.mod-counts {
+  font-size: var(--size-xs);
+}
+
+.mod-source,
+.mod-observed-empty {
+  margin: var(--space-1) 0 var(--space-2);
+  font-size: var(--size-sm);
+}
+
+.mod-details {
+  padding: var(--space-2) 0;
+  border-top: 1px dashed var(--line);
+}
+
+.mod-counts {
+  display: block;
+  margin: var(--space-1) 0 0 var(--space-4);
+}
+
+.mod-capabilities {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24ch), 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.mod-capabilities h4 {
+  margin: 0 0 var(--space-1);
+  font-size: var(--size-sm);
+}
+
+.mod-capabilities ul {
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+.mod-capabilities li {
+  padding: var(--space-0) 0;
+  font-size: var(--size-sm);
+}

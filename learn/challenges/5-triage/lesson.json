@@ -1,0 +1,12 @@
+{
+  "mod": "triage",
+  "title": "Label every prompt, cheaply",
+  "summary": "The starter has a model label each prompt bug, feature or question, for the main model to read. It works, and spends more than it needs to on every prompt. Make the label a clean one the main model can use, the guide come from the cache, and a failure never stand in the prompt's way.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "A clean label for the main model", "checks": "checks/1-label.test.ts", "calls": ["$.model.complete"] },
+    { "title": "The guide paid for once", "checks": "checks/2-cached.test.ts" },
+    { "title": "Never in the prompt's way", "checks": "checks/3-failure.test.ts" },
+    { "title": "Score it in a session", "live": true }
+  ]
+}

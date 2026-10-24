@@ -1,0 +1,14 @@
+{
+  "mod": "fence",
+  "title": "Standing between plugins and the engine",
+  "summary": "A mod that keeps .env files from other plugins and the model: watching, refusing and changing calls on $, following links, and failing closed.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "Who reads what", "checks": "checks/1-who-reads.test.ts" },
+    { "title": "Refuse a read", "checks": "checks/2-refuse.test.ts" },
+    { "title": "Try it in the lab", "live": true },
+    { "title": "Follow the link, and fail closed", "checks": "checks/4-links.test.ts", "catch": ["fs.read"] },
+    { "title": "The model's reads", "checks": "checks/5-model.test.ts", "catch": ["tool.call"] },
+    { "title": "Change the answer", "checks": "checks/6-redact.test.ts" }
+  ]
+}

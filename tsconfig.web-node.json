@@ -1,0 +1,21 @@
+{
+  // The explorer's server, its library, its tests, the e2e scripts and the
+  // bridge plugin's explorer.mjs, which serves it inside a session, checked as
+  // JavaScript against Node's types. Not strict. Run with `npm run typecheck:web`.
+  // The DOM library is for the callbacks e2e-page.mjs runs in the page; TypeScript
+  // cannot give one file a library of its own, and ESLint keeps browser globals
+  // out of the rest. With it, fetch's response.json() is typed `any`, as in the page.
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": false,
+    "target": "es2023",
+    "lib": ["es2023", "dom", "dom.iterable"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "skipLibCheck": true
+  },
+  "include": ["mods/mod-lab-bridge/explorer.mjs", "web/*.mjs", "web/lib/**/*.mjs", "web/test/**/*.mjs"]
+}

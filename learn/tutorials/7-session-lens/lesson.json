@@ -1,0 +1,48 @@
+{
+  "id": "session-lens",
+  "mod": "session-lens",
+  "title": "Session lens: chat, JSONL, and model input",
+  "summary": "Build a pane that adds notes and notices, compares two session message views, and observes a model step. Then inspect saved JSONL and resume the conversation to separate persistence from request assembly.",
+  "minVersion": "2.1.310",
+  "steps": [
+    {
+      "title": "Open the lens"
+    },
+    {
+      "title": "Add a model note",
+      "checks": "checks/2-note.test.ts",
+      "calls": [
+        "$.session.append"
+      ]
+    },
+    {
+      "title": "Add a chat notice",
+      "checks": "checks/3-notice.test.ts",
+      "calls": [
+        "$.session.append"
+      ]
+    },
+    {
+      "title": "Inspect two message views",
+      "checks": "checks/4-inspect.test.ts",
+      "calls": [
+        "$.session.messages"
+      ]
+    },
+    {
+      "title": "Start a model turn",
+      "checks": "checks/5-submit.test.ts",
+      "calls": [
+        "$.prompt.submit"
+      ]
+    },
+    {
+      "title": "Observe the next model step",
+      "checks": "checks/6-step.test.ts"
+    },
+    {
+      "title": "Read JSONL and resume",
+      "live": true
+    }
+  ]
+}

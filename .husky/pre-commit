@@ -1,0 +1,2 @@
+node scripts/line-limit.mjs --staged
+lint-staged

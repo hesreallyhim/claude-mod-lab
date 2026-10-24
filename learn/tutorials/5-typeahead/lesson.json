@@ -1,0 +1,14 @@
+{
+  "mod": "typeahead",
+  "title": "Shaping the prompt box",
+  "summary": "A mod for the prompt box, beside the lab: /mod-lab painted as it is typed, a word that is no probe underlined, the rest of a probe id as ghost text and a row Tab takes, and #probe in a prompt, the probe's answer attached for the model.",
+  "minVersion": "2.1.300",
+  "steps": [
+    { "title": "Paint the command", "checks": "checks/1-paint.test.ts" },
+    { "title": "Mark what is no probe", "checks": "checks/2-unknown.test.ts", "calls": ["$.lab.probes"] },
+    { "title": "Ghost text", "checks": "checks/3-ghost.test.ts" },
+    { "title": "A row for Tab", "checks": "checks/4-tab.test.ts" },
+    { "title": "A probe's answer for the model", "checks": "checks/5-hash.test.ts", "catch": ["prompt.submit"] },
+    { "title": "Type it live", "live": true }
+  ]
+}

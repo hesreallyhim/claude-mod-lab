@@ -1,0 +1,12 @@
+{
+  "mod": "redact",
+  "title": "Redact before it is stored",
+  "summary": "The starter takes keys out of what the person types. Keys still reach the conversation the model reads and the transcript on disk, through tool results, files read and hooks' context. Redact them in every row, on its way to being stored, and touch nothing else.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "Keys in a prompt are never stored", "checks": "checks/1-prompt.test.ts" },
+    { "title": "Nor anywhere else a row carries one", "checks": "checks/2-anywhere.test.ts" },
+    { "title": "Everything else as it came", "checks": "checks/3-untouched.test.ts" },
+    { "title": "See it in a session", "live": true }
+  ]
+}

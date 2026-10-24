@@ -1,0 +1,592 @@
+/* The bench (reference.js, runs.js, intercepts.js): on a method's or an event's
+   page, a terminal pane split off at the right, the full height of the window,
+   scrolling on its own, where the session is worked with: the probe forms, the
+   runs as log entries with their stamps and the chain that answered, the
+   intercept in force behind hazard tape. It is a
+   .bench, so it takes the terminal's tokens (style.css). The run entries and
+   probe forms are drawn the same way wherever they appear (the Session area's
+   feed, All probes, the first page), so only the pane is scoped. */
+
+/* The Session area's feed is a pane too (pages.css). */
+.bench,
+#feed {
+  min-width: 0;
+  padding: 0 var(--space-4) var(--space-4);
+  border-left: 1px solid var(--line-strong);
+  background-color: var(--bg);
+  background-image: repeating-linear-gradient(to bottom, transparent 0 2px, var(--scan) 2px 3px);
+}
+
+@media (min-width: 1201px) {
+  .sheet-body > .bench {
+    position: sticky;
+    top: var(--bar-h);
+    height: calc(100vh - var(--bar-h));
+    overflow-y: auto;
+  }
+}
+
+.bench,
+#feed {
+  scrollbar-color: var(--line-strong) var(--bg);
+}
+
+/* The pane's title bar: what it is, and the session it works in. */
+.bench-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 0 calc(-1 * var(--space-4)) var(--space-4);
+  padding: var(--space-1) var(--space-4);
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--panel);
+  font: var(--size-xs) var(--mono);
+}
+
+.bench-title {
+  font: var(--size-vt-brand) / 1 var(--display);
+  color: var(--prompt);
+  text-shadow: var(--glow);
+  text-transform: lowercase;
+}
+
+.bench-title::before {
+  content: '~/';
+  font: 600 var(--size-sm) var(--mono);
+  color: var(--muted);
+}
+
+.bench-where {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--muted);
+}
+
+.bench-where::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--line-strong);
+}
+
+.bench-where[data-state='on']::before {
+  border-color: var(--ok);
+  background: var(--ok);
+  box-shadow: 0 0 6px var(--ok);
+}
+
+.bench-part + .bench-part {
+  margin-top: var(--space-5);
+}
+
+/* A part of the pane is headed as a comment in a shell script. */
+body[data-area='api'] .bench h2 {
+  margin: 0 0 var(--space-3);
+  font: 600 var(--size-sm) var(--mono);
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--ink);
+}
+
+body[data-area='api'] .bench h2::before {
+  content: '# ';
+  color: var(--prompt);
+  white-space: pre;
+}
+
+/* An empty part, here and wherever a live region has nothing yet (the feed, a Session page's live parts). */
+.bench .empty,
+#feed-body > p.muted,
+:is(div[data-live]:not([class]), .page[data-live]) > p.muted {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px dashed var(--line-strong);
+  background: var(--panel);
+  color: var(--muted);
+}
+
+/* Forms that run something in the session: a frame with its title in the top edge. */
+
+form.probe {
+  position: relative;
+  margin: var(--space-4) 0;
+  padding: var(--space-4) var(--space-3) var(--space-3);
+  border: 1px solid var(--line-strong);
+  background: transparent;
+}
+
+.bench form.probe {
+  margin: var(--space-3) 0 var(--space-3);
+}
+
+.probe-head {
+  position: absolute;
+  top: -0.8em;
+  left: var(--space-2);
+  right: var(--space-2);
+  flex-wrap: nowrap;
+  gap: 0;
+  margin: 0;
+}
+
+.probe-head > * {
+  padding: 0 var(--space-1);
+  background: var(--bg);
+  line-height: 1.5;
+}
+
+.probe-label {
+  font: 600 var(--size-xs) var(--mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--muted);
+}
+
+.probe-head strong {
+  font-size: var(--size-md);
+  color: var(--prompt);
+}
+
+.probe-head .effect {
+  margin-left: auto;
+}
+
+form.probe > p {
+  margin: 0 0 var(--space-3);
+  font-size: var(--size-body);
+}
+
+form.probe .fields {
+  margin: 0 0 var(--space-3);
+}
+
+.bench form.probe label {
+  grid-template-columns: 80px minmax(0, 1fr);
+}
+
+form.probe label > span {
+  color: var(--muted);
+}
+
+form.probe label > span::after {
+  content: ':';
+}
+
+form.probe label input,
+form.probe label select {
+  width: 100%;
+  min-width: 0;
+  background: var(--code-bg);
+  caret-color: var(--prompt);
+}
+
+form.probe .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+form.probe details.source summary {
+  font: var(--size-sm) var(--mono);
+  min-height: var(--target);
+  display: flex;
+  align-items: center;
+}
+
+form.probe details.source[open] {
+  flex-basis: 100%;
+}
+
+form.probe details.source pre {
+  margin: var(--space-1) 0 0;
+}
+
+.run-glyph::before {
+  content: '↵';
+  margin-right: var(--space-2);
+  font-weight: 600;
+}
+
+/* The form's echo: the same call as a command typed in Claude Code, kept in step with the fields. */
+form.probe > .echo {
+  display: block;
+  margin: 0 0 var(--space-3);
+  padding: var(--space-1) 0;
+  border-top: 1px dashed var(--line);
+  border-bottom: 1px dashed var(--line);
+  font: var(--size-xs) var(--mono);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.echo-label {
+  display: block;
+}
+
+.echo code {
+  font-size: var(--size-sm);
+  color: var(--ink);
+}
+
+.echo code::before {
+  content: '$ ';
+  color: var(--prompt);
+  font-weight: 600;
+}
+
+/* The intercept: what is in force, behind hazard tape, then the calls it acted on, then the form that sets one. */
+
+.in-force {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid var(--warn);
+  background: var(--warn-wash);
+}
+
+.in-force::before,
+.in-force::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--space-3);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--hazard) 0 var(--space-1),
+    var(--tape) var(--space-1) var(--space-2)
+  );
+}
+
+.in-force::before {
+  left: 0;
+}
+
+.in-force::after {
+  right: 0;
+}
+
+.in-force-text {
+  font: 600 var(--size-sm) var(--mono);
+  color: var(--warn);
+}
+
+.in-force-text::before {
+  content: '!! ';
+  white-space: pre;
+}
+
+.in-force button.quiet {
+  background: var(--panel);
+}
+
+.no-intercept {
+  margin: 0 0 var(--space-2);
+  font: var(--size-sm) var(--mono);
+}
+
+[data-intercept-state] .acted {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-1) var(--space-3) var(--space-2);
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+[data-intercept-state] .acted h4 {
+  margin: var(--space-1) 0;
+  font: 600 var(--size-xs) var(--mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--muted);
+}
+
+[data-intercept-state] .acted p {
+  margin: 0;
+  font-size: var(--size-sm);
+}
+
+[data-intercept-state] details.trace:last-child {
+  border-bottom: 0;
+}
+
+form.intercept {
+  border-color: var(--warn);
+}
+
+form.intercept > p {
+  font-size: var(--size-sm);
+  color: var(--muted);
+}
+
+form.intercept .fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2) var(--space-3);
+}
+
+form.intercept .fields label {
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0;
+}
+
+form.intercept .fields label small {
+  grid-column: 1;
+}
+
+form.intercept .fields label[for='intercept-value'] {
+  grid-column: 1 / -1;
+}
+
+/* Watch and refuse take no value: the field is hidden for them, past the labels' display: grid. */
+form.intercept .fields label[hidden] {
+  display: none;
+}
+
+/* The stub's description, from the person's declarations: set off as quoted reference, not the form's own hint. */
+form.intercept .stub-doc {
+  grid-column: 1 / -1;
+  padding-left: var(--space-2);
+  border-left: 2px solid var(--line-strong);
+  color: var(--muted);
+  font-size: var(--size-sm);
+}
+
+form.intercept .stub-doc p {
+  margin: 0 0 var(--space-1);
+}
+
+form.intercept .stub-doc[hidden] {
+  display: none;
+}
+
+/* A run: an entry in the log. Its number, the probe, a stamp with the reading, then the outcome and the dispatches. */
+
+article.run {
+  border: 0;
+  border-left: var(--rule) solid var(--ok);
+  background: var(--panel);
+}
+
+article.run.failed {
+  border-left-color: var(--bad);
+}
+
+article.run header {
+  gap: var(--space-1) var(--space-2);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px dashed var(--line);
+}
+
+.entry-no {
+  font-size: var(--size-xs);
+  color: var(--muted);
+}
+
+article.run header > a {
+  font-weight: 600;
+}
+
+/* The stamp, as a boot log prints one: [  OK  ], [FAILED]. */
+article.run .status {
+  font-size: var(--size-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: pre;
+}
+
+article.run .status::before {
+  content: '[ ';
+  color: var(--ink);
+}
+
+article.run .status::after {
+  content: ' ]';
+  color: var(--ink);
+}
+
+article.run.ok .status::before {
+  content: '[  ';
+}
+
+article.run.ok .status::after {
+  content: '  ]';
+}
+
+article.run .reading {
+  margin-left: auto;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+article.run header .muted {
+  font-size: var(--size-xs);
+}
+
+article.run .outcome {
+  margin: var(--space-2) 0;
+  font: var(--size-sm) var(--mono);
+}
+
+article.run .outcome .error,
+.page p.error {
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  background: var(--bad-wash);
+  font: var(--size-sm) var(--mono);
+}
+
+article.run .outcome .error::before,
+.page p.error::before {
+  content: '! ';
+  font-weight: 600;
+}
+
+.dispatch-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 var(--space-1);
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--line);
+}
+
+article.run .dispatch-head h4 {
+  margin: 0;
+}
+
+.dispatch-head button.quiet {
+  min-height: var(--target);
+  padding: 0 var(--space-2);
+  font-size: var(--size-xs);
+}
+
+ol.dispatches li::marker {
+  font: var(--size-xs) var(--mono);
+  color: var(--muted);
+}
+
+ol.dispatches .call code {
+  padding: 0;
+  background: none;
+  color: var(--muted);
+}
+
+ol.dispatches details summary {
+  font: var(--size-xs) var(--mono);
+}
+
+/* A link of the chain as a bracketed cell. */
+.chain .link {
+  border: 0;
+  background: var(--code-bg);
+}
+
+.chain .link::before {
+  content: '[';
+  color: var(--muted);
+}
+
+.chain .link::after {
+  content: ']';
+  color: var(--muted);
+}
+
+.chain .link.intercept {
+  border: 0;
+  background: var(--warn-wash);
+  color: var(--warn);
+}
+
+.chain .arrow {
+  font-family: var(--mono);
+}
+
+/* Rows the session traced, on the pane of an event's page and under an intercept: a log, newest first. */
+.bench details.trace,
+#feed details.trace {
+  padding: var(--space-1) 0;
+}
+
+.bench details.trace summary,
+#feed details.trace summary {
+  min-height: var(--target);
+}
+
+.bench .bench-part > details.trace,
+#feed-body > details.trace {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--line);
+  border-bottom-width: 0;
+  background: var(--panel);
+}
+
+.bench .bench-part > details.trace:last-child,
+#feed-body > details.trace:last-child {
+  border-bottom-width: 1px;
+}
+
+/* A terminal window on paper, for a run shown outside the pane. */
+.window {
+  border: 1px solid var(--line-strong);
+  background-color: var(--bg);
+  background-image: repeating-linear-gradient(to bottom, transparent 0 2px, var(--scan) 2px 3px);
+}
+
+.window-head {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-1) var(--space-3);
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--panel);
+  font: var(--size-xs) var(--mono);
+  color: var(--muted);
+}
+
+.window-body {
+  padding: var(--space-3);
+}
+
+.window-body article.run {
+  margin: 0;
+}
+
+/* An older run, folded to its log line. */
+article.run.folded > details > summary {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-height: var(--target);
+  list-style: none;
+}
+
+article.run.folded > details > summary::before {
+  content: '+';
+  font: 600 var(--size-sm) var(--mono);
+  color: var(--muted);
+}
+
+article.run.folded > details[open] > summary::before {
+  content: '-';
+}
+
+article.run.folded > details > summary > header {
+  flex: 1;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+article.run.folded > details[open] > summary > header {
+  padding-bottom: var(--space-1);
+  border-bottom: 1px dashed var(--line);
+}

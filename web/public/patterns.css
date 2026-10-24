@@ -1,0 +1,143 @@
+/* Patterns the explorer's pages share, built on the tokens in style.css. */
+
+/* The sentence under a page's title that says what the page is for. */
+.page .lede {
+  font-size: var(--size-lead);
+  line-height: 1.45;
+  margin: 0 0 var(--space-2);
+}
+
+/* A surface that holds one thing: a live view, a log, a table. */
+.panel {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+}
+
+/* A grid of cards, each a thing to try: a title, a line or two, what it uses, and an action at the foot. */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-3);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+}
+
+.card h3 {
+  margin: 0 0 var(--space-1);
+  font-size: var(--size-md);
+}
+
+.card p {
+  margin: 0 0 var(--space-2);
+}
+
+.card .meta {
+  font-size: var(--size-sm);
+  color: var(--muted);
+}
+
+.card .uses {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+}
+
+.card .uses .more {
+  margin-left: auto;
+  font-size: var(--size-sm);
+}
+
+/* The action sits at the foot, so the actions of a row of cards line up. */
+.card > .component {
+  margin-top: auto;
+}
+
+/* Cards as a list, for a catalog read top to bottom: the text on the left, the action beside it. */
+.cards.list {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.cards.list .card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 36%);
+  column-gap: var(--space-4);
+  align-content: start;
+}
+
+.cards.list .card > :not(.component) {
+  grid-column: 1;
+}
+
+.cards.list .card > .component {
+  grid-column: 2;
+  grid-row: 1 / span 6;
+  margin: 0;
+  padding: 0 0 0 var(--space-4);
+  border-top: 0;
+  border-left: 1px dashed var(--line);
+}
+
+.cards.list .card .uses {
+  margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .cards.list .card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cards.list .card > .component {
+    grid-column: 1;
+    grid-row: auto;
+    margin-top: var(--space-2);
+    padding: var(--space-2) 0 0;
+    border-left: 0;
+    border-top: 1px dashed var(--line);
+  }
+}
+
+/* Terms and what they mean, side by side. The second column may shrink, so
+   code in it scrolls in its own box rather than widening the page. */
+dl.pairs {
+  grid-template-columns: 10em minmax(0, 1fr);
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+}
+
+dl.pairs dd {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  dl.pairs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  dl.pairs dt {
+    color: var(--muted);
+  }
+}
+
+/* A button that reads as a link: it moves the reader, it does not change anything. */
+button.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+button.link:hover {
+  text-decoration: underline;
+}

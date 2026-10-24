@@ -1,0 +1,13 @@
+{
+  "id": "tick",
+  "mod": "tick",
+  "title": "A stopwatch you can click",
+  "summary": "A stopwatch in a pane that is drawn from the start: make its button count, let a timer tick it, then stop the timer. $.state and how a pane redraws, a button's handler, $.clock.every, and a timer's cancel.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "Open it" },
+    { "title": "Count a click", "checks": "checks/2-click.test.ts" },
+    { "title": "Tick by itself", "checks": "checks/3-tick.test.ts", "calls": ["$.clock.every"] },
+    { "title": "Stop it", "checks": "checks/4-stop.test.ts" }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "floor": "2.1.299",
+  "testedThrough": "2.1.308",
+  "plugins": {
+    "mod-lab-keys": { "since": "2.1.300", "uses": ["prompt.change"] },
+    "draft-keeper-mod": { "since": "2.1.300", "uses": ["prompt.change"] },
+    "paint-mod": { "since": "2.1.300", "uses": ["PromptDecoration.virtualText"] },
+    "paste-guard-mod": { "since": "2.1.300", "uses": ["PromptDecoration.virtualText"] },
+    "shortcodes-mod": { "since": "2.1.300", "uses": ["PromptDecoration.virtualText"] }
+  },
+  "capabilities": {}
+}

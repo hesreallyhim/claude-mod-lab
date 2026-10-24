@@ -1,0 +1,9 @@
+{
+  "name": "paste-guard-mod",
+  "version": "0.1.0",
+  "description": "Paints anything shaped like an API key in the prompt box red as it goes in, and holds back a prompt holding one until Enter is pressed again",
+  "author": {
+    "name": "Really Him"
+  },
+  "license": "MIT"
+}

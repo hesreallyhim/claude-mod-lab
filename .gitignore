@@ -18,7 +18,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/lib/
 lib64/
 parts/
 sdist/
@@ -135,3 +135,24 @@ temp/
 INTERNAL
 
 sync-from-*
+
+# Written by Claude Code when it loads a mod: the types in .claude-plugin/types/,
+# and a tsconfig.json beside them that extends those types. A session writes both
+# again, so neither belongs to the project.
+**/.claude-plugin/types/
+mods/*/tsconfig.json
+templates/*/tsconfig.json
+learn/**/tsconfig.json
+
+# Local lesson state, if created while developing; clones are not lesson workspaces by default.
+/.claude-mod-lab/
+
+# Optional local mod experiments; lesson work normally lives in a dedicated workspace.
+/workshop/*
+!/workshop/README.md
+
+# Components the explorer adds to a session (Add to session); each is yours to edit.
+/.claude/skills/
+
+antipasta*
+sites

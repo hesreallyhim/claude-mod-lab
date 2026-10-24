@@ -1,0 +1,15 @@
+{
+  "id": "stopwatch",
+  "mod": "stopwatch",
+  "title": "A mod from an empty folder",
+  "summary": "A mod that times the model's tool calls: a command, a hook on both sides of every call, the status line, and $.state.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "The folder" },
+    { "title": "A command", "checks": "checks/2-command.test.ts" },
+    { "title": "Timing tool calls", "checks": "checks/3-time.test.ts" },
+    { "title": "The status line", "checks": "checks/4-status.test.ts" },
+    { "title": "Watch it run", "live": true },
+    { "title": "Keep the totals across a reload", "checks": "checks/6-state.test.ts" }
+  ]
+}

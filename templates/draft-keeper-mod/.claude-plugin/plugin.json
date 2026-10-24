@@ -1,0 +1,9 @@
+{
+  "name": "draft-keeper-mod",
+  "version": "0.1.0",
+  "description": "Keeps the draft Ctrl+C clears from the prompt box and offers it back as a suggestion that Tab takes",
+  "author": {
+    "name": "Really Him"
+  },
+  "license": "MIT"
+}

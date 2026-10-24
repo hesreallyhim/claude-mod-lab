@@ -1,0 +1,97 @@
+/* The Gallery page, gallery.js: the technique cards, the table of what each
+   surface draws, and a panel per technique. The lede, panels, cards and pairs
+   are patterns.css. */
+
+.technique-card code {
+  align-self: center;
+}
+
+.matrix-wrap {
+  overflow-x: auto;
+}
+
+table.matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--size-sm);
+}
+
+table.matrix th {
+  padding: var(--space-2) var(--space-3);
+  font-weight: normal;
+  color: var(--muted);
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+}
+
+table.matrix th:first-child,
+table.matrix td:first-child {
+  text-align: left;
+}
+
+table.matrix td {
+  padding: var(--space-1) var(--space-3);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono);
+}
+
+table.matrix tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+table.matrix tbody tr:hover {
+  background: var(--code-bg);
+}
+
+table.matrix td.yes {
+  color: var(--ok);
+  text-align: center;
+}
+
+table.matrix td.no {
+  color: var(--muted);
+  text-align: center;
+}
+
+.technique {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  scroll-margin-top: var(--space-4);
+}
+
+.technique header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.technique h3 {
+  margin: 0;
+  font-size: var(--size-lead);
+}
+
+.technique dd p {
+  margin: 0;
+}
+
+.technique .source {
+  display: grid;
+  gap: var(--space-0);
+}
+
+.technique details.excerpt summary {
+  font: var(--size-sm) var(--mono);
+}
+
+.technique details.excerpt pre,
+.technique details.snippet pre {
+  max-height: 32em;
+  overflow: auto;
+}
+
+.technique .as-mod p {
+  margin: 0 0 var(--space-1);
+}

@@ -1,0 +1,10 @@
+{
+  "name": "gallery-mod",
+  "version": "0.1.0",
+  "description": "Rendering techniques for mods, one tab each, drawn as well as the surface allows",
+  "license": "MIT",
+  "author": {
+    "name": "Really Him"
+  },
+  "types": "./types/index.d.ts"
+}

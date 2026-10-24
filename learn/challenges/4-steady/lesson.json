@@ -1,0 +1,10 @@
+{
+  "mod": "steady",
+  "title": "Keep the system prompt steady",
+  "summary": "The starter tells the model the git branch in the system prompt, which changes it on every request. Tell the model the branch without changing the system prompt.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "The same system prompt on every request", "checks": "checks/1-steady.test.ts" },
+    { "title": "The model still knows the branch", "checks": "checks/2-told.test.ts" }
+  ]
+}

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="lab-token" content="__LAB_TOKEN__" />
+    <title>claude-mod-lab explorer</title>
+    <link rel="icon" href="data:," />
+    <link rel="preload" href="/fonts/ibm-plex-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/vt323-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/patterns.css" />
+    <link rel="stylesheet" href="/components.css" />
+    <link rel="stylesheet" href="/keys.css" />
+    <link rel="stylesheet" href="/gallery.css" />
+    <link rel="stylesheet" href="/areas.css" />
+    <link rel="stylesheet" href="/lab.css" />
+    <link rel="stylesheet" href="/overview.css" />
+    <link rel="stylesheet" href="/bench.css" />
+    <link rel="stylesheet" href="/log.css" />
+    <link rel="stylesheet" href="/pages.css" />
+    <link rel="stylesheet" href="/lesson-progress.css" />
+    <link rel="stylesheet" href="/dialogs.css" />
+    <link rel="stylesheet" href="/xray.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <header class="bar">
+      <a class="brand" href="#/" aria-label="claude-mod-lab explorer: home">
+        <!-- The mark: a flask drawn in a terminal's cells, part filled. -->
+        <svg viewBox="0 0 12 12" aria-hidden="true">
+          <path
+            class="flask-glass"
+            d="M3 0h6v1H3zM4 1h1v3H4zM7 1h1v3H7zM3 4h1v1H3zM8 4h1v1H8zM2 5h1v1H2zM9 5h1v1H9zM1 6h1v5H1zM10 6h1v5h-1zM1 11h10v1H1z"
+          />
+          <path class="flask-liquid" d="M2 8h8v3H2zM5 6h1v1H5zM6 3h1v1H6z" />
+        </svg>
+        <span class="brand-name">claude-mod-lab</span>
+      </a>
+      <nav id="areas" class="areas" aria-label="Areas"></nav>
+      <details id="intercept-status" hidden>
+        <summary><span id="intercept-count" aria-live="polite" aria-atomic="true"></span></summary>
+        <div id="intercept-panel"></div>
+      </details>
+      <!-- The session's lamp: its state in words; its id, folder, build and the reference's version in a tooltip. -->
+      <span id="session" class="pill" tabindex="0" aria-describedby="session-tip">
+        <span id="session-text">connecting to the explorer server</span>
+        <span id="session-tip" class="tip" role="tooltip">
+          <span class="tip-heading">Session details</span>
+          <span id="session-where"></span>
+          <span id="engine"></span>
+          <span id="reference"></span>
+        </span>
+      </span>
+    </header>
+    <div class="layout">
+      <nav id="nav" aria-label="Reference">
+        <div class="filter">
+          <label for="search" class="filter-label"
+            >Filter the reference <span class="key" aria-hidden="true">press <kbd>/</kbd></span></label
+          >
+          <div class="filter-line">
+            <span class="filter-prompt" aria-hidden="true">/</span>
+            <input
+              id="search"
+              type="search"
+              placeholder="cwd, toast, tool.call"
+              autocomplete="off"
+              spellcheck="false"
+              aria-keyshortcuts="/"
+            />
+          </div>
+          <p id="tree-count" class="filter-count" aria-live="polite"></p>
+        </div>
+        <div id="tree"></div>
+      </nav>
+      <main id="main" tabindex="-1"></main>
+      <aside id="feed" class="term" aria-label="Live feed">
+        <div class="tabs" role="tablist">
+          <button id="tab-runs" role="tab" aria-selected="true" title="Probe runs: what each dispatched">Runs</button>
+          <button id="tab-trace" role="tab" aria-selected="false" title="Engine events the lab traces">
+            Session events
+          </button>
+          <button id="tab-taps" role="tab" aria-selected="false" title="Calls an intercept acted on">
+            Intercepted
+          </button>
+        </div>
+        <p id="feed-caption" class="feed-caption"></p>
+        <div id="feed-body"></div>
+        <details id="feed-legend" class="legend">
+          <summary>How to read a row</summary>
+          <dl>
+            <dt><i class="mark ok"></i></dt>
+            <dd>a run that returned; a square in red failed</dd>
+            <dt><i class="mark request"></i></dt>
+            <dd>a model request; hollow, a tool call; a dash, a command</dd>
+            <dt><i class="mark ix acted"></i></dt>
+            <dd>an intercept of yours: filled where it acted, hollow where it watched</dd>
+            <dt>
+              <span class="strip"
+                ><i class="from"></i><i class="w"></i><i class="k passed"></i><i class="w"></i><i class="k returned"></i
+              ></span>
+            </dt>
+            <dd>the chain: the caller, then a cell a hook; filled where it answered</dd>
+            <dt>
+              <span class="strip"><i class="k rejected"></i><i class="w"></i><i class="k skipped"></i></span>
+            </dt>
+            <dd>a hook that rejected; dashed, one skipped or out of time</dd>
+          </dl>
+        </details>
+      </aside>
+    </div>
+  </body>
+</html>

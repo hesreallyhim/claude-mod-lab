@@ -1,0 +1,11 @@
+{
+  "mod": "receipt",
+  "title": "A tool the model can call",
+  "summary": "The starter registers a tool for the model, but the model never gets a total from it. Make it work, and refuse what it cannot add up.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "Registered for the model to see", "checks": "checks/1-registered.test.ts" },
+    { "title": "Answered with the total", "checks": "checks/2-answer.test.ts" },
+    { "title": "Refused when it cannot be added up", "checks": "checks/3-refuse.test.ts" }
+  ]
+}

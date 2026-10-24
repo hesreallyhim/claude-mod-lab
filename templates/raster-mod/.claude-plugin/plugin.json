@@ -1,0 +1,9 @@
+{
+  "name": "raster-mod",
+  "version": "0.1.0",
+  "description": "A Raster in a pane, repainted by $.ui.blit with no render pass",
+  "author": {
+    "name": "Really Him"
+  },
+  "license": "MIT"
+}

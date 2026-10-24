@@ -1,0 +1,13 @@
+{
+  "id": "egg",
+  "mod": "egg",
+  "title": "An egg timer above the prompt",
+  "summary": "A timer drawn in the band above the prompt, which /egg already sets: make it count down by the clock, take its minutes from what you type, and go from green to red. $.clock.now, a command's e.args, and the colours a drawing can use.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "Set one" },
+    { "title": "Count down", "checks": "checks/2-countdown.test.ts", "calls": ["$.clock.now"] },
+    { "title": "Any number of minutes", "checks": "checks/3-minutes.test.ts" },
+    { "title": "Green, then red", "checks": "checks/4-colour.test.ts" }
+  ]
+}

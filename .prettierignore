@@ -1,0 +1,10 @@
+# Prettier formats the web app alone: web/ without its Markdown, and the
+# bridge plugin's explorer.mjs, which serves it inside a session.
+/*
+!/web/
+!/mods/
+/mods/*
+!/mods/mod-lab-bridge/
+/mods/mod-lab-bridge/*
+!/mods/mod-lab-bridge/explorer.mjs
+*.md

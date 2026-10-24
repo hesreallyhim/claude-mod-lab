@@ -1,0 +1,256 @@
+/* The three areas (areas.js): the header's tabs, the columns each area shows,
+   the home page, and the line that links a page to the other area. The area is
+   body[data-area]: api, session, build, or home. */
+
+/* The header stays one line at any width, its texts cut short, so the sticky columns below it keep their place. */
+.brand,
+.areas {
+  flex: none;
+  white-space: nowrap;
+}
+
+.bar > .pill {
+  min-width: 0;
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Intercepts stay visible across areas; the disclosure gives each rule a Clear control. */
+.bar > #intercept-status {
+  display: block;
+  position: relative;
+  flex: none;
+  border-left: 1px solid var(--line);
+  color: var(--warn);
+  background: var(--warn-wash);
+}
+
+.bar > #intercept-status[hidden] {
+  display: none;
+}
+
+#intercept-status > summary {
+  align-content: center;
+  height: 100%;
+  padding: 0 var(--space-2);
+  cursor: pointer;
+  font-size: var(--size-xs);
+  white-space: nowrap;
+}
+
+#intercept-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: min(480px, calc(100vw - 2 * var(--space-2)));
+  max-height: 70vh;
+  overflow: auto;
+  padding: var(--space-3);
+  border: 1px solid var(--warn);
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow: 0 8px 24px #0003;
+  overflow-wrap: anywhere;
+}
+
+#intercept-panel > p {
+  margin-top: 0;
+}
+
+#intercept-panel .in-force-list {
+  margin-bottom: 0;
+}
+
+.brand .flask-glass,
+.brand .flask-liquid {
+  fill: currentColor;
+}
+
+/* The areas as a terminal multiplexer's windows: numbered, the current one lit and starred. */
+.areas {
+  counter-reset: area;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+}
+
+.areas a {
+  counter-increment: area;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 var(--space-1) 0 var(--space-2);
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  font: 500 var(--size-sm) var(--mono);
+  text-transform: lowercase;
+}
+
+.areas a::before {
+  content: counter(area) ':';
+  color: var(--muted);
+}
+
+/* A cell kept for the star, so the tabs keep their width as the current one moves. */
+.areas a::after {
+  content: '*';
+  visibility: hidden;
+}
+
+.areas a:hover {
+  background: var(--code-bg);
+  text-decoration: none;
+}
+
+.areas a[aria-current='page'] {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  background: var(--accent);
+  font-weight: 600;
+}
+
+.areas a[aria-current='page']::before {
+  color: inherit;
+}
+
+.areas a[aria-current='page']::after {
+  visibility: visible;
+}
+
+/* A narrow window gets the status line in two rows: the brand and the areas, then the session's lamp.
+   The bar's height token follows, so the columns still stick under it. */
+@media (max-width: 760px) {
+  :root {
+    --bar-h: 76px;
+  }
+
+  .bar {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+    grid-template-rows: 40px 36px;
+    padding: 0;
+  }
+
+  .brand {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .areas {
+    grid-column: 2 / 4;
+    grid-row: 1;
+    overflow-x: auto;
+  }
+
+  .bar > #session {
+    grid-column: 1 / 4;
+    grid-row: 2;
+    flex: 0 1 auto;
+    min-width: 0;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .bar:has(#intercept-status:not([hidden])) > #session {
+    grid-column: 1 / 3;
+  }
+
+  .bar > #intercept-status {
+    grid-column: 3;
+    grid-row: 2;
+    border-top: 1px solid var(--line);
+  }
+}
+
+/* The feed is the Session area's; the filter is the reference tree's; the home page has neither column. */
+body:not([data-area='session']) #feed,
+body:not([data-area='api']) #nav > .filter,
+body[data-area='home'] #nav {
+  display: none;
+}
+
+body[data-area='api'] .layout {
+  grid-template-columns: 272px minmax(0, 1fr);
+}
+
+body[data-area='session'] .layout {
+  grid-template-columns: 200px minmax(0, 1fr) minmax(320px, 420px);
+}
+
+body[data-area='build'] .layout {
+  grid-template-columns: 200px minmax(0, 1fr);
+}
+
+body[data-area='home'] .layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* A Session or Build page's list is short; the reference tree is long, so on a narrow window it follows the page. */
+@media (max-width: 1100px) {
+  body[data-area] .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body[data-area='api'] #nav {
+    order: 1;
+  }
+}
+
+/* A Session or Build page's list, drawn as the reference's index draws its pages (lab.css): on the sheet's
+   panel, each page marked with a >, the current one in reverse video. It holds page names, not identifiers. */
+body:is([data-area='session'], [data-area='build']) #nav {
+  background: var(--panel);
+  border-right: 1px solid var(--line-strong);
+}
+
+body:is([data-area='session'], [data-area='build']) #tree .group a {
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font: 500 var(--size-sm) var(--prose);
+}
+
+body:is([data-area='session'], [data-area='build']) #tree .group a::before {
+  content: '>';
+  color: var(--muted);
+}
+
+body:is([data-area='session'], [data-area='build']) #tree .group a:hover {
+  background: var(--code-bg);
+  text-decoration: none;
+}
+
+body:is([data-area='session'], [data-area='build']) #tree .group a.current {
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+body:is([data-area='session'], [data-area='build']) #tree .group a.current::before {
+  color: inherit;
+}
+
+.page .cross {
+  margin: 0 0 var(--space-3);
+  font: var(--size-sm) var(--mono);
+  color: var(--muted);
+}
+
+/* The home page is centred in the window, its three areas in a row of equal cards that stack as the window narrows. */
+.home {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.home .areas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  justify-content: center;
+  gap: var(--space-5);
+  margin: var(--space-6) 0;
+}
+
+.home .card ul {
+  margin: 0;
+  padding-left: var(--space-4);
+}

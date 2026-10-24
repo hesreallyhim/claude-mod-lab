@@ -1,0 +1,413 @@
+/* The Mod API area's first page (overview.js): its readouts, Fig. 1 and the
+   catalogue; and All probes. lab.css draws the index and the manual page
+   these pages share. Scoped to body[data-area='api']. */
+
+.overview .sheet-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  column-gap: var(--space-6);
+}
+
+.overview .sheet-head > :not(.readouts) {
+  grid-column: 1;
+}
+
+/* The counts, as a system monitor's readouts: a figure over its label. */
+.readouts {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  align-self: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  margin: 0;
+  border: 1px solid var(--line-strong);
+  /* The cells wrap where the figure is narrow; the ground shows through the gaps as the lines between them. */
+  background: var(--line-strong);
+}
+
+.readouts > div {
+  display: flex;
+  flex-direction: column-reverse;
+  flex: 1 0 auto;
+  padding: var(--space-1) var(--space-3) var(--space-2);
+  background: var(--bg);
+}
+
+.readouts dt {
+  font: 500 var(--size-xs) var(--mono);
+  color: var(--muted);
+}
+
+.readouts dd {
+  margin: 0;
+  font: var(--size-vt-readout) / 1 var(--display);
+  color: var(--prompt);
+  text-shadow: var(--glow);
+}
+
+@media (max-width: 1320px) {
+  .overview .sheet-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .readouts {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: start;
+    margin-top: var(--space-4);
+  }
+}
+
+.overview .lede {
+  max-width: var(--measure);
+  margin: var(--space-1) 0 0;
+  font-size: var(--size-lead);
+  line-height: 1.6;
+}
+
+/* Fig. 1 on a terminal's character cells, its steps as framed boxes joined by arrows. */
+.diagram {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  border: 1px solid var(--line-strong);
+  background-color: var(--panel);
+  background-image: radial-gradient(var(--grid) 1px, transparent 1.5px);
+  background-size: var(--space-2) var(--space-4);
+}
+
+.path {
+  display: flex;
+  align-items: stretch;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.path .node {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--ink);
+  background: var(--panel);
+}
+
+.node-label {
+  font: 500 var(--size-xs) var(--mono);
+  color: var(--muted);
+}
+
+.path .node code {
+  padding: 0;
+  background: none;
+  font-size: var(--size-md);
+  font-weight: 600;
+}
+
+.path .node.event {
+  border: var(--rule) double var(--accent);
+}
+
+.path .node.event code {
+  color: var(--accent);
+}
+
+.path .node.hooks {
+  box-shadow:
+    3px 3px 0 var(--panel),
+    4px 4px 0 var(--line-strong);
+}
+
+.path .node.engine {
+  background: var(--ink);
+}
+
+.path .node.engine .node-label,
+.path .node.engine code {
+  color: var(--bg);
+}
+
+.path .edge {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+}
+
+.path .edge::before {
+  content: '';
+  position: absolute;
+  left: var(--space-1);
+  right: var(--space-2);
+  top: 50%;
+  border-top: 1px dashed var(--line-strong);
+}
+
+.path .edge::after {
+  content: '>';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-52%);
+  font: 600 var(--size-md) / 1 var(--mono);
+  color: var(--ink);
+}
+
+.path .edge code {
+  position: relative;
+  padding: 0 var(--space-1);
+  background: var(--panel);
+  font-size: var(--size-xs);
+  color: var(--muted);
+}
+
+/* A pulse runs along the three edges in turn, so the figure shows a call travelling down the chain to the engine. */
+.path .edge .pulse {
+  position: absolute;
+  top: 50%;
+  left: var(--space-1);
+  width: var(--space-3);
+  height: 3px;
+  margin-top: -2px;
+  background: var(--prompt);
+  box-shadow: var(--glow);
+  opacity: 0;
+  animation: travel 3.6s linear infinite;
+}
+
+.path .edge:nth-child(4) .pulse {
+  animation-delay: 1.2s;
+}
+
+.path .edge:nth-child(6) .pulse {
+  animation-delay: 2.4s;
+}
+
+@keyframes travel {
+  0% {
+    left: var(--space-1);
+    opacity: 0;
+  }
+
+  4% {
+    opacity: 1;
+  }
+
+  29% {
+    opacity: 1;
+  }
+
+  33% {
+    left: calc(100% - var(--space-5));
+    opacity: 0;
+  }
+
+  100% {
+    left: calc(100% - var(--space-5));
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .path .edge .pulse {
+    animation: none;
+  }
+}
+
+/* Where the figure is narrow, the path runs down the page instead of across it: the steps stack, each edge
+   a dashed line down to a > turned into a v, and the pulse runs down it. The figure's own width decides,
+   not the window's, so the figure fits beside an index or on its own alike. */
+.diagram {
+  container-type: inline-size;
+}
+
+@container (max-width: 720px) {
+  .path {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .path .edge {
+    flex: none;
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  .path .edge::before {
+    top: var(--space-1);
+    bottom: var(--space-3);
+    left: 50%;
+    right: auto;
+    border-top: 0;
+    border-left: 1px dashed var(--line-strong);
+  }
+
+  .path .edge::after {
+    content: 'v';
+    top: auto;
+    right: auto;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .path .edge .pulse {
+    top: var(--space-1);
+    left: 50%;
+    width: 3px;
+    height: var(--space-3);
+    margin: 0 0 0 -1px;
+    animation-name: travel-down;
+  }
+}
+
+@keyframes travel-down {
+  0% {
+    top: var(--space-1);
+    opacity: 0;
+  }
+
+  4% {
+    opacity: 1;
+  }
+
+  29% {
+    opacity: 1;
+  }
+
+  33% {
+    top: calc(100% - var(--space-6));
+    opacity: 0;
+  }
+
+  100% {
+    top: calc(100% - var(--space-6));
+    opacity: 0;
+  }
+}
+
+.diagram figcaption {
+  max-width: var(--measure);
+  font-size: var(--size-body);
+  color: var(--muted);
+}
+
+.fig-no {
+  margin-right: var(--space-1);
+  font: 600 var(--size-xs) var(--mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--ink);
+}
+
+.overview .note {
+  margin: 0 0 var(--space-3);
+  color: var(--muted);
+}
+
+body[data-area='api'] .overview h2 {
+  margin: var(--space-6) 0 var(--space-2);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px dashed var(--line-strong);
+}
+
+.catalogue h3 {
+  margin: var(--space-4) 0 var(--space-2);
+  font: 500 var(--size-xs) var(--mono);
+  color: var(--muted);
+}
+
+.catalogue h3::before {
+  content: '# ';
+  color: var(--prompt);
+  white-space: pre;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-2);
+}
+
+button.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-0);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  color: var(--ink);
+  text-align: left;
+  font-weight: 400;
+}
+
+button.tile:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  box-shadow: none;
+}
+
+button.tile:hover > * {
+  color: var(--bg);
+}
+
+.tile-name {
+  font: 600 var(--size-sm) var(--mono);
+}
+
+.tile-line {
+  font: var(--size-xs) var(--mono);
+  color: var(--muted);
+}
+
+.overview .latest {
+  max-width: 900px;
+}
+
+.colophon {
+  margin-top: var(--space-6);
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--line-strong);
+  font: var(--size-xs) var(--mono);
+  color: var(--muted);
+}
+
+/* All probes */
+
+.probes details.noun {
+  margin: 0;
+  border-bottom: 1px dashed var(--line-strong);
+}
+
+.probes details.noun > summary {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  min-height: 36px;
+  padding: var(--space-2) 0;
+}
+
+.probes .noun-name {
+  min-width: 11ch;
+}
+
+.probes summary .count {
+  font: 600 var(--size-xs) var(--mono);
+  color: var(--prompt);
+}
+
+.noun-probes {
+  font: 400 var(--size-xs) var(--mono);
+  color: var(--muted);
+}
+
+body[data-area='api'] .sheet-head .lede {
+  max-width: var(--measure);
+  margin: 0;
+  font-size: var(--size-lead);
+}

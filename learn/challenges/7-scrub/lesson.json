@@ -1,0 +1,12 @@
+{
+  "mod": "scrub",
+  "title": "Redact a stream as it passes",
+  "summary": "The starter redacts API keys in a child's output, piece by piece, on its way to the plugin that started the child. Pieces are cut where the child happened to write, not at line ends, so a key written in two parts passes, half in each. Redact whole lines, pass each on as soon as it is complete, and leave the rest as it came.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "A key split across two pieces is redacted", "checks": "checks/1-split.test.ts" },
+    { "title": "Each line passes on as soon as it is whole", "checks": "checks/2-lines.test.ts" },
+    { "title": "Everything else as it came", "checks": "checks/3-untouched.test.ts" },
+    { "title": "See it in a session", "live": true }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "explorer": {
+      "command": "${MOD_LAB_NODE:-node}",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/explorer.mjs"],
+      "env": {
+        "MOD_LAB_PACKAGE_ROOT": "${MOD_LAB_PACKAGE_ROOT:-}",
+        "MOD_LAB_OPEN": "${MOD_LAB_OPEN:-}",
+        "MOD_LAB_NO_OPEN": "${MOD_LAB_NO_OPEN:-}",
+        "MOD_LAB_PORT": "${MOD_LAB_PORT:-}",
+        "MOD_LAB_BRIDGE_OPTION": "${user_config.bridgeFile}",
+        "MOD_LAB_BRIDGE_FILE": "${MOD_LAB_BRIDGE_FILE:-}",
+        "MOD_LAB_LESSONS": "${MOD_LAB_LESSONS:-}",
+        "MOD_LAB_TYPES": "${MOD_LAB_TYPES:-}",
+        "BROWSER": "${BROWSER:-}"
+      }
+    }
+  }
+}

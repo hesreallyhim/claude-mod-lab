@@ -1,0 +1,16 @@
+{
+  "id": "stopwatch-pane",
+  "mod": "stopwatch",
+  "starter": "../1-stopwatch/solution",
+  "title": "Drawing a pane",
+  "summary": "Stopwatch again, drawn: a pane that redraws as the totals change, bars of time sized to the pane, a reset button, and text made safe to draw.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "A pane to draw in", "checks": "checks/1-open.test.ts" },
+    { "title": "Totals that redraw themselves", "checks": "checks/2-totals.test.ts" },
+    { "title": "Bars that fit the pane", "checks": "checks/3-bars.test.ts" },
+    { "title": "A button", "checks": "checks/4-reset.test.ts" },
+    { "title": "The latest call, safe to draw", "checks": "checks/5-latest.test.ts" },
+    { "title": "Watch it live", "live": true }
+  ]
+}

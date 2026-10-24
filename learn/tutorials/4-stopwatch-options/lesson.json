@@ -1,0 +1,15 @@
+{
+  "id": "stopwatch-options",
+  "mod": "stopwatch",
+  "starter": "../3-stopwatch-pane/solution",
+  "title": "Options",
+  "summary": "Stopwatch, configurable: userConfig fields that reach register as options, a config.set hook that cuts a value to size or refuses it with a reason, and config.describe making a /config row say what the option has done.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "Tools to leave out", "checks": "checks/1-ignore.test.ts" },
+    { "title": "A slow call", "checks": "checks/2-slow.test.ts" },
+    { "title": "Guard the value", "checks": "checks/3-guard.test.ts", "catch": ["config.set"] },
+    { "title": "A row that says what it did", "checks": "checks/4-describe.test.ts", "calls": ["$.ui.invalidate"] },
+    { "title": "Set it in /config", "live": true }
+  ]
+}

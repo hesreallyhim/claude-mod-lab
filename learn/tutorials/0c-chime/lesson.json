@@ -1,0 +1,13 @@
+{
+  "id": "chime",
+  "mod": "chime",
+  "title": "A chime when Claude is done",
+  "summary": "A sound that /chime already plays, made to ring when Claude finishes a long answer and then say its first sentence aloud. A hook on the engine's own event, turn.complete, what its e tells you, $.audio.play and $.audio.speak, and a call you do not wait for.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "Hear it" },
+    { "title": "Ring when Claude is done", "checks": "checks/2-ring.test.ts" },
+    { "title": "Only after a long turn", "checks": "checks/3-long.test.ts" },
+    { "title": "Say what Claude said", "checks": "checks/4-speak.test.ts", "calls": ["$.audio.speak"] }
+  ]
+}

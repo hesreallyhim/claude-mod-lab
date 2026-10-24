@@ -1,0 +1,14 @@
+{
+  "mod": "snake",
+  "title": "A game in a Client",
+  "summary": "A game of snake in a pane, run by a surface module in a Client: its own state, clock and keys on the drawing thread, and a score posted back to the hooks module, which keeps the best and hands it back as props.",
+  "minVersion": "2.1.299",
+  "steps": [
+    { "title": "A Client in a pane", "checks": "checks/1-client.test.ts" },
+    { "title": "A click and a clock", "checks": "checks/2-clock.test.ts" },
+    { "title": "The keys", "checks": "checks/3-keys.test.ts" },
+    { "title": "Food and the end", "checks": "checks/4-food.test.ts" },
+    { "title": "A score for the hooks module", "checks": "checks/5-best.test.ts", "calls": ["$.store.set"] },
+    { "title": "Play it", "live": true }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "shortcodes-mod",
+  "version": "0.1.0",
+  "description": "Shortcodes of your own in the prompt box: type :tests: and the closing colon writes the prompt it stands for; a half-typed one shows the rest as ghost text",
+  "author": {
+    "name": "Really Him"
+  },
+  "license": "MIT"
+}
