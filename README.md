@@ -56,7 +56,7 @@ The Session area shows what a mod can see and change while you work: each turn's
 
 ### Learn by building
 
-Ten tutorials and eight challenges, from a stopwatch you can click to a game of Snake. Each lesson starts from a mod that already runs. You fill in what is missing in your lesson workspace’s `workshop/` directory, the session reloads the mod as you save, and the lesson's page checks every step and tells you what the mod did when a step fails.
+Eleven tutorials and eight challenges, from a stopwatch you can click to a game of Snake. Each lesson starts from a mod that already runs. You fill in what is missing in your lesson workspace’s `workshop/` directory, the session reloads the mod as you save, and the lesson's page checks every step and tells you what the mod did when a step fails.
 
 ![A lesson checking each step as the file is saved](docs/media/lesson.gif)
 
