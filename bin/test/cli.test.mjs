@@ -338,8 +338,11 @@ async function stubExplorer({ session = null, protocol = 1 } = {}) {
       if (req.headers['x-lab-token'] !== 't') { res.writeHead(401); return res.end() }
       res.setHeader('content-type', 'application/json')
       res.end(JSON.stringify(req.url === '/api/context' ? { protocol: ${protocol} } : state))
-    }).listen(0, '127.0.0.1', function () { console.log(this.address().port) })
-  `])
+    }).listen(0, '127.0.0.1', function () { process.stdout.write(String(this.address().port)) })
+  `], {
+    // Keep color enabled to catch accidental formatting of the port protocol.
+    env: { ...process.env, FORCE_COLOR: '1', NO_COLOR: undefined },
+  })
   const port = await new Promise(resolve => child.stdout.once('data', chunk => resolve(Number(String(chunk).trim()))))
   return { port, stop: () => child.kill() }
 }
