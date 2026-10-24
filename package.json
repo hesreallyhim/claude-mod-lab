@@ -28,7 +28,11 @@
     "!plugins/mod-bootstrap/test/",
     "plugins/mod-authoring-notes/",
     "scripts/tsc.mjs",
-    "compat.json"
+    "compat.json",
+    "!**/.claude-plugin/types/**",
+    "!**/claude-code/**",
+    "!**/claude-code-tools/**",
+    "!**/claude-code-mcp/**"
   ],
   "engines": {
     "node": ">=22"

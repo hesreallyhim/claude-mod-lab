@@ -140,6 +140,9 @@ sync-from-*
 # and a tsconfig.json beside them that extends those types. A session writes both
 # again, so neither belongs to the project.
 **/.claude-plugin/types/
+**/claude-code/
+**/claude-code-tools/
+**/claude-code-mcp/
 mods/*/tsconfig.json
 templates/*/tsconfig.json
 learn/**/tsconfig.json

@@ -105,3 +105,5 @@ An installed mod-lab-bridge gets the explorer from the npm package: its own `pac
 4. Once the npm package and bridge lockfile are ready, push `main`, which the marketplace serves, and the release tags to the release repository.
 
 `node scripts/install-check.temp.mjs` checks the installed route before any of this is published: it serves a pack of HEAD from a local npm registry and a clone over a local git server, runs `bridge-lock` there, installs the bridge into a throwaway Claude Code config, and checks that its session serves the explorer from the installed package.
+
+Generated Claude Code declarations are not distributed. Git and npm exclude `.claude-plugin/types/` and the `claude-code`, `claude-code-tools` and `claude-code-mcp` directories. `pack-check` also rejects copied `.d.ts` files carrying the core generator's version header. The lab's authored `types/index.d.ts` contracts remain included. `scripts/test/distribution.test.mjs` verifies the exclusions with a real npm pack of synthetic fixtures.

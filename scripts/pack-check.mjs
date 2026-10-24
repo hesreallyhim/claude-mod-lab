@@ -42,13 +42,13 @@ import { basename, join, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { AUTHORING_PLUGINS, labPlugins } from '../web/lib/session-folders.mjs'
+import { isGeneratedDeclaration } from './distribution-policy.mjs'
 
 const REPO = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const TYPESCRIPT = '6.0.3'
 
 /** What the packed list must not hold, each with what it would be. */
 const KEPT_OUT = [
-  { test: path => path.includes('.claude-plugin/types/'), what: 'engine declarations (.claude-plugin/types/)' },
   { test: path => basename(path) === 'tsconfig.json', what: 'tsconfig.json' },
   { test: path => path.startsWith('workshop/'), what: 'workshop/' },
   { test: path => path.startsWith('.claude/') || path.includes('/.claude/'), what: '.claude/ folder' },
@@ -95,8 +95,12 @@ async function until(what, check, ms) {
   }
 }
 
-function checkPacked(files, manifest) {
+function checkPacked(files, manifest, source) {
   console.log('\n== the packed files and package.json')
+  const generated = files.filter(path => isGeneratedDeclaration(
+    path, path.endsWith('.d.ts') ? readFileSync(join(source, path), 'utf8') : '',
+  ))
+  expect(generated.length === 0, `no generated engine declarations in the tarball${generated.length > 0 ? `: ${generated.join(', ')}` : ''}`)
   for (const { test, what } of KEPT_OUT) {
     const found = files.filter(test)
     expect(found.length === 0, `no ${what} in the tarball${found.length > 0 ? `: ${found.slice(0, 5).join(', ')}` : ''}`)
@@ -243,7 +247,7 @@ async function main() {
     tarball = join(out, packed.filename)
     console.log(`packed ${head} into ${tarball}`)
     const manifest = JSON.parse(readFileSync(join(source, 'package.json'), 'utf8'))
-    checkPacked(packed.files.map(file => file.path), manifest)
+    checkPacked(packed.files.map(file => file.path), manifest, source)
 
     console.log('\n== installed with npm install --save-exact --ignore-scripts')
     writeFileSync(join(install, 'package.json'), '{ "name": "pack-check-install", "private": true }\n')
