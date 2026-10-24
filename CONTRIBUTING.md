@@ -44,7 +44,7 @@ What a contributor runs, as npm scripts:
 ## Layout
 
 ```
-docs/                the design, the append stream, a debugger proposal, mods in the desktop app, and the README's media
+docs/                the design, the append stream, mods in the desktop app, and the README's media
 mods/mod-lab         the lab mod
 mods/mod-lab-bridge  the bridge mod, and the explorer's MCP server
 mods/mod-lab-target  hooks that fail on request, for /mod-lab verify
