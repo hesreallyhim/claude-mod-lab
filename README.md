@@ -44,27 +44,19 @@ Initialization creates `workshop/`, `.claude-mod-lab/`, a README and a `.gitigno
 
 The lab has 55 probes, each a few lines that call a method on `$` in your session. Run one from the explorer or with `/mod-lab <probe>`, and you see the value it returned, each event it dispatched, and the chain of hooks that answered it. Then put the lab's own hook on that event to watch, refuse, answer, rewrite or delay the call, and run it again.
 
-![Running fs.read, refusing it with an intercept, and running it again](docs/media/api.gif)
-
 The reference is built from the declarations of the Claude Code you are running, so it always matches your version. Any run can be copied as test hooks, which stand in for the engine in a test of your own mod.
 
 ### Watch your session from the inside
 
 The Session area shows what a mod can see and change while you work: each turn's model requests and tool calls on a timeline, the rows the conversation stores and whether the model or you will read them, what each plugin adds to the model's input, agents, the model calls plugins make and the tokens they use, the prompt box key by key, and settings.
 
-![The turn timeline: two model requests and a tool call](docs/media/session.png)
-
 ### Learn by building
 
 Eleven tutorials and eight challenges, from a stopwatch you can click to a game of Snake. Each lesson starts from a mod that already runs. You fill in what is missing in your lesson workspace’s `workshop/` directory, the session reloads the mod as you save, and the lesson's page checks every step and tells you what the mod did when a step fails.
 
-![A lesson checking each step as the file is saved](docs/media/lesson.gif)
-
 ### Start from something that works
 
 The Gallery has seven ways a mod can draw beyond plain text, from raster graphics and images to SVG charts and hover cards. The Prompt box page has six mods that change how the prompt box behaves: closing brackets, shortcodes, highlighted slash commands, a guard against pasting API keys, and more. In a session started with `run`, Add to project copies the mod into `.claude/mod-lab/<name>/`, the collection already supplied to Claude at startup. The copy is yours to change and stays in that project until you remove it. The explorer asks the connected session to reload the plugins. Existing Gallery and template copies in `.claude/skills/` stay in place, with their edits preserved, and the launcher explicitly loads those too. Each added mod shows the command or interaction to try it.
-
-![The Prompt box page: try each kind of edit and watch it arrive](docs/media/prompt-box.png)
 
 ### Have Claude help you write mods
 
