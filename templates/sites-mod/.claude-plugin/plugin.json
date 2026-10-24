@@ -1,6 +1,6 @@
 {
   "name": "sites-mod",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A line under each finished tool call's row saying how long it ran",
   "author": {
     "name": "Really Him"

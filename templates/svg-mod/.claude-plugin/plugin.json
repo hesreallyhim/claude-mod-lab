@@ -1,6 +1,6 @@
 {
   "name": "svg-mod",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The session's tool calls as an Svg bar chart where the surface has Svg, and block glyphs on the terminal",
   "author": {
     "name": "Really Him"

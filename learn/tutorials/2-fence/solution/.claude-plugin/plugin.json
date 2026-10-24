@@ -1,6 +1,6 @@
 {
   "name": "fence",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Keeps .env files from plugins' reads and the model's Read tool",
   "author": {
     "name": "Really Him"

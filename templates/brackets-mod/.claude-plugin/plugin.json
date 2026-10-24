@@ -1,6 +1,6 @@
 {
   "name": "brackets-mod",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Closes brackets as they are typed in the prompt box, steps over a closer, and paints the bracket beside the cursor with its partner",
   "author": {
     "name": "Really Him"

@@ -3,6 +3,6 @@
   "private": true,
   "description": "What Claude Code installs into its copy of the plugin: the claude-mod-lab package, whose explorer the bridge's MCP server serves. npm run release sets the version; npm run bridge-lock writes the lockfile once that version is on npm.",
   "dependencies": {
-    "claude-mod-lab": "0.1.0"
+    "claude-mod-lab": "0.2.0"
   }
 }

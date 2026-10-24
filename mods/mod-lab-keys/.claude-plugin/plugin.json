@@ -1,6 +1,6 @@
 {
   "name": "mod-lab-keys",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Keeps each change to the prompt box that came another way than an edit (a recalled prompt, a clear, a plugin's fill) for /mod-lab keys; it needs Claude Code 2.1.300",
   "license": "MIT",
   "author": {

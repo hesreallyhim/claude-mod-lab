@@ -1,6 +1,6 @@
 {
   "name": "chime",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A chime when Claude finishes a long answer, and its first sentence said aloud",
   "author": {
     "name": "Really Him"
