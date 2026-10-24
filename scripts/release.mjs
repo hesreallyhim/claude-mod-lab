@@ -1,4 +1,4 @@
-// `npm run release -- <version> [--dry-run]`, on the maintainer's machine, from
+// `npm run release -- <version> [--all-plugins] [--dry-run]`, on the maintainer's machine, from
 // a clean working tree (CONTRIBUTING.md, Releasing, step 1). In order, it:
 //
 // 1. refreshes mod-lab's copy of compat.json (npm run sync-compat);
@@ -27,7 +27,9 @@
 // stay local: the maintainer publishes the tarball pack-check printed, runs
 // `npm run bridge-lock`, then pushes the tags with the signed release tag. Run
 // again with the same version after fixing a failed step; nothing already
-// bumped is bumped twice.
+// bumped is bumped twice. --all-plugins sets every tracked plugin manifest to
+// <version>, including lesson starters and solutions; those lesson copies are
+// not marketplace releases and do not receive plugin tags.
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
@@ -91,16 +93,26 @@ function lastRelease(name) {
 /** Whether the folder differs, in the working tree, from what the tag holds. */
 const changedSince = (tag, dir) => run('git', ['diff', '--quiet', tag, '--', dir], { quiet: true }).status !== 0
 
-/** Every plugin with its folder, version and last release. */
-function readPlugins() {
-  return plugins(REPO).map(({ name, dir }) => ({ name, dir, version: versionOf(dir), last: lastRelease(name) }))
+/** Release plugins, optionally including every other tracked plugin manifest. */
+function readPlugins(allPlugins = false) {
+  const listed = plugins(REPO).map(({ name, dir }) => ({ name, dir, version: versionOf(dir), last: lastRelease(name), taggable: true }))
+  if (!allPlugins) return listed
+  const known = new Set(listed.map(one => one.dir))
+  const suffix = '/.claude-plugin/plugin.json'
+  const extra = git('ls-files', '-z').split('\0').filter(file => file.endsWith(suffix))
+    .map(file => file.slice(0, -suffix.length)).filter(dir => !known.has(dir))
+    .map(dir => {
+      const { name, version } = JSON.parse(readFileSync(manifestPath(dir), 'utf8'))
+      return { name, dir, version, last: null, taggable: false }
+    })
+  return [...listed, ...extra]
 }
 
 /** The bumps a release to `version` makes: the coupled parts to it, any other changed plugin a patch up. */
-function plan(version, list) {
+function plan(version, list, allPlugins = false) {
   const bumps = []
   for (const plugin of list) {
-    if (COUPLED.includes(plugin.name)) {
+    if (allPlugins || COUPLED.includes(plugin.name)) {
       if (compare(version, plugin.version) < 0) throw new Error(`${plugin.name} is at ${plugin.version}, above ${version}`)
       if (plugin.version !== version) bumps.push({ ...plugin, to: version })
     } else if (plugin.last !== null && changedSince(plugin.last.tag, plugin.dir)) {
@@ -114,13 +126,13 @@ function plan(version, list) {
  * What the version guard refuses, as sentences; empty when the release may go ahead. `bridge` is the
  * claude-mod-lab version mod-lab-bridge's package.json names: as planned before anything is written.
  */
-function guard(packageVersion, list, bridge = bridgeDependency()) {
+function guard(packageVersion, list, bridge = bridgeDependency(), allPlugins = false) {
   const problems = []
   if (bridge !== packageVersion) {
     problems.push(`${BRIDGE_DIR}/package.json names claude-mod-lab ${bridge}, the package is at ${packageVersion}: the coupled parts move together`)
   }
   for (const { name, dir, version, last } of list) {
-    if (COUPLED.includes(name) && version !== packageVersion) {
+    if ((allPlugins || COUPLED.includes(name)) && version !== packageVersion) {
       problems.push(`${name} is at ${version}, the package at ${packageVersion}: the coupled parts move together`)
     }
     if (last === null) continue
@@ -136,11 +148,41 @@ function guard(packageVersion, list, bridge = bridgeDependency()) {
   return problems
 }
 
+/** Explains a planned bump without assuming that a lesson copy has a release tag. */
+function bumpReason(bump, allPlugins) {
+  if (allPlugins) return ` (${bump.dir})`
+  if (COUPLED.includes(bump.name)) return ''
+  return ` (changed since ${bump.last.tag})`
+}
+
+function printPlan(version, previousVersion, bumps, allPlugins) {
+  console.log(`== release ${version}`)
+  console.log(`   package  ${previousVersion} -> ${version}`)
+  for (const bump of bumps) console.log(`   ${bump.name}  ${bump.version} -> ${bump.to}${bumpReason(bump, allPlugins)}`)
+}
+
+/** Sync before planning, so compatibility changes count as plugin changes. */
+function syncCompatibility(isDry) {
+  if (!existsSync(join(REPO, 'scripts', 'sync-compat.mjs'))) return
+  const sync = run(process.execPath, ['scripts/sync-compat.mjs', ...(isDry ? ['--check'] : [])], { quiet: true })
+  if (sync.status !== 0 && !isDry) throw new Error(`sync-compat failed:\n${sync.stdout}${sync.stderr}`)
+  if (sync.status !== 0) console.log(`would refresh mod-lab's copy of compat.json: ${sync.stderr.trim()}`)
+}
+
+function printDryRun(list) {
+  const untagged = list
+    .filter(one => one.taggable && one.last?.version !== one.version && one.name !== 'mod-lab-bridge')
+    .map(one => `${one.name}--v${one.version}`)
+  console.log(`\nwould tag: ${untagged.join(', ') || 'nothing'}; mod-lab-bridge is tagged by npm run bridge-lock`)
+  console.log('\n--dry-run: nothing was written')
+}
+
 function main(args) {
   const isDry = args.includes('--dry-run')
-  const [version, ...extra] = args.filter(arg => arg !== '--dry-run')
+  const allPlugins = args.includes('--all-plugins')
+  const [version, ...extra] = args.filter(arg => arg !== '--dry-run' && arg !== '--all-plugins')
   if (version === undefined || extra.length > 0 || !SEMVER.test(version)) {
-    console.error('Usage: npm run release -- <x.y.z> [--dry-run]')
+    console.error('Usage: npm run release -- <x.y.z> [--all-plugins] [--dry-run]')
     return 2
   }
   if (!isDry && git('status', '--porcelain', '--untracked-files=no') !== '') {
@@ -149,26 +191,15 @@ function main(args) {
   }
   const pkg = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8'))
   if (compare(version, pkg.version) < 0) throw new Error(`the package is at ${pkg.version}, above ${version}`)
-  // The copy first, so a change to compat.json counts as mod-lab's; a dry run only says whether it would change.
-  if (existsSync(join(REPO, 'scripts', 'sync-compat.mjs'))) {
-    const sync = run(process.execPath, ['scripts/sync-compat.mjs', ...(isDry ? ['--check'] : [])], { quiet: true })
-    if (sync.status !== 0 && !isDry) throw new Error(`sync-compat failed:\n${sync.stdout}${sync.stderr}`)
-    if (sync.status !== 0) console.log(`would refresh mod-lab's copy of compat.json: ${sync.stderr.trim()}`)
-  }
-  const bumps = plan(version, readPlugins())
-  console.log(`== release ${version}`)
-  console.log(`   package  ${pkg.version} -> ${version}`)
-  for (const bump of bumps) console.log(`   ${bump.name}  ${bump.version} -> ${bump.to}${COUPLED.includes(bump.name) ? '' : ` (changed since ${bump.last.tag})`}`)
+  syncCompatibility(isDry)
+  const bumps = plan(version, readPlugins(allPlugins), allPlugins)
+  printPlan(version, pkg.version, bumps, allPlugins)
   // The guard runs on the versions planned, before anything is written, and again once they are.
-  const after = readPlugins().map(one => ({ ...one, version: bumps.find(bump => bump.name === one.name)?.to ?? one.version }))
-  const refused = guard(version, after, version)
+  const after = readPlugins(allPlugins).map(one => ({ ...one, version: bumps.find(bump => bump.dir === one.dir)?.to ?? one.version }))
+  const refused = guard(version, after, version, allPlugins)
   for (const problem of refused) console.error(`the version guard refuses: ${problem}`)
   if (isDry) {
-    const untagged = after
-      .filter(one => one.last?.version !== one.version && one.name !== 'mod-lab-bridge')
-      .map(one => `${one.name}--v${one.version}`)
-    console.log(`\nwould tag: ${untagged.join(', ') || 'nothing'}; mod-lab-bridge is tagged by npm run bridge-lock`)
-    console.log('\n--dry-run: nothing was written')
+    printDryRun(after)
     return refused.length > 0 ? 1 : 0
   }
   if (refused.length > 0) return 1
@@ -178,7 +209,7 @@ function main(args) {
   })
   for (const bump of bumps) setVersion(bump.dir, bump.to)
   setBridgeDependency(version)
-  const problems = guard(version, readPlugins())
+  const problems = guard(version, readPlugins(allPlugins), bridgeDependency(), allPlugins)
   if (problems.length > 0) {
     for (const problem of problems) console.error(`the version guard refuses: ${problem}`)
     console.error('Nothing is committed; git restore . puts the bumped files back.')
