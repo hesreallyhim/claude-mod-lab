@@ -45,7 +45,6 @@ What a contributor runs, as npm scripts:
 ## Layout
 
 ```
-docs/media/          the README's screenshots and recordings
 mods/mod-lab         the lab mod
 mods/mod-lab-bridge  the bridge mod, and the explorer's MCP server
 mods/mod-lab-target  hooks that fail on request, for /mod-lab verify
@@ -79,7 +78,7 @@ The terminal and the desktop app are tested by hand. VS Code and mobile are chec
 
 ## The README's media
 
-The GIFs and screenshots in `docs/media/` come from two scripts kept for retaking them when the explorer's look changes: `scripts/readme-terminal.temp.tape` records the terminal clip with [vhs](https://github.com/charmbracelet/vhs), and `scripts/readme-media.temp.mjs` records the explorer's clips and screenshots from a running lab session. Each file's header says how to run it.
+Outdated README screenshots and recordings have been removed. The capture scripts remain for a future media update: `scripts/readme-terminal.temp.tape` records a terminal clip with [vhs](https://github.com/charmbracelet/vhs), and `scripts/readme-media.temp.mjs` records the explorer from a running lab session. Review their setup instructions before reuse and use a disposable workspace; the lesson scene deletes and recreates `workshop/tick`.
 
 ## Releasing
 

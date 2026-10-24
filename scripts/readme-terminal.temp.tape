@@ -1,5 +1,5 @@
-# temp: the terminal clip in README.md (docs/media/start.gif), recorded with vhs.
-# Written while rewriting the README (October 2026); kept so it can be taken again.
+# Historical terminal capture script; the outdated GIF has been removed.
+# Written in October 2026; review before recording a replacement.
 # Hidden setup: `npx` is a shell function that runs this checkout's launcher,
 # since the package may not be on npm yet, and Claude Code loads no user
 # settings, so your own plugins and status line stay out of the picture. Variables

@@ -1,5 +1,5 @@
-// temp: records the explorer clips and screenshots in docs/media/ that README.md
-// shows. Written while rewriting the README (October 2026); kept so the media can
+// Historical README capture script. The outdated media has been removed.
+// Written in October 2026; kept so the media can
 // be taken again when the explorer's look changes. It drives an explorer whose
 // lab session is already running (start one with `npx claude-mod-lab run <folder>`,
 // ideally with `--setting-sources project,local` so your own plugins stay out of
@@ -20,6 +20,7 @@
 //   shots   PNG screenshots of a few pages, in the light scheme.
 //
 // A clip becomes a GIF with ffmpeg and gifski, for example:
+//   mkdir -p frames docs/media
 //   ffmpeg -i api.webm -vf fps=12,scale=1200:-1:flags=lanczos frames/%04d.png
 //   gifski --fps 12 --width 1200 --quality 90 -o docs/media/api.gif frames/*.png
 
