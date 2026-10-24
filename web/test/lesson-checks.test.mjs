@@ -107,10 +107,12 @@ test("a save that another session's explorer is checking is not checked again: i
   const lesson = { id: 'tick', mod: 'tick' }
   const events = []
   const stop = other.watch(lesson, event => events.push(event))
+  /** @type {ReturnType<typeof one.check> | undefined} */
+  let checking
   try {
     // The same save, seen by both; the first explorer checks it at once.
     other.poke(lesson)
-    const checking = one.check(lesson)
+    checking = one.check(lesson)
     await until('the first check to hold the lock', () => first.ran.length === 1)
     await pause(300)
     assert.deepEqual(second.ran, [], 'the second explorer runs no check of its own while the lock is held')
@@ -122,14 +124,25 @@ test("a save that another session's explorer is checking is not checked again: i
     assert.equal(existsSync(join(dir, '.claude-mod-lab', 'check.lock')), false, 'the lock is let go')
   } finally {
     stop()
+    release()
+    await checking
+    one.close()
+    other.close()
   }
 })
 
 test('a lock left by a process that is gone is taken over', async () => {
   const dir = workspace()
-  const gone = spawnSync(process.execPath, ['-e', 'console.log(process.pid)'], { encoding: 'utf8' })
+  const gone = spawnSync(process.execPath, ['-e', 'process.stdout.write(String(process.pid))'], {
+    encoding: 'utf8',
+    // Numeric console output must not turn this PID into a null lock holder.
+    env: { ...process.env, FORCE_COLOR: '1', NO_COLOR: undefined },
+  })
+  assert.equal(gone.status, 0, gone.stderr)
+  const pid = Number(gone.stdout)
+  assert.ok(Number.isInteger(pid) && pid > 0, 'the exited process reported a valid PID')
   mkdirSync(join(dir, '.claude-mod-lab'))
-  const lock = { pid: Number(gone.stdout), token: 'old', lesson: 'tick', at: Date.now() }
+  const lock = { pid, token: 'old', lesson: 'tick', at: Date.now() }
   writeFileSync(join(dir, '.claude-mod-lab', 'check.lock'), JSON.stringify(lock))
   const { ran, run } = fakeChecker(dir)
   const checked = await createLessonChecks({ workspace: dir, run, quietMs: QUIET }).check({ id: 'tick', mod: 'tick' })
