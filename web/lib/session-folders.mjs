@@ -1,6 +1,6 @@
 // The folders `npx claude-mod-lab` loads with --plugin-dir, in order: mod-lab,
 // mod-lab-bridge and mod-lab-target, then any other plugin mod-lab names among
-// its dependencies (mod-lab-keys), then an explicitly selected lesson workspace's workshop/, a folder of
+// its dependencies (mod-lab-keys), then the authoring skill plugins, then an explicitly selected lesson workspace's workshop/, a folder of
 // plugins: each mod in it with a manifest loads, and in an interactive session
 // one added later loads once its manifest exists. The first folder
 // given sits on top of the hook chains, so the lab sees what everything
@@ -21,6 +21,9 @@ import { filesOf } from './components.mjs'
 
 /** The lab, its bridge and its target, in the order they load. */
 export const LAB = ['mod-lab', 'mod-lab-bridge', 'mod-lab-target']
+
+/** Skill plugins included with every launcher session. */
+export const AUTHORING_PLUGINS = ['mod-bootstrap', 'mod-authoring-notes']
 
 function manifestOf(dir) {
   try {
@@ -100,8 +103,8 @@ export function refreshCopy(from, to) {
 
 /**
  * The --plugin-dir folders for a session, in order: the lab's, with their
- * copies refreshed first unless `inPlace`, then the selected lesson workspace's workshop/, if any.
- * `names` are the lab's plugins.
+ * copies refreshed first unless `inPlace`, then the authoring skills and the selected lesson workspace's workshop/, if any.
+ * `names` includes the lab and authoring plugins.
  *
  * @param {object} options
  * @param {string} options.packageRoot
@@ -113,11 +116,18 @@ export function refreshCopy(from, to) {
  */
 export function sessionFolders({ packageRoot, home, version, inPlace, workspace = null }) {
   const modsDir = join(packageRoot, 'mods')
-  const { names, missing } = labPlugins(modsDir)
+  const { names: mods, missing } = labPlugins(modsDir)
+  const sources = mods.map(name => ({ name, dir: join(modsDir, name) }))
+  for (const name of AUTHORING_PLUGINS) {
+    const dir = join(packageRoot, 'plugins', name)
+    if (manifestOf(dir)?.name === name) sources.push({ name, dir })
+    else missing.push(name)
+  }
+  const names = sources.map(({ name }) => name)
   const copyRoot = inPlace ? null : copiesRoot(home, version)
-  const lab = names.map(name => {
-    if (copyRoot === null) return join(modsDir, name)
-    refreshCopy(join(modsDir, name), join(copyRoot, name))
+  const lab = sources.map(({ name, dir }) => {
+    if (copyRoot === null) return dir
+    refreshCopy(dir, join(copyRoot, name))
     return join(copyRoot, name)
   })
   return { folders: [...lab, ...(workspace === null ? [] : [join(workspace, 'workshop')])], names, copyRoot, missing }

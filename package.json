@@ -24,6 +24,9 @@
     "mods/",
     "!mods/mod-lab-bridge/package.json",
     "!mods/mod-lab-bridge/package-lock.json",
+    "plugins/mod-bootstrap/",
+    "!plugins/mod-bootstrap/test/",
+    "plugins/mod-authoring-notes/",
     "scripts/tsc.mjs",
     "compat.json"
   ],

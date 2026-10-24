@@ -115,6 +115,9 @@ test('init-lessons scaffolds explicitly without starting Claude, and run loads i
     assert.equal(session.cwd, workspace)
     const folders = pluginDirs(session.args)
     assert.deepEqual(folders.slice(0, 3), ['mod-lab', 'mod-lab-bridge', 'mod-lab-target'].map(name => join(PACKAGE_ROOT, 'mods', name)))
+    for (const name of ['mod-bootstrap', 'mod-authoring-notes']) {
+      assert.ok(folders.includes(join(PACKAGE_ROOT, 'plugins', name)), `${name} is loaded without a marketplace install`)
+    }
     assert.ok(folders.includes(join(workspace, 'workshop')))
     assert.equal(folders.at(-1), join(workspace, '.claude', 'mod-lab'))
     assert.deepEqual(JSON.parse(session.env.MOD_LAB_COMPONENT_DIRS), [folders.at(-1)])

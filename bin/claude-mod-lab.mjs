@@ -274,7 +274,7 @@ async function connectionFor(options) {
   return { ...found, bridgeFile }
 }
 
-/** Loads the lab, with a workshop added only for an initialized lesson directory. */
+/** Loads the lab and authoring skills, with a workshop added only for an initialized lesson directory. */
 async function sessionPlugins(project, lessons) {
   const { folders, names, copyRoot, missing } = sessionFolders({
     packageRoot: PACKAGE_ROOT,
@@ -283,7 +283,7 @@ async function sessionPlugins(project, lessons) {
     inPlace,
     workspace: lessons,
   })
-  for (const name of missing) console.error(`mod-lab requires ${name}, which this package lacks.`)
+  for (const name of missing) console.error(`claude-mod-lab is missing a bundled plugin: ${name}.`)
   if (copyRoot !== null) console.error(`claude-mod-lab: the lab's folders are copies in ${copyRoot}`)
   const { copies } = await installedCopies(names, { cwd: project })
   for (const copy of copies) console.error(sessionCopyNote(copy))

@@ -66,7 +66,9 @@ The Gallery has seven ways a mod can draw beyond plain text, from raster graphic
 
 ### Have Claude help you write mods
 
-Two skills come with the lab. `mod-bootstrap` scaffolds a new mod with its manifest, hooks, types, a test and a README, and checks it before handing it over. `mod-authoring-notes` gives Claude the practical facts about writing mods: what the validator refuses, how the test kit behaves, and what the engine will and won't do. They also work without the lab, in any project:
+`npx claude-mod-lab run` includes two authoring skills; no marketplace installation is needed. `mod-bootstrap` scaffolds a new mod with its manifest, hooks, types, a test and a README, and checks it before handing it over. `mod-authoring-notes` gives Claude the practical facts about writing mods: what the validator refuses, how the test kit behaves, and what the engine will and won't do. Ask Claude to help write a mod, or invoke `/mod-bootstrap:mod-bootstrap` or `/mod-authoring-notes:mod-authoring-notes` directly.
+
+To use these skills in sessions started without the lab launcher, install them separately:
 
 ```sh
 claude plugin marketplace add hesreallyhim/claude-mod-lab

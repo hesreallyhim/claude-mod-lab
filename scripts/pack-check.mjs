@@ -20,7 +20,8 @@
 //    loads from its copies under ~/.claude-mod-lab/plugins/<version>/; the
 //    session's own explorer, in the bridge's MCP server, serves from the
 //    installed package, which only MOD_LAB_PACKAGE_ROOT names to it; the
-//    bridge connects, and a probe from the page answers the workspace.
+//    bridge connects, a probe from the page answers the workspace, and both
+//    bundled authoring skills appear in the session's command list.
 // 5. In that workspace, a lesson's solution is checked with `learn <id>
 //    --once`, TypeScript step included. That step needs the engine's
 //    declarations: MOD_LAB_TYPES, or a plugin-authoring copy under the temp
@@ -40,7 +41,7 @@ import { tmpdir } from 'node:os'
 import { basename, join, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { labPlugins } from '../web/lib/session-folders.mjs'
+import { AUTHORING_PLUGINS, labPlugins } from '../web/lib/session-folders.mjs'
 
 const REPO = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const TYPESCRIPT = '6.0.3'
@@ -51,14 +52,18 @@ const KEPT_OUT = [
   { test: path => basename(path) === 'tsconfig.json', what: 'tsconfig.json' },
   { test: path => path.startsWith('workshop/'), what: 'workshop/' },
   { test: path => path.startsWith('.claude/') || path.includes('/.claude/'), what: '.claude/ folder' },
-  { test: path => /^(bin|web|learn)\/test\//.test(path) || path.startsWith('plugins/'), what: 'tests' },
+  { test: path => /^(bin|web|learn)\/test\//.test(path) || /^plugins\/[^/]+\/tests?\//.test(path), what: 'maintainer tests' },
+  { test: path => path.startsWith('plugins/') && !AUTHORING_PLUGINS.some(name => path.startsWith(`plugins/${name}/`)), what: 'unbundled authoring plugins' },
   { test: path => /^web\/e2e[^/]*\.mjs$/.test(path), what: 'e2e script' },
   { test: path => path.startsWith('scripts/') && path !== 'scripts/tsc.mjs', what: "maintainer script (the package runs only scripts/tsc.mjs)" },
   // An installed bridge's npm dependency on this package, which a --plugin-dir copy never installs (scripts/bridge-deps.mjs).
   { test: path => /^mods\/[^/]+\/package(-lock)?\.json$/.test(path), what: "a plugin's own package.json or lockfile" },
 ]
 /** What it must hold: the licence and the entry points each route starts from. */
-const REQUIRED = ['LICENSE', 'compat.json', 'bin/claude-mod-lab.mjs', 'web/server.mjs', 'web/public/versions.js', 'learn/check.mjs', 'scripts/tsc.mjs']
+const REQUIRED = [
+  'LICENSE', 'compat.json', 'bin/claude-mod-lab.mjs', 'web/server.mjs', 'web/public/versions.js', 'learn/check.mjs', 'scripts/tsc.mjs',
+  ...AUTHORING_PLUGINS.flatMap(name => [`plugins/${name}/.claude-plugin/plugin.json`, `plugins/${name}/skills/${name}/SKILL.md`]),
+]
 
 const failures = []
 function expect(isTrue, message) {
@@ -139,6 +144,24 @@ async function freePort() {
   return port
 }
 
+/** Verify the installed route loads skills, rather than only copying their files. */
+async function checkAuthoringSkills(api, copies) {
+  for (const name of AUTHORING_PLUGINS) {
+    expect(existsSync(join(copies, name, '.claude-plugin', 'plugin.json')), `the launcher copied ${name}`)
+    expect(existsSync(join(copies, name, 'skills', name, 'SKILL.md')), `the copied ${name} contains its skill`)
+  }
+  await api('/api/run', { probe: 'command.list', args: {} })
+  const listed = await until(
+    'the command list to come back',
+    async () => (await api('/api/state')).runs.findLast(one => one.probe === 'command.list' && one.from === 'explorer'),
+    20_000,
+  )
+  const names = listed.ok && Array.isArray(listed.value) ? listed.value.map(command => command.name) : []
+  for (const name of AUTHORING_PLUGINS) {
+    expect(names.includes(`/${name}:${name}`), `/${name}:${name} is available in the installed session`)
+  }
+}
+
 async function checkSession(bin, workspace, home, env, version, lab) {
   console.log('\n== the installed launcher, headless, in a new folder')
   const port = await freePort()
@@ -187,6 +210,7 @@ async function checkSession(bin, workspace, home, env, version, lab) {
       20_000,
     )
     expect(answered.ok === true && answered.value === workspace, 'session.cwd, run from the explorer, answered the workspace')
+    await checkAuthoringSkills(api, copies)
   } catch (error) {
     expect(false, error.message)
     console.log(output.join(''))

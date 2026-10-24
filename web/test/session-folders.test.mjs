@@ -24,7 +24,7 @@ function plugin(dir, name, manifest = {}) {
   return dir
 }
 
-/** A package root with the lab's three mods, gallery-mod and one template. */
+/** A package root with the lab's three mods, two authoring skills, gallery-mod and one template. */
 function packageIn(dir, labManifest = {}) {
   const root = join(dir, 'package')
   plugin(join(root, 'mods', 'mod-lab'), 'mod-lab', labManifest)
@@ -32,6 +32,16 @@ function packageIn(dir, labManifest = {}) {
   plugin(join(root, 'mods', 'mod-lab-target'), 'mod-lab-target')
   plugin(join(root, 'mods', 'gallery-mod'), 'gallery-mod')
   plugin(join(root, 'templates', 'band-mod'), 'band-mod')
+  for (const name of ['mod-bootstrap', 'mod-authoring-notes']) {
+    const folder = join(root, 'plugins', name)
+    mkdirSync(join(folder, '.claude-plugin'), { recursive: true })
+    mkdirSync(join(folder, 'skills', name), { recursive: true })
+    writeFileSync(join(folder, '.claude-plugin', 'plugin.json'), JSON.stringify({ name }))
+    writeFileSync(
+      join(folder, 'skills', name, 'SKILL.md'),
+      `---\nname: ${name}\ndescription: Test skill\n---\nInstructions\n`,
+    )
+  }
   return root
 }
 
@@ -67,9 +77,18 @@ test("a session loads the lab's folders in place from a git checkout, then the w
       join(root, 'mods', 'mod-lab'),
       join(root, 'mods', 'mod-lab-bridge'),
       join(root, 'mods', 'mod-lab-target'),
+      join(root, 'plugins', 'mod-bootstrap'),
+      join(root, 'plugins', 'mod-authoring-notes'),
       join(workspace, 'workshop'),
     ])
-    assert.deepEqual(loaded.names, ['mod-lab', 'mod-lab-bridge', 'mod-lab-target'])
+    assert.deepEqual(loaded.names, [
+      'mod-lab',
+      'mod-lab-bridge',
+      'mod-lab-target',
+      'mod-bootstrap',
+      'mod-authoring-notes',
+    ])
+    assert.deepEqual(loaded.missing, [])
     assert.equal(loaded.copyRoot, null)
     assert.ok(!existsSync(join(dir, 'home')), 'nothing is copied')
   }))
@@ -86,9 +105,18 @@ test('from an npm install the package folders load from copies under ~/.claude-m
       join(copies, 'mod-lab'),
       join(copies, 'mod-lab-bridge'),
       join(copies, 'mod-lab-target'),
+      join(copies, 'mod-bootstrap'),
+      join(copies, 'mod-authoring-notes'),
       join(workspace, 'workshop'),
     ])
     assert.ok(existsSync(join(copies, 'mod-lab-bridge', '.claude-plugin', 'plugin.json')))
+    for (const name of ['mod-bootstrap', 'mod-authoring-notes']) {
+      assert.equal(
+        readFileSync(join(copies, name, 'skills', name, 'SKILL.md'), 'utf8'),
+        readFileSync(join(root, 'plugins', name, 'skills', name, 'SKILL.md'), 'utf8'),
+      )
+      assert.ok(!existsSync(join(copies, name, 'hooks')), 'skill plugins do not need hooks')
+    }
     assert.ok(!existsSync(join(copies, 'gallery-mod')), 'only the lab is copied')
     assert.deepEqual(
       labFolders({ packageRoot: root, home, version: '1.2.3', inPlace: false }),
@@ -96,15 +124,29 @@ test('from an npm install the package folders load from copies under ~/.claude-m
     )
   }))
 
-test('a project session loads only the lab when no lesson workspace is selected', () =>
+test('a project session loads the lab and authoring skills without a lesson workspace', () =>
   inTemp(dir => {
     const root = packageIn(dir)
     const loaded = sessionFolders({ packageRoot: root, home: join(dir, 'home'), version: '1.2.3', inPlace: true })
-    assert.deepEqual(
-      loaded.folders,
-      labFolders({ packageRoot: root, home: join(dir, 'home'), version: '1.2.3', inPlace: true }),
-    )
+    assert.deepEqual(loaded.folders, [
+      ...labFolders({ packageRoot: root, home: join(dir, 'home'), version: '1.2.3', inPlace: true }),
+      join(root, 'plugins', 'mod-bootstrap'),
+      join(root, 'plugins', 'mod-authoring-notes'),
+    ])
     assert.ok(!existsSync(join(dir, 'home')))
+  }))
+
+test('a missing bundled skill is reported without loading a stale cached copy', () =>
+  inTemp(dir => {
+    const root = packageIn(dir)
+    const home = join(dir, 'home')
+    const options = { packageRoot: root, home, version: '1.2.3', inPlace: false }
+    sessionFolders(options)
+    rmSync(join(root, 'plugins', 'mod-bootstrap'), { recursive: true })
+    const loaded = sessionFolders(options)
+    assert.deepEqual(loaded.missing, ['mod-bootstrap'])
+    assert.ok(!loaded.names.includes('mod-bootstrap'))
+    assert.ok(!loaded.folders.includes(join(home, '.claude-mod-lab', 'plugins', '1.2.3', 'mod-bootstrap')))
   }))
 
 test('refreshCopy brings a copy in line with the package and keeps the files the engine wrote', () =>
