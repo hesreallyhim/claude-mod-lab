@@ -28,7 +28,7 @@ export function protocolMessage(theirs) {
   // claude plugin update does not follow dependencies, so the bridge's update alone would leave mod-lab behind.
   const fix =
     typeof theirs === 'number' && theirs > BRIDGE_PROTOCOL
-      ? 'update the explorer with npx claude-mod-lab@latest'
+      ? 'update the explorer with npx claude-mod-lab@alpha'
       : 'update the lab\'s plugins, each with its own claude plugin update, as the README\'s "Updating" section lists them, then run /reload-plugins in the session'
   return `the session's mod-lab-bridge ${speaks} and this explorer speaks ${BRIDGE_PROTOCOL}: ${fix}`
 }

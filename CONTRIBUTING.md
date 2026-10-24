@@ -1,10 +1,10 @@
 # Contributing to claude-mod-lab
 
-This covers working on the lab itself: setting up a clone, the checks, how the repository is laid out, how the lab handles Claude Code versions, and releases. [README.md](README.md) is for people using the lab. [docs/design.md](docs/design.md) explains how the parts fit together and the bridge protocol.
+This covers working on the lab itself: setting up a clone, the checks, how the repository is laid out, how the lab handles Claude Code versions, and releases. [README.md](README.md) is for people using the lab.
 
 ## Setting up a clone
 
-You need Claude Code, Node 22 or newer, and `npm install`, which installs TypeScript and the development tools (among them playwright-core, which `npm run e2e-page` uses to drive Google Chrome) and sets up the git hooks.
+You need Claude Code and Node 22 or newer. Run `npm ci` to install TypeScript and the development tools (among them playwright-core, which `npm run e2e-page` uses to drive Google Chrome) and set up the git hooks.
 
 In the clone, `npx claude-mod-lab run <folder>` runs the clone's own launcher, which loads the lab from `mods/` instead of copies, so an edit reaches a running session through `/reload-plugins`. `npm run explorer` runs the explorer's server on its own. `claude plugin marketplace add .` adds the marketplace from the clone; plugins installed from it are read from their folders here.
 
@@ -12,7 +12,7 @@ For lessons, create a separate workspace with `npx claude-mod-lab init-lessons <
 
 ## Commands
 
-What a person runs, in a clone or from the package:
+What a person runs, in a clone or from the package. In a clone, the unversioned `npx claude-mod-lab` command uses the local package. Outside a clone, use `npx claude-mod-lab@alpha` for the alpha release.
 
 | Command | What it does |
 | --- | --- |
@@ -38,13 +38,13 @@ What a contributor runs, as npm scripts:
 | `npm run headless` | a headless session serving the explorer, no model requests |
 | `npm run sync-compat` | copy the root `compat.json` into each plugin that reads it; `-- --check` only checks the copies |
 | `npm run pack-check` | pack the npm package and check what it holds |
-| `npm run release -- <version>` | on the maintainer's machine: bump the versions, commit them, run `pack-check`, and tag the changed plugins; `--dry-run` writes nothing |
+| `npm run release -- <version> [--all-plugins]` | on the maintainer's machine: bump the versions, commit them, run `pack-check`, and tag the changed plugins; `--dry-run` writes nothing |
 | `npm run bridge-lock` | after `npm publish`: write, check and commit mod-lab-bridge's lockfile for the published version, and tag the bridge |
 
 ## Layout
 
 ```
-docs/                the design, the append stream, mods in the desktop app, and the README's media
+docs/media/          the README's screenshots and recordings
 mods/mod-lab         the lab mod
 mods/mod-lab-bridge  the bridge mod, and the explorer's MCP server
 mods/mod-lab-target  hooks that fail on request, for /mod-lab verify
@@ -84,13 +84,22 @@ The GIFs and screenshots in `docs/media/` come from two scripts kept for retakin
 
 Releases are cut from `main`, whose head is what the marketplace serves; work happens on `develop`. A plugin's version lives in its `plugin.json` only, never also in its entry in `marketplace.json`. The npm package, mod-lab, mod-lab-bridge, mod-lab-target and mod-lab-keys share one version and move together, since the bridge protocol couples them. The templates, gallery-mod, scratch-mod, mod-bootstrap and mod-authoring-notes bump only when they change. A plugin that changed without a higher version is not offered by `claude plugin update`.
 
+For the initial alpha, use `--all-plugins` to give every shipped plugin manifest a fresh version, including lesson starters and solutions. This is an optional exception for replacing previously cached development versions; ordinary releases keep the default policy above. Preview the changes first:
+
+```sh
+npm run release -- 0.2.0 --all-plugins --dry-run
+npm run release -- 0.2.0 --all-plugins
+```
+
+The flag does not add lessons to the marketplace. Plugin tags still cover the marketplace plugins and scratch-mod; mod-lab-bridge waits for its published dependency lockfile.
+
 `claude plugin tag <folder>` tags each plugin that changed, as `<name>--v<version>`, after checking that its `plugin.json` and its marketplace entry agree; `--dry-run` shows the tag and the commands without making it.
 
 An installed mod-lab-bridge gets the explorer from the npm package: its own `package.json` names `claude-mod-lab` at the bridge's version, and Claude Code installs it from the bridge's lockfile when it installs the plugin. So a release goes in this order:
 
 1. `npm run release -- <version>` bumps the versions (the bridge's dependency included, dropping its old lockfile), commits, runs `pack-check`, and tags every changed plugin but the bridge.
-2. `npm publish <tarball>`, the tarball `pack-check` printed; a plain `npm publish` is refused.
+2. `npm publish <tarball> --tag alpha --access public`, using the tarball `pack-check` printed. The initial 0.2.0 release uses the `alpha` channel; do not publish it under `latest`. A plain `npm publish` from the repository folder is refused.
 3. `npm run bridge-lock` writes the bridge's lockfile against the registry, checks it pins the published version with npm's integrity, commits it and tags the bridge.
-4. Merge into `main`, which the marketplace serves, and push the tags.
+4. Once the npm package and bridge lockfile are ready, push `main`, which the marketplace serves, and the release tags to the release repository.
 
 `node scripts/install-check.temp.mjs` checks the installed route before any of this is published: it serves a pack of HEAD from a local npm registry and a clone over a local git server, runs `bridge-lock` there, installs the bridge into a throwaway Claude Code config, and checks that its session serves the explorer from the installed package.

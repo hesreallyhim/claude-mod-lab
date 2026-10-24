@@ -248,7 +248,7 @@ test('a bridge with another protocol number is refused, told which side to updat
   )
   assert.match(
     hub.hello({ protocol: BRIDGE_PROTOCOL + 1 }).error,
-    /: update the explorer with npx claude-mod-lab@latest$/,
+    /: update the explorer with npx claude-mod-lab@alpha$/,
   )
   assert.equal(hub.snapshot().mismatch.protocol, BRIDGE_PROTOCOL + 1)
   const { client } = hub.hello({ protocol: BRIDGE_PROTOCOL, session: { id: 's-1' } })

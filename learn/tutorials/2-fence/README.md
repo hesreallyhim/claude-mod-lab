@@ -9,7 +9,7 @@ You will build fence, a mod that keeps `.env` files away from other plugins and 
 This tutorial assumes you have done stopwatch, or know what it covers. In a terminal of its own:
 
 ```sh
-npx claude-mod-lab learn fence
+npx claude-mod-lab@alpha learn fence
 ```
 
 You build the mod in `workshop/fence/`. The checks need a plugin that reads files, so they load a second one beside yours, called reader. Its `/read <path>` command calls `$.fs.read` and answers with the text, or with why the read was refused. It is in [checks/kit.ts](checks/kit.ts) with the rest of what the checks stand on.
@@ -109,7 +109,7 @@ echo 'API_KEY=not-a-real-key' > workshop/demo.env
 Then start a session with the lab and your mod:
 
 ```sh
-npx claude-mod-lab run
+npx claude-mod-lab@alpha run
 ```
 
 1. `/mod-lab fs.read workshop/demo.env`. The probe fails with your reason, and its dispatch reads `chain: fence (user) returned`: one link, and no `engine`. The file was never read. Compare `/mod-lab fs.read README.md`, whose chain is `fence (user) returned > engine (core) returned`.
@@ -222,7 +222,7 @@ and `/mod-lab fs.read workshop/settings.toml`.
 
 ## Where next
 
-[stopwatch-pane](../3-stopwatch-pane) draws the stopwatch tutorial's mod in a pane: `npx claude-mod-lab learn stopwatch-pane`. The [challenges](../../challenges) each turn on one idea from the tutorials, starting with [only-mine](../../challenges/1-only-mine).
+[stopwatch-pane](../3-stopwatch-pane) draws the stopwatch tutorial's mod in a pane: `npx claude-mod-lab@alpha learn stopwatch-pane`. The [challenges](../../challenges) each turn on one idea from the tutorials, starting with [only-mine](../../challenges/1-only-mine).
 
 Some ways to take fence further, without checks:
 

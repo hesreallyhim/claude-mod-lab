@@ -84,7 +84,7 @@ test('finding nothing says for which version, and how to get the declarations', 
   const message = missingTypes(found)
   assert.match(message, /^No engine declarations found for Claude Code 1\.0\.9, so there is no reference/)
   assert.match(message, /never into an installed copy/)
-  assert.match(message, /npx claude-mod-lab\b.*\/plugin-authoring.*MOD_LAB_TYPES/)
+  assert.match(message, /npx claude-mod-lab@alpha\b.*\/plugin-authoring.*MOD_LAB_TYPES/)
   assert.match(missingTypes({ version: null }), /^No engine declarations found, so/)
 })
 

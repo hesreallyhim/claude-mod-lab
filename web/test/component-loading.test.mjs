@@ -124,7 +124,7 @@ test('a collection without matching session metadata explains how to launch it a
     const added = await request('/add', { name: 'gallery-mod', directory: collection })
     assert.equal(added.component.isAdded, true)
     assert.equal(added.reload.isReloaded, false)
-    assert.match(added.component.loadProblem, /npx claude-mod-lab run/)
+    assert.match(added.component.loadProblem, /npx claude-mod-lab@alpha run/)
     assert.equal(server.hub.snapshot().jobs.length, 0)
   })
 })

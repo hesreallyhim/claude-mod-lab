@@ -421,7 +421,7 @@ async function serveUntilStopped(dir, args, extraEnv = {}) {
   const said = new Promise((resolve, reject) => {
     child.stdout.on('data', chunk => {
       out += chunk
-      if (out.includes('npx claude-mod-lab run')) resolve()
+      if (out.includes('npx claude-mod-lab@alpha run')) resolve()
     })
     timer = setTimeout(() => reject(new Error(`explorer said: ${out}; stderr: ${err}`)), 20_000)
     child.once('exit', () => reject(new Error(`explorer stopped: ${out}; stderr: ${err}`)))

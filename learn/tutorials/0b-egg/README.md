@@ -20,13 +20,13 @@ You start from a mod where `/egg` already puts the timer above the prompt, but t
 This tutorial follows [tick](../0a-tick). In your workspace folder, start the checker in one terminal:
 
 ```sh
-npx claude-mod-lab learn egg
+npx claude-mod-lab@alpha learn egg
 ```
 
 and Claude Code with your mod in a second, in the same folder:
 
 ```sh
-npx claude-mod-lab run
+npx claude-mod-lab@alpha run
 ```
 
 Everything you will change is in `workshop/egg/hooks/register.tsx`.

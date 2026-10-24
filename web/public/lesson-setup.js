@@ -11,7 +11,7 @@ export function lessonSetup() {
       {},
       'You can read the lessons here. To work through them or use the Sandbox, create a dedicated folder and start a session in it:',
     ),
-    el('pre', {}, 'npx claude-mod-lab init-lessons ~/mod-lessons\nnpx claude-mod-lab run ~/mod-lessons'),
+    el('pre', {}, 'npx claude-mod-lab@alpha init-lessons ~/mod-lessons\nnpx claude-mod-lab@alpha run ~/mod-lessons'),
     el(
       'p',
       { class: 'muted' },

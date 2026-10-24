@@ -28,13 +28,13 @@ You start from a mod Claude can already call, but the mod only answers that remi
 This tutorial follows [chime](../0c-chime). In your workspace folder, start the checker:
 
 ```sh
-npx claude-mod-lab learn remind
+npx claude-mod-lab@alpha learn remind
 ```
 
 and, in a second terminal, Claude Code with your mod:
 
 ```sh
-npx claude-mod-lab run
+npx claude-mod-lab@alpha run
 ```
 
 Everything you will change is in `workshop/remind/hooks/register.ts`. Saving reloads your mod, and a reload stops the reminders still waiting: set them again after each save.

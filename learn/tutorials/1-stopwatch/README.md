@@ -16,7 +16,7 @@ This tutorial follows [remind](../0d-remind). The first four tutorials each bega
 You need Claude Code 2.1.299 or later. In a terminal of its own, open the lesson workspace initialized in [tick](../0a-tick):
 
 ```sh
-npx claude-mod-lab learn stopwatch
+npx claude-mod-lab@alpha learn stopwatch
 ```
 
 That watches `workshop/stopwatch/`, the folder you build the mod in, and checks it every time you save. Each check runs `claude plugin validate` on your folder, then this lesson's checks (the test files in [checks/](checks)) with `claude plugin test` against a copy of it, and type-checks it. It then lists the steps that pass, why the current one does not, and what the validator reads in your module. Your folder is never written to. Git ignores `workshop/`.
@@ -183,7 +183,7 @@ The status line reads `Read 40 ms`, or `Bash 2.3 s (failed)` for a command that 
 Load the mod in a session, beneath the lab. In a second terminal, in the same folder:
 
 ```sh
-npx claude-mod-lab run
+npx claude-mod-lab@alpha run
 ```
 
 That starts Claude Code with the lab (mod-lab), its bridge (mod-lab-bridge), the plugin its checks run against (mod-lab-target), the one that keeps the prompt box's changes (mod-lab-keys), and your mod. Things to try:
@@ -192,7 +192,7 @@ That starts Claude Code with the lab (mod-lab), its bridge (mod-lab-bridge), the
 2. Ask Claude to read a file that does not exist. The status line marks the Read, as `Read 15 ms (failed)`, and `/stopwatch` counts it with the rest.
 3. `/mod-lab tool.call workshop/stopwatch/hooks/register.ts` runs the lab's probe that calls the Read tool through `$.tool.call`. Its output lists each event the lab's call raised, with the chain that answered: `tool.call(...)` with `chain: stopwatch (user) returned 1.26ms > engine (core) returned 8.09ms`, and `tool.check(...)`, the permission check the engine made on the way. Your hook is a link in the first chain. A plugin's `$.tool.call` raises the same `tool.call` event as the model's calls, so the status line shows this Read too. (Run the probe on the same file again and the Read answers `file_unchanged`, Claude Code's way of saying it has not changed since the last read; the call is timed all the same.)
 4. The probe lists only the calls the lab itself makes, so your hook's two `$.clock.now` calls are not in it. To see them, have the lab watch everyone's: `/mod-lab intercept clock.now watch others`, then the probe again, then `/mod-lab intercept`. It lists two lines like `stopwatch clock.now({}) -> {"value":1792429951235}`, one before `next` and one after, each answered by the engine, and the difference between the two values is the time on the status line. `/mod-lab intercept clear` stops the watching.
-5. Ask Claude to run a command that needs your permission, such as `mkdir -p /tmp/stopwatch-test`, and wait a few seconds before you answer Yes. The status line counts the wait (`Bash 18.1 s` for a `mkdir` answered after about fifteen seconds): `next` covers the permission check as well as the tool, so the time is from the model's request to its answer, not the tool's own running time. The prompt only appears in manual mode, which the footer names (`⏸ manual mode on`). If your settings default to auto mode, which answers such prompts itself, start this session with the mode given: `npx claude-mod-lab run --permission-mode default`.
+5. Ask Claude to run a command that needs your permission, such as `mkdir -p /tmp/stopwatch-test`, and wait a few seconds before you answer Yes. The status line counts the wait (`Bash 18.1 s` for a `mkdir` answered after about fifteen seconds): `next` covers the permission check as well as the tool, so the time is from the model's request to its answer, not the tool's own running time. The prompt only appears in manual mode, which the footer names (`⏸ manual mode on`). If your settings default to auto mode, which answers such prompts itself, start this session with the mode given: `npx claude-mod-lab@alpha run --permission-mode default`.
 6. Ask Claude to run `sleep 20`, and press Esc after a few seconds. The call ends there, `next` resolves, and the status line reads `Bash 3.8 s (failed)`: the time up to the interruption. `/stopwatch` counts it.
 7. Add `throw new Error('after next')` in the `tool.call` hook, right before `return result`, and save. The transcript says `stopwatch: reloaded (3 hooks: session.start, command.run, tool.call)`. Run `/mod-lab tool.call workshop/stopwatch/hooks/register.ts` again: the chain reads `stopwatch (user) kept`, the transcript has a grey line, `stopwatch: tool.call hook skipped: threw Error: after next`, and the Read ran once and answered. The line says "skipped" for any hook that throws; the chain is where kept and skipped are told apart. Take the line out again.
 8. Run `/stopwatch`. It says "No tool calls yet." The reload threw away the totals. Each reload imports the module afresh, so its variables start over. Step 6 fixes that. The status line still shows the last call: the engine keeps it, not the module.

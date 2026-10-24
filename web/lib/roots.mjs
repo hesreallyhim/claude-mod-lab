@@ -23,7 +23,7 @@ const EMPTY_ENOUGH = new Set(['.git', '.DS_Store'])
 
 const README = `# claude-mod-lab workspace
 
-A workspace of [claude-mod-lab](https://github.com/hesreallyhim/claude-mod-lab), a playground for learning Claude Code mods. Run \`npx claude-mod-lab run\` here to start Claude Code with the lab and open the explorer.
+A workspace of [claude-mod-lab](https://github.com/hesreallyhim/claude-mod-lab), a playground for learning Claude Code mods. Run \`npx claude-mod-lab@alpha run\` here to start Claude Code with the lab and open the explorer.
 
 Your mods go in \`workshop/\`, one folder each, and the lab loads every one of them. \`.claude-mod-lab/\` holds the lab's state for this folder.
 
@@ -37,7 +37,7 @@ const GITIGNORE = `# The lab's state for this workspace.
 # What Claude Code writes into each mod it loads: the declarations, and a tsconfig.json that extends them. The mods themselves are yours to keep.
 workshop/*/.claude-plugin/types/
 workshop/*/tsconfig.json
-# The lab, where npx claude-mod-lab init-lessons . --pin installs it.
+# The lab, where npx claude-mod-lab@alpha init-lessons . --pin installs it.
 node_modules/
 `
 
@@ -86,14 +86,14 @@ export function workspaceRoot({ env = process.env, cwd = process.cwd(), home = h
  */
 export function labFolder({ folder, cwd = process.cwd(), home = homedir() }) {
   const dir = resolve(cwd, folder ?? '.')
-  refuseHome(dir, home, 'Name a lesson folder of your own: npx claude-mod-lab init-lessons my-lab.')
+  refuseHome(dir, home, 'Name a lesson folder of your own: npx claude-mod-lab@alpha init-lessons my-lab.')
   if (!existsSync(dir)) return { dir, isNew: true }
   if (!isFolder(dir)) throw new Error(`${dir} is a file. Name a new folder for the lab, or an empty one.`)
   if (isWorkspace(dir)) return { dir: real(dir), isNew: false }
   if (readdirSync(dir).every(name => EMPTY_ENOUGH.has(name))) return { dir: real(dir), isNew: true }
   throw new Error(
     folder === undefined
-      ? 'This folder is not a claude-mod-lab workspace, and not empty. Name a new folder for the lab, as in npx claude-mod-lab init-lessons my-lab, or run it in an empty one.'
+      ? 'This folder is not a claude-mod-lab workspace, and not empty. Name a new folder for the lab, as in npx claude-mod-lab@alpha init-lessons my-lab, or run it in an empty one.'
       : `${dir} is not a claude-mod-lab workspace, and not empty. Name a new folder for the lab, or an empty one.`,
   )
 }

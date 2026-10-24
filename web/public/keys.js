@@ -75,7 +75,7 @@ function whereLine(state) {
       'p',
       { class: 'hint' },
       'No session is connected. In your project directory, ',
-      el('code', {}, 'npx claude-mod-lab run'),
+      el('code', {}, 'npx claude-mod-lab@alpha run'),
       ' starts Claude Code with the lab, connected to this page.',
     )
   }

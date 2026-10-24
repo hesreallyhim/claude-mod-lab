@@ -196,7 +196,7 @@ export function homePage(ctx) {
           {},
           el('h2', {}, 'Connect a session'),
           el('p', {}, 'In your project directory, run:'),
-          el('pre', {}, 'npx claude-mod-lab run'),
+          el('pre', {}, 'npx claude-mod-lab@alpha run'),
           el(
             'p',
             {},

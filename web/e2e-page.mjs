@@ -241,7 +241,7 @@ try {
     (await page.textContent('#session')).includes(server.hub.snapshot().session.facts.id.slice(0, 8)),
     'the header names the connected session',
   )
-  const engine = await page.textContent('#engine')
+  const engine = await page.textContent('#engine .tip-value')
   expect(
     engine.startsWith(`Claude Code ${server.hub.snapshot().session.engine.version}`),
     `the header shows the session's build (${engine})`,

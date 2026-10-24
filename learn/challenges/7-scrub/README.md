@@ -3,7 +3,7 @@
 `$.process.spawn` starts a child process and hands its output to the plugin that started it a little at a time, as the output arrives. The starter hooks `process.spawn` and redacts API keys in each piece on its way. Pieces are cut wherever the child happened to write, not at line ends, though, so a key the child wrote in two parts passes: half in one piece, half in the next, neither one a whole key. Make the mod redact whole lines, pass each line on as soon as it is complete, and leave everything else as it came.
 
 ```sh
-npx claude-mod-lab learn scrub
+npx claude-mod-lab@alpha learn scrub
 ```
 
 The first run copies the [starter](starter) to `workshop/scrub/`; edit it there. A key is any of:
@@ -27,7 +27,7 @@ stdout and stderr stay apart: a line on one is never joined to text from the oth
 ## 4. See it in a session
 
 ```sh
-npx claude-mod-lab run
+npx claude-mod-lab@alpha run
 ```
 
 The lab's `process.spawn` probe has a command that writes a made-up key in two parts, a second apart. Run it:

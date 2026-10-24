@@ -26,13 +26,13 @@ Sound needs a Mac for now: the sound plays with `afplay` and the voice is macOS'
 This tutorial follows [egg](../0b-egg). In your workspace folder, start the checker:
 
 ```sh
-npx claude-mod-lab learn chime
+npx claude-mod-lab@alpha learn chime
 ```
 
 and, in a second terminal, Claude Code with your mod:
 
 ```sh
-npx claude-mod-lab run
+npx claude-mod-lab@alpha run
 ```
 
 Everything you will change is in `workshop/chime/hooks/register.ts`. The sound is `workshop/chime/sounds/chime.wav`; a mod's own files go beside its code like this.

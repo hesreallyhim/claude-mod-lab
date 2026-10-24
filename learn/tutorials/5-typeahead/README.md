@@ -9,7 +9,7 @@ You will build typeahead, a companion to the lab. It paints `/mod-lab` as you ty
 This tutorial assumes you have done [stopwatch](../1-stopwatch) and [fence](../2-fence), or know what they cover. In a terminal of its own:
 
 ```sh
-npx claude-mod-lab learn typeahead
+npx claude-mod-lab@alpha learn typeahead
 ```
 
 You build the mod in `workshop/typeahead/`. It asks the lab for its probes and runs them through `$.lab`, a noun the lab adds to `$`. The test kit does not load a mod's dependencies, so the checks load a stand-in for the lab beside your mod: six probes, each run answering `value-of-<id>`. It is in [checks/kit.ts](checks/kit.ts), with the editor, the engine's typeahead and the model the checks stand in for.
@@ -189,7 +189,7 @@ The hook makes calls before `next`, so it can fail before the prompt has passed 
 ## 6. Type it live
 
 ```sh
-npx claude-mod-lab run --model haiku
+npx claude-mod-lab@alpha run --model haiku
 ```
 
 Type `/mod-lab ses` a key at a time. `/mod-lab` is bold, the rest of `session.cwd` stands dim after the caret, and the rows beneath the box list the session probes with their descriptions; Tab takes the first. Type `/mod-lab fs.raed` and the word is underlined. `/mod-lab keys` lists each edit you made, and shows the row Tab took as a change by the engine.

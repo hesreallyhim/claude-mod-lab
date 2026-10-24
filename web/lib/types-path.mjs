@@ -19,7 +19,7 @@ export const SKILL_BASES = [
 /** How to get the declarations, for a message that found none. */
 export const HOW_TO_GET =
   'An interactive session writes them beside each plugin it loads from a folder, never into an installed copy. ' +
-  'To get them: start a session with npx claude-mod-lab run, load the plugin-authoring skill once in a session (/plugin-authoring), ' +
+  'To get them: start a session with npx claude-mod-lab@alpha run, load the plugin-authoring skill once in a session (/plugin-authoring), ' +
   'or set MOD_LAB_TYPES to a claude-code.d.ts.'
 
 /** The version `claude --version` answers, or null where there is no claude to ask. */

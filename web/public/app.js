@@ -86,7 +86,7 @@ function renderHeader() {
     pill.dataset.state = 'off'
   } else if (session === null) {
     text.textContent = 'no session connected'
-    where.textContent = 'Run npx claude-mod-lab run in your project to connect a session.'
+    where.textContent = 'Run npx claude-mod-lab@alpha run in your project to connect a session.'
     pill.dataset.state = 'off'
   } else {
     text.textContent = session.isConnected ? 'session connected' : 'session not polling'
