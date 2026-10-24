@@ -565,7 +565,7 @@ export const PROBES: readonly LabProbe[] = [
     text('text', 'explain what the last probe returned', 'the suggestion'),
   ]),
   probe('prompt.compose', 'read', "The system prompt's sections, composed without sending.", promptCompose),
-  probe('tool.list', 'read', 'The tools the model can call now, in the order it sees them.', toolList),
+  probe('tool.list', 'read', 'The list of tools available to the model.', toolList),
   probe('tool.check', 'read', 'The permission decision for a call, without running it.', toolCheck, [
     choice('call', ['Read README.md', 'Bash ls', 'Bash rm -rf build'], 'which call to ask about'),
   ]),
