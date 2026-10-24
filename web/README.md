@@ -4,6 +4,8 @@ The explorer: `server.mjs` serves the page in `public/`, builds the `$` referenc
 
 The package root is read-only. The explorer's runtime files are per-user; its startup directory is not a write destination. Explicit project actions such as Add to session target the connected session's project. Lessons, Sandbox and Workshop require an initialized lesson workspace selected by `run <lesson-directory>`. Browsing lesson material creates no files. Each mutation carries the destination shown by its page, and a changed session or workspace makes an old request fail before writing.
 
+Both server modes enforce a Content Security Policy. Scripts, stylesheets, fonts and browser connections are restricted to the same origin; images also allow data URLs for the favicon. Inline scripts, evaluation of JavaScript strings, embedded frames, form submissions and base-URL overrides are blocked. Inline style attributes remain allowed for chart and timeline dimensions. The policy is set on every response, including errors and event streams.
+
 | Variable | Default | What it sets |
 | --- | --- | --- |
 | `MOD_LAB_PORT` | `4977` | the local HTTP port; the session-owned server can use the next available port |

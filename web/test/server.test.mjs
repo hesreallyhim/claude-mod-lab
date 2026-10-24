@@ -40,6 +40,30 @@ after(async () => {
 const bridgeHeaders = () => ({ authorization: `Bearer ${server.token}`, 'content-type': 'application/json' })
 const pageHeaders = () => ({ 'x-lab-token': server.token, 'content-type': 'application/json' })
 
+test('CSP covers documents, assets, API responses and errors', async () => {
+  const paths = ['/', '/app.js', '/style.css', '/fonts/ibm-plex-mono-latin-400-normal.woff2', '/api/state', '/missing']
+  for (const path of paths) {
+    const response = await fetch(`${server.url}${path}`)
+    const policy = response.headers.get('content-security-policy')
+    assert.ok(policy, path)
+    const directives = Object.fromEntries(
+      policy.split(';').map(directive => {
+        const [name, ...sources] = directive.trim().split(/\s+/)
+        return [name, sources]
+      }),
+    )
+    for (const name of ['default-src', 'object-src', 'base-uri', 'form-action', 'frame-ancestors']) {
+      assert.deepEqual(directives[name], ["'none'"], `${path}: ${name}`)
+    }
+    for (const name of ['script-src', 'style-src', 'font-src', 'connect-src']) {
+      assert.deepEqual(directives[name], ["'self'"], `${path}: ${name}`)
+    }
+    assert.deepEqual(directives['img-src'], ["'self'", 'data:'])
+    assert.deepEqual(directives['style-src-attr'], ["'unsafe-inline'"])
+    await response.arrayBuffer()
+  }
+})
+
 test('the bridge file holds the address and token, readable by the owner alone', () => {
   const written = JSON.parse(readFileSync(bridgeFile, 'utf8'))
   assert.equal(written.url, server.url)

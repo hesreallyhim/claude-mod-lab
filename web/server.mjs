@@ -31,6 +31,20 @@ const STATIC = /^\/([a-z0-9-]+)\.(js|css)$/
 const FONT = /^\/fonts\/([a-z0-9-]+)\.woff2$/
 const TYPES = { js: 'text/javascript', css: 'text/css' }
 const MAX_BODY = 4 * 1024 * 1024
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'none'",
+  "script-src 'self'",
+  "style-src 'self'",
+  // Timeline and chart renderers set positions and sizes through style attributes.
+  "style-src-attr 'unsafe-inline'",
+  "img-src 'self' data:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "base-uri 'none'",
+  "form-action 'none'",
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+].join('; ')
 
 /** The package's compat.json, for the templates' minimums; null where it cannot be read. */
 function readCompat() {
@@ -179,6 +193,7 @@ export async function startServer({
   let address = ''
 
   const server = createServer(async (req, res) => {
+    res.setHeader('Content-Security-Policy', CONTENT_SECURITY_POLICY)
     const url = new URL(req.url ?? '/', 'http://local')
     if (req.headers.host !== address && req.headers.host !== address.replace('127.0.0.1', 'localhost')) {
       return send(res, 403, { error: 'this server answers only to its own address' })

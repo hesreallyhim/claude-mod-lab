@@ -28,6 +28,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { chromium } from 'playwright-core'
 
 import { startServer } from './server.mjs'
+import { checkContentSecurityPolicy } from './e2e-csp.mjs'
 
 const REPO = resolve(fileURLToPath(new URL('..', import.meta.url)))
 
@@ -720,6 +721,7 @@ try {
   expect(!(await page.textContent('main')).includes('[object'), 'a type page draws its declaration and doc text')
 
   expect(errors.length === 0, `no console errors${errors.length > 0 ? `: ${errors.join('; ')}` : ''}`)
+  await checkContentSecurityPolicy(page, expect)
   await stopPageCoverage?.()
 } catch (error) {
   failures.push(error.message)
