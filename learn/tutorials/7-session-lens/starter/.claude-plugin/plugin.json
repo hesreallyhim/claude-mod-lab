@@ -4,5 +4,6 @@
   "description": "Compare session notes, notices, saved JSONL, and model-message projections",
   "author": {
     "name": "Really Him"
-  }
+  },
+  "license": "MIT"
 }

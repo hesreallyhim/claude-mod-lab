@@ -1,6 +1,9 @@
 ---
 name: mod-authoring-notes
 description: Apply alongside plugin-authoring whenever making, changing, testing or debugging a Claude Code mod (a hooks module). Holds the engine, validator, test-kit and packaging facts that the plugin-authoring skill does not state and that otherwise cost a failed validate or test run each to discover. Also use when a mod moves into a larger plugin, when it is packaged for install, or when deciding how a mod reaches the model.
+license: MIT
+metadata:
+  author: Really Him
 ---
 
 # Mod authoring notes

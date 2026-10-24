@@ -4,5 +4,6 @@
   "description": "A challenge: a quiet switch that holds a timer's reminders",
   "author": {
     "name": "Really Him"
-  }
+  },
+  "license": "MIT"
 }

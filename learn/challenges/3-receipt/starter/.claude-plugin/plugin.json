@@ -4,5 +4,6 @@
   "description": "A challenge: a tool the model can call",
   "author": {
     "name": "Really Him"
-  }
+  },
+  "license": "MIT"
 }

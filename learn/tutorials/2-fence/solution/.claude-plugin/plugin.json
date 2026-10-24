@@ -4,5 +4,6 @@
   "description": "Keeps .env files from plugins' reads and the model's Read tool",
   "author": {
     "name": "Really Him"
-  }
+  },
+  "license": "MIT"
 }

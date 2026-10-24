@@ -2,6 +2,9 @@
 name: mod-bootstrap
 description: Scaffold a new Claude Code mod, a plugin of function hooks, in a folder of the person's own. Writes .claude-plugin/plugin.json, hooks/hooks.json, hooks/register.ts, types/index.d.ts, a test and a README, then validates and tests the result. Use when asked to create, start, scaffold or bootstrap a mod.
 argument-hint: "[name]"
+license: MIT
+metadata:
+  author: Really Him
 ---
 
 # mod-bootstrap

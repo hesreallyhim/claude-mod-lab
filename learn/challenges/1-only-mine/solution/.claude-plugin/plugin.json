@@ -4,5 +4,6 @@
   "description": "A challenge: answer your own calls on $ and no one else's",
   "author": {
     "name": "Really Him"
-  }
+  },
+  "license": "MIT"
 }

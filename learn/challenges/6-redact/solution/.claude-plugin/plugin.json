@@ -4,5 +4,6 @@
   "description": "A challenge: redact before it is stored",
   "author": {
     "name": "Really Him"
-  }
+  },
+  "license": "MIT"
 }

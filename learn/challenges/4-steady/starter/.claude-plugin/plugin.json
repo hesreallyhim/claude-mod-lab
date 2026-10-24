@@ -4,5 +4,6 @@
   "description": "A challenge: tell the model the branch without changing the system prompt",
   "author": {
     "name": "Really Him"
-  }
+  },
+  "license": "MIT"
 }

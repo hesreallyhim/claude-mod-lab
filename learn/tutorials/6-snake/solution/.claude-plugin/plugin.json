@@ -4,5 +4,6 @@
   "description": "A game of snake in a pane, played in a Client, the best score kept by the hooks module",
   "author": {
     "name": "Really Him"
-  }
+  },
+  "license": "MIT"
 }

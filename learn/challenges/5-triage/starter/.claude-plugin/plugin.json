@@ -4,5 +4,6 @@
   "description": "A challenge: label every prompt, cheaply",
   "author": {
     "name": "Really Him"
-  }
+  },
+  "license": "MIT"
 }

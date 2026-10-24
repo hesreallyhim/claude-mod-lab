@@ -4,5 +4,6 @@
   "description": "Reminders Claude can set for you: said aloud when they go off, and passed back to Claude to remind you",
   "author": {
     "name": "Really Him"
-  }
+  },
+  "license": "MIT"
 }

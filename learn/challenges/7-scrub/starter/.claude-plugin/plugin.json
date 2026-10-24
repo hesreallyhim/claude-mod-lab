@@ -4,5 +4,6 @@
   "description": "A challenge: redact a stream as it passes",
   "author": {
     "name": "Really Him"
-  }
+  },
+  "license": "MIT"
 }
