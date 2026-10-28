@@ -38,6 +38,7 @@
   "scripts": {
     "prepare": "husky",
     "check": "npm run validate && npm run typecheck && npm test && npm run learn:solutions && npm run check:web && npm run lines",
+    "check:local": "npm run check && npm run test:browser && npm run e2e && npm run e2e-page",
     "validate": "node scripts/plugins.mjs validate",
     "typecheck": "node scripts/typecheck.mjs",
     "test": "npm run test:mods && npm run test:web && npm run test:learn && npm run test:plugins && npm run test:bin && npm run test:scripts",
@@ -47,6 +48,7 @@
     "test:plugins": "node --test 'plugins/*/test/*.test.mjs'",
     "test:bin": "node --test 'bin/test/*.test.mjs'",
     "test:scripts": "node --test 'scripts/test/*.test.mjs'",
+    "test:browser": "node web/e2e-agent-transcript.mjs && node web/e2e-components.mjs && node web/e2e-content.mjs && node web/e2e-guidance.mjs && node web/e2e-home.mjs && node web/e2e-intercepts.mjs && node web/e2e-lesson-progress.mjs && node web/e2e-navigation.mjs && node web/e2e-workspaces.mjs",
     "learn:solutions": "node learn/check.mjs --solutions",
     "e2e": "node web/e2e.mjs",
     "e2e-page": "node web/e2e-page.mjs",

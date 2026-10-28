@@ -1,4 +1,4 @@
-// Run with node web/e2e-lesson-progress.mjs. Real lesson metadata and DOM; no session or model calls.
+// Run with node web/e2e-lesson-progress.mjs. Real lesson IDs/titles and DOM; no session or model calls.
 /* global document */
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
@@ -6,15 +6,17 @@ import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright-core'
 import { loadLessons } from '../learn/lib/lessons.mjs'
 
+const SESSION_VERSION = '2.1.303'
+// Keep catalog lessons eligible in this fixture; the explicit future lesson below tests version gating.
 const lessons = loadLessons(fileURLToPath(new URL('../learn', import.meta.url))).map(lesson => ({
   id: lesson.id,
   title: lesson.title,
-  minVersion: lesson.minVersion,
+  minVersion: SESSION_VERSION,
   progress: lesson.id === 'tick' ? { passed: 4, total: 4 } : null,
 }))
 
 /** @param {import('playwright-core').Page} page */
-async function render(page, lessons, version = '2.1.303') {
+async function render(page, lessons, version = SESSION_VERSION) {
   await page.evaluate(
     async ({ lessons, version }) => {
       const module = '/lesson-catalog.js'

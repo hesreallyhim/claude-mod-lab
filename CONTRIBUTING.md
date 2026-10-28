@@ -64,9 +64,19 @@ Installing a marketplace copy is a separate installation test. The local develop
 
 Run these from the repository root.
 
+For the full local development check, including browser tests and live-session E2E tests, run:
+
+```sh
+npm run check:local
+```
+
+This runs `check`, `test:browser`, `e2e`, and `e2e-page` in order and stops on the first failure. It checks the working tree, including uncommitted edits. Use Node 24, install dependencies with `npm ci`, and have Claude Code with mod support on `PATH` and Google Chrome installed. The mod type checks also need Claude Code's generated declarations; set `MOD_LAB_TYPES` to the path of `claude-code.d.ts` if they are not discovered automatically. The E2E tests start their own servers and sessions and do not make model requests.
+
 | Script | What it does |
 | --- | --- |
-| `npm run check` | validate and type-check every mod and lesson, run all tests, check every lesson's solution, and check the web app's formatting, lint, types, coverage and line limit |
+| `npm run check:local` | run `check`, all standalone browser suites, and both live-session E2E suites sequentially |
+| `npm run check` | validate and type-check every mod and lesson, run the mod and Node test suites, check every lesson's solution, and check the web app's formatting, lint, types, coverage and line limit; excludes browser and live-session E2E suites |
+| `npm run test:browser` | run all nine standalone browser suites in Google Chrome: agent transcripts, components, content, guidance, home, intercepts, lesson progress, navigation, and workspaces |
 | `npm run validate` | strictly validate the marketplace and every plugin manifest, including lesson starters and solutions |
 | `npm run e2e` | the server and a headless session, checked end to end |
 | `npm run e2e-page` | the same through the page, in the installed Google Chrome |
@@ -76,11 +86,13 @@ Run these from the repository root.
 | `npm run release -- <version> [--all-plugins]` | on the maintainer's machine: bump the versions, commit them, run `pack-check`, and tag the changed plugins; `--dry-run` writes nothing |
 | `npm run bridge-lock` | after `npm publish`: write, check and commit mod-lab-bridge's lockfile for the published version, and tag the bridge |
 
+Packaging and marketplace-installation checks are separate release checks: `npm run pack-check` and `node scripts/install-check.mjs`. Both package committed `HEAD`, so commit the changes you intend to test first. They use temporary installation directories and require npm dependencies from the cache or registry; the marketplace-installation check also needs network access and Git's HTTP backend. Neither is included in `check:local`.
+
 ## Continuous integration
 
 The [CI workflow](.github/workflows/ci.yml) runs on pull requests and pushes to `main`, and can be started manually. It checks current Node 22.x and 24.x on Ubuntu with `npm ci`, `npm run check:web`, `npm run test:bin`, `npm run test:scripts`, the lesson parsing and start tests, and `npm run lines`.
 
-These checks do not require Claude Code, credentials, or generated engine declarations. The full `npm run check`, live session and browser E2E tests, and installed-package checks still run locally with Claude Code available. Publishing remains a local maintainer operation.
+These checks do not require Claude Code, credentials, or generated engine declarations. Run `npm run check:local` for the full local development suite; it uses the Node version active in your shell, while CI checks both Node 22 and 24. Installed-package checks also run locally with Claude Code available. Publishing remains a local maintainer operation.
 
 ## Claude Code versions
 
