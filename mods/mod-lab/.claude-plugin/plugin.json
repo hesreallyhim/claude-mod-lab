@@ -1,6 +1,6 @@
 {
   "name": "mod-lab",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Run mod API calls in a live session and inspect their results and dispatched events",
   "license": "MIT",
   "author": {

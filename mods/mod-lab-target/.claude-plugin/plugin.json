@@ -1,6 +1,6 @@
 {
   "name": "mod-lab-target",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Triggers intentional hook failures so /mod-lab verify can check how Claude Code handles them",
   "license": "MIT",
   "author": { "name": "Really Him" }

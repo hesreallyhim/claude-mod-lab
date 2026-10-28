@@ -1,6 +1,6 @@
 {
   "name": "claude-mod-lab",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "A comprehensive workbench for Claude Code mods. Explore the mod API, trace the interaction of mods in a live session, and learn how to build your own mods from the ground up",
   "license": "MIT",
