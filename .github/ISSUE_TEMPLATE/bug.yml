@@ -1,0 +1,74 @@
+name: Bug report
+description: Report something that does not work as expected.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a suspected vulnerability, please [report it privately](https://github.com/hesreallyhim/claude-mod-lab/security/advisories/new) instead of opening an issue.
+
+        Share a small reproduction and the environment where it happened. Remove secrets, private prompts, and identifying paths from logs and screenshots.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe what you expected and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include the launch command, relevant flags, and the actions or mod code needed to reproduce the problem.
+      placeholder: |
+        1. Start the lab with ...
+        2. Open ...
+        3. Run ...
+    validations:
+      required: true
+  - type: input
+    id: lab-version
+    attributes:
+      label: claude-mod-lab version and installation method
+      description: Use --version with the same installation you launched. For a clone, include the commit. Say whether you used npx, a project dependency, or the plugin marketplace. Enter unknown if unavailable.
+      placeholder: "0.2.0 via npx; or mod-lab-bridge plugin version ..."
+    validations:
+      required: true
+  - type: input
+    id: claude-version
+    attributes:
+      label: Claude Code version
+      description: Prefer the connected session's Runtime version in the Explorer header. For a terminal session, claude --version also helps. Other clients can run a different build. Enter unknown if unavailable.
+      placeholder: "2.1.312"
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: Claude Code client
+      description: Name the client and its version if available. Include whether the session runs locally or remotely.
+      placeholder: "Terminal CLI, desktop app, VS Code extension, web, or another client"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system and version
+      description: Include WSL, containers, or remote hosts if relevant. If the browser and session run on different machines, describe both.
+      placeholder: "macOS ...; Ubuntu ...; Windows ... with WSL2 Ubuntu ..."
+    validations:
+      required: true
+  - type: textarea
+    id: runtime
+    attributes:
+      label: Node, npm, and browser versions
+      description: Include node --version and npm --version when available. For Explorer issues, include the browser name/version and whether a session was connected.
+      placeholder: |
+        Node:
+        npm:
+        Browser:
+        Session connected: yes / no
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs, screenshots, and other context
+      description: Paste relevant errors or attach screenshots. Mention other loaded plugins if they may be involved. Review everything for private information before submitting.

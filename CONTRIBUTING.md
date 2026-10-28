@@ -2,6 +2,10 @@
 
 This guide covers developing the lab itself: local setup, checks, repository layout, compatibility decisions, and releases. For using the lab, see the [README](README.md).
 
+Use the [issue forms](https://github.com/hesreallyhim/claude-mod-lab/issues/new/choose) for bugs, feature requests, and documentation feedback. Community participation follows our [Code of Conduct](CODE_OF_CONDUCT.md). Report suspected vulnerabilities through the private channel in our [security policy](SECURITY.md).
+
+Every pull request must link to an issue. Open an issue first if none exists. Use `Closes #123` when the PR resolves the issue, or `Related to #123` for partial or supporting work.
+
 ## Setting up a clone
 
 Use Node 24 for development. Run `npm ci` to install TypeScript and the development tools (among them playwright-core, which `npm run e2e-page` uses to drive Google Chrome) and set up the git hooks.

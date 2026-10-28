@@ -1,0 +1,22 @@
+name: Documentation feedback
+description: Report unclear, incorrect, or missing documentation.
+body:
+  - type: input
+    id: location
+    attributes:
+      label: Where is the documentation?
+      description: Link to the page, file, or lesson, or name the Explorer tab and section. For missing documentation, say where you looked.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is unclear, incorrect, or missing?
+      description: Include the relevant passage and what you were trying to understand or do.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested correction or context
+      description: Optional. Suggest wording or an example. For instructions that did not work, include the command and your lab and Claude Code versions.
