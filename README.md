@@ -11,7 +11,7 @@ A comprehensive workbench for Claude Code mods. Explore the mod API, trace the i
 
 **Requirements:**
 
-* Claude Code with mod support (minimum version: 2.1.299), with `claude` on your PATH for the launcher
+* Claude Code with mod support, with `claude` on your PATH for the launcher
 * Node.js 22 or newer
 * macOS or Linux
 
@@ -85,7 +85,7 @@ The local server serves the browser explorer and API reference. The `mod-lab-bri
 npx claude-mod-lab run ~/code/my-project -- --model haiku
 ```
 
-The launcher supplies the lab and project plugin folders through `--plugin-dir`, alongside your Claude Code flags. It creates `.claude/mod-lab/` in the project for editable Gallery and Prompt box examples. Use `npx claude-mod-lab --help` for launcher options.
+The launcher supplies the lab and example folders through `--plugin-dir`, alongside your Claude Code flags. By default, it uses `~/.claude-mod-lab/examples/` and creates no directories in your project. Use `run --local` for project examples in `.claude/mod-lab/`. Use `npx claude-mod-lab --help` for launcher options.
 
 To browse before connecting a session, run `npx claude-mod-lab` on its own. This starts or opens an explorer without creating project files. Later, `run` connects a new session to an available explorer or starts one for that session. With the bridge already loaded in an existing session, use `/mod-lab explorer` instead.
 
@@ -104,9 +104,22 @@ npx claude-mod-lab run ~/mod-lessons
 
 The terminal initializer accepts a new, empty, or already initialized lesson directory. Working mods go in `workshop/`, reference solutions in `solutions/`, and progress in `.claude-mod-lab/`. Each lesson starts from a working mod; edit it, let the session reload it as you save, and use the lesson page to check your work. Return later with the same `run` command. See the [lesson guide](learn/README.md) for details.
 
+From the lesson workspace, `npx claude-mod-lab learn` lists lessons and progress. Use `npx claude-mod-lab learn <lesson>` to check a lesson on each save, or add `--once` to check once and exit.
+
 ## Adding and writing mods
 
-In the Gallery or Prompt box page, **Add to project** copies an example into `.claude/mod-lab/<name>/` in a launcher-started project and requests a plugin reload. The copy is yours to edit and remains in the project. Follow the example's command or interaction instructions to try it. File-copy and reload results are shown separately; if a mod does not appear, check those results and confirm that the session was started with `run` in the intended project. Older copies in `.claude/skills/` are preserved and also loaded by the launcher.
+In the Gallery or Prompt box page, **Add to lab** copies an example into `~/.claude-mod-lab/examples/<name>/` and requests a plugin reload when the session watches that folder. These editable copies are shared by lab sessions; edits and removal affect every session using them. Run an example’s command to activate it separately in each session. Prompt-box examples, `band-mod`, and `sites-mod` start inactive; `/<name> off` disables them again. Each example shows its destination, activation instructions, and reload result.
+
+From the terminal, list the examples or add one to your shared lab:
+
+```sh
+npx claude-mod-lab examples list
+npx claude-mod-lab examples add raster-mod
+```
+
+These are complete, runnable mods; see the [examples](examples/README.md) for what each does. Start the project with `npx claude-mod-lab run`, or run `/reload-plugins` in an existing session started in shared mode after adding one. For project-specific copies, use the adjacent **Add to project** button or `examples add <name> --local`. These copies load in sessions started with `run --local`; adding them from shared mode requires a restart with that flag. Existing copies in `.claude/skills/` are preserved and loaded in local mode. For a project starter mod to build on, use `npx claude-mod-lab examples add scratch-mod --local`.
+
+Inside a session, `/mod-lab add gallery` adds the complete Gallery mod to your shared lab; `/mod-gallery` opens it. `/mod-lab add <example-name>` adds an individual example, and `--local` chooses the project destination. The command reports whether the destination is watched by the current session and how to load the copy.
 
 The launcher includes **`/mod-bootstrap:mod-bootstrap`**, an authoring skill that scaffolds a mod's manifest, hooks, types, test, and README, then validates and tests it. Ask Claude to help write a mod, or invoke the skill directly. For installation outside launcher-started sessions, see [mod-bootstrap](plugins/mod-bootstrap/README.md).
 
@@ -116,9 +129,51 @@ The launcher includes **`/mod-bootstrap:mod-bootstrap`**, an authoring skill tha
 
 To request the latest published package explicitly, use `npx claude-mod-lab@latest run`. Unversioned `npx claude-mod-lab` can use a locally installed version. Add `--pin` when initializing a lesson workspace to install that initializer's exact package version there, or use `npx claude-mod-lab@<version>` to select a release explicitly.
 
+## Project Structure
+
+<!-- treestamp:start -->
+<!-- treestamp:config
+hidden = [".c8rc.json", ".git-blame-ignore-revs", ".gitignore", ".husky", ".prettierignore", ".prettierrc.json", "CONTRIBUTING.md", "LICENSE", "assets", "eslint.config.mjs", "examples/README.md", "lint-staged.config.mjs", "package-lock.json", "package.json", "tsconfig.web-node.json", "tsconfig.web.json"]
+-->
+```sh
+./
+├── .claude-plugin/  # claude plugin marketplace manifest
+├── bin/  # the claude-mod-lab command
+├── examples/
+│   ├── band-mod/
+│   ├── brackets-mod/
+│   ├── draft-keeper-mod/
+│   ├── hover-mod/
+│   ├── image-mod/
+│   ├── keycast-mod/
+│   ├── links-mod/
+│   ├── paint-mod/
+│   ├── paste-guard-mod/
+│   ├── raster-mod/
+│   ├── shortcodes-mod/
+│   ├── sites-mod/
+│   └── svg-mod/
+├── learn/  # tutorials, challenges, and the solution checker
+├── mods/
+│   ├── gallery-mod/  # rendering techniques
+│   ├── mod-lab/  # the lab mod
+│   ├── mod-lab-bridge/  # the bridge mod, and the explorer's MCP server
+│   ├── mod-lab-keys/  # the prompt box's changes, for /mod-lab keys
+│   ├── mod-lab-target/  # hooks that fail on request, for /mod-lab verify
+│   └── scratch-mod/  # a loadable scratch mod for pattern exercises
+├── plugins/
+│   └── mod-bootstrap/  # scaffold a mod directory
+├── scripts/  # the npm scripts' code: validation, type-checks, packing, releases
+├── web/  # the explorer server, page, and tests
+└── README.md
+```
+<!-- treestamp:end -->
+
+<sub>(maintained by [treestamp](https://github.com/reponomics/treestamp))</sub>
+
 ## Contributing
 
-Contributions are welcome. Open an issue to report a bug or suggest a feature. See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, repository layout, checks, and releases.
+Contributions are welcome. Open an issue to report a bug or suggest a feature. For bugs, include the Claude Code version shown in the explorer, your client (terminal, desktop, or VS Code), operating system, and the action or error you encountered. See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, local checks, and release management information.
 
 ## License
 

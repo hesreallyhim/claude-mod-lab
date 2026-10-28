@@ -22,7 +22,7 @@ const lesson = {
   steps: [],
   progress: null,
 }
-const component = { name: 'test-mod', isAdded: false, isForeign: false, isEdited: false, howToTry: null, since: null }
+const component = { name: 'test-mod', isAdded: false, isForeign: false, isEdited: false, howToTry: null }
 const files = { module: '', contract: '', test: '' }
 const workshopMod = {
   name: 'tick-mod',
@@ -56,7 +56,7 @@ function answer(path) {
       readme: '# A stopwatch\n\nRead this lesson before setting up a workspace.',
       ...context,
     }
-  if (path === '/api/sandbox') return { dir: 'workshop/sandbox-mod', files, blank: files, templates: [], ...context }
+  if (path === '/api/sandbox') return { dir: 'workshop/sandbox-mod', files, blank: files, examples: [], ...context }
   if (path === '/api/workshop')
     return { settings: '.claude/settings.local.json', mods: context.lessonWorkspace ? [workshopMod] : [], ...context }
   if (path === '/api/components')

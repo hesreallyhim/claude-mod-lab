@@ -1,7 +1,7 @@
 {
   "name": "mod-bootstrap",
   "version": "0.2.0-beta.2",
-  "description": "A skill that scaffolds a new mod: its manifest, hooks.json, a hooks module with one command, a type contract, a test and a README",
+  "description": "A skill that creates a working starter mod with hooks, types, tests, and a README",
   "license": "MIT",
   "author": {
     "name": "Really Him"

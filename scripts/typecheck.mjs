@@ -42,9 +42,9 @@ const everything = () => [
     include: ['hooks', 'types', 'tests'].map(part => join(REPO, 'mods', mod, part)),
     files: dependencies.map(dependency => join(REPO, 'mods', dependency, 'types', 'index.d.ts')),
   })),
-  ...readdirSync(join(REPO, 'templates'))
-    .filter(name => existsSync(join(REPO, 'templates', name, '.claude-plugin', 'plugin.json')))
-    .map(name => ({ name: `templates/${name}`, include: ['hooks', 'types', 'tests'].map(part => join(REPO, 'templates', name, part)), files: [] })),
+  ...readdirSync(join(REPO, 'examples'))
+    .filter(name => existsSync(join(REPO, 'examples', name, '.claude-plugin', 'plugin.json')))
+    .map(name => ({ name: `examples/${name}`, include: ['hooks', 'types', 'tests'].map(part => join(REPO, 'examples', name, part)), files: [] })),
   ...loadLessons(join(REPO, 'learn')).flatMap(lesson =>
     // A starter elsewhere (another lesson's solution) is checked there.
     ['solution', 'starter']

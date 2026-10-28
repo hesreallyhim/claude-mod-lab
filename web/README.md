@@ -12,7 +12,7 @@ Both server modes enforce a Content Security Policy. Scripts, stylesheets, fonts
 | `MOD_LAB_BRIDGE_FILE` | `~/.claude-mod-lab/bridge.json` | the connection file for an explicitly selected standalone explorer; prefer the CLI's `--port` option for separate instances |
 | `MOD_LAB_TYPES` | discovered locally | the declaration file used for the reference |
 | `MOD_LAB_LESSONS` | unset | the initialized lesson workspace; the launcher sets it only for a lesson session |
-| `MOD_LAB_WORKSPACE` | working directory | the workspace for the `learn` and `add` CLI tools; the explorer does not read it to select lessons |
+| `MOD_LAB_WORKSPACE` | working directory | the workspace for the `learn` and `examples add` CLI commands; the explorer does not read it to select lessons |
 
 The bridge greeting names the selected lesson workspace independently of the session's project. `/api/context` reports both paths and the bridge protocol. The server keeps lesson checkers separate from project component destinations, and closes obsolete lesson watches when the context changes.
 

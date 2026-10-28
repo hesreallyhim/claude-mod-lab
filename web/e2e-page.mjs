@@ -622,7 +622,7 @@ try {
   const tests = await page.locator('main ul.tests li').allTextContents()
   expect(
     tests.length === 3 && tests.every(line => line.startsWith('✓')),
-    `a template loaded into the sandbox is saved and its tests pass (${tests.join(' | ')})`,
+    `an example loaded into the sandbox is saved and its tests pass (${tests.join(' | ')})`,
   )
   if (process.env.SCREENSHOT)
     await page.locator('main').screenshot({ path: process.env.SCREENSHOT.replace(/\.png$/, '-sandbox.png') })

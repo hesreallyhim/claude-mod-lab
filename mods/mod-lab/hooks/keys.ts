@@ -8,7 +8,6 @@ import { atom, read, update } from 'claude-code'
 import type { ClientKeyEvent, EngineInterface, PluginState, PromptEditInput, PromptEditResult, Register } from 'claude-code'
 
 import type { LabKey, LabKeys } from '../types'
-import { isPluginMissing } from './compat'
 import { clock } from './format'
 import { serial } from './runner'
 
@@ -108,7 +107,7 @@ function note($: Dollar, change: (kept: LabKeys) => LabKeys): void {
   void serial(() => flush($))
 }
 
-/** The change rows mod-lab-keys keeps; null where it has kept none, as where its build refused it. */
+/** The change rows mod-lab-keys keeps; null when its state is unavailable. */
 async function keptChanges($: Dollar): Promise<KeyChanges | null> {
   try {
     const { value } = await $.state.get({ plugin: 'mod-lab-keys', key: 'changes' })
@@ -118,12 +117,9 @@ async function keptChanges($: Dollar): Promise<KeyChanges | null> {
   }
 }
 
-/** Why the log holds no change rows: mod-lab-keys needs a newer Claude Code, or none made yet. */
+/** Explain where changes made outside prompt.edit are recorded. */
 function changesNote(kept: LabKeys): string | null {
   if (kept.rows.some(row => row.kind === 'change')) return null
-  if (isPluginMissing('mod-lab-keys')) {
-    return 'Changes made some other way (going back to an earlier prompt, clearing the box, text a plugin put there) are kept by mod-lab-keys, which needs a newer version of Claude Code.'
-  }
   return "No change has come another way yet: mod-lab-keys keeps those (going back to an earlier prompt, clearing the box, text a plugin put there) as they come."
 }
 
@@ -155,8 +151,7 @@ export const registerKeys: Register = on => {
     return result
   }).catch(($, e, next) => next(e))
 
-  // mod-lab-keys hooks prompt.change, which builds before 2.1.300 lack, so the
-  // lab never does; each change it keeps joins the log here, as it is written.
+  // mod-lab-keys records prompt.change; each change joins the log here as it is written.
   on('state.set', { plugin: 'mod-lab-keys', key: 'changes' }, async ($, e, next) => {
     const result = await next(e)
     const changes = e.value.rows

@@ -3,7 +3,7 @@ import type { Plugin } from 'claude-code/testing'
 import type { On, PromptEditInput, PromptEditResult } from 'claude-code'
 
 import { keyName } from '../hooks/keys'
-import { compatText, lab, labStart, slash } from './kit'
+import { lab, slash } from './kit'
 
 /** The editor beneath the plugins: applies each splice to the draft, as the engine does. */
 function editor(on: On, then: (box: { text: string; cursor: number }) => object = box => box): void {
@@ -75,20 +75,6 @@ test("a change mod-lab-keys kept that the lab's hook did not see is read from it
 
   expect(report).toContain('change by history, 12 chars, cursor 3')
   expect(report.split('change by history')).toHaveLength(2)
-})
-
-test('without mod-lab-keys, on a build older than it needs, /mod-lab keys shows the edits and says change rows need that build', async ($, on) => {
-  editor(on)
-  await labStart($, on, {
-    version: '3.0.10',
-    compat: compatText({ floor: '3.0.10', testedThrough: '3.0.30', plugins: { 'mod-lab-keys': { since: '3.0.20', uses: ['prompt.change'] } } }),
-  }).start()
-
-  await edit($, typed('', 'a', { key: 'a' }))
-  const report = (await $.command.run(lab('keys'))).text ?? ''
-
-  expect(report).toContain('1 edit as typed, 0 changes another way')
-  expect(report).toContain('kept by mod-lab-keys, which needs a newer version of Claude Code.')
 })
 
 test('a key is named with its modifiers, and a character typed plain only as text', () => {

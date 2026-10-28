@@ -3,18 +3,19 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { loadLessons } from '../../learn/lib/lessons.mjs'
 import { copyLessonSolution, startLesson } from '../../learn/lib/start.mjs'
-import { componentFolder } from './component-folders.mjs'
+import { componentFolder, sharedComponentFolder } from './component-folders.mjs'
 import { createComponents } from './components.mjs'
+import { exampleCollection } from './example-collections.mjs'
 import { installedCopies, skillsCopyNote } from './installed.mjs'
 import { checkSummary, createLessonChecks } from './lesson-checks.mjs'
 import { prepareLessonLink } from './lesson-loading.mjs'
 import { openLesson, readProgress } from './progress.mjs'
 import { PACKAGE_ROOT } from './roots.mjs'
-import { BLANK, createSandbox, templateFiles, templateNames } from './sandbox.mjs'
+import { BLANK, createSandbox, exampleFiles, exampleNames } from './sandbox.mjs'
 import { listWorkshop, SETTINGS, switchMod } from './workshop.mjs'
 
 const LEARN = join(PACKAGE_ROOT, 'learn')
-const TEMPLATES = join(PACKAGE_ROOT, 'templates')
+const EXAMPLES = join(PACKAGE_ROOT, 'examples')
 const RELOAD_WAIT_MS = 5_000
 
 /** All requests use destinations captured in their page, so a stale tab cannot write to a newly connected project. */
@@ -24,7 +25,6 @@ export function createBuildApi({
   send,
   readBody,
   currentTypes,
-  compat,
   sandboxDir,
   skillsDir,
   lessonChecks,
@@ -59,12 +59,18 @@ export function createBuildApi({
     return createSandbox(sandboxDir ?? join(root, 'workshop', 'sandbox-mod'), { currentTypes })
   }
 
-  function components(project) {
+  function components(project, scope) {
+    if (scope !== undefined) return exampleCollection(PACKAGE_ROOT, project, scope)
     const collection = componentFolder(project)
     const legacy = join(project, '.claude', 'skills')
-    const destination = skillsDir ?? (existsSync(collection) ? collection : legacy)
+    const session = hub.snapshot().session
+    const advertised = session?.facts.cwd === project ? session.lab?.examplesDir : null
+    if (advertised && ![collection, sharedComponentFolder()].includes(advertised)) {
+      throw new Error('The session reported an unrecognized examples directory. Restart it with claude-mod-lab run.')
+    }
+    const destination = skillsDir ?? advertised ?? (existsSync(collection) ? collection : legacy)
     return createComponents({
-      templatesDir: TEMPLATES,
+      examplesDir: EXAMPLES,
       skillsDir: destination,
       legacyDir: destination === collection ? legacy : null,
       others: { 'gallery-mod': join(PACKAGE_ROOT, 'mods', 'gallery-mod') },
@@ -100,15 +106,15 @@ export function createBuildApi({
       dir: own?.dir ?? null,
       files: own?.read() ?? BLANK,
       blank: BLANK,
-      templates: templateNames(TEMPLATES),
+      examples: exampleNames(EXAMPLES),
     }
   }
 
   async function sandboxApi(req, res, url) {
     if (url.pathname === '/api/sandbox' && req.method === 'GET') return send(res, 200, sandboxInfo())
-    if (url.pathname === '/api/sandbox/template' && req.method === 'GET') {
-      const files = templateFiles(TEMPLATES, url.searchParams.get('name') ?? '')
-      return files === null ? send(res, 404, { error: 'no such template' }) : send(res, 200, { files })
+    if (url.pathname === '/api/sandbox/example' && req.method === 'GET') {
+      const files = exampleFiles(EXAMPLES, url.searchParams.get('name') ?? '')
+      return files === null ? send(res, 404, { error: 'no such example' }) : send(res, 200, { files })
     }
     if (req.method !== 'POST') return send(res, 404, { error: 'not found' })
     const body = await readBody(req)
@@ -129,23 +135,25 @@ export function createBuildApi({
     if (!session?.isConnected || session.facts.cwd !== project) return false
     const directories = session.lab?.componentDirs
     if (!Array.isArray(directories)) return false
-    return (
-      (component.directory === componentFolder(project) && directories.includes(component.directory)) ||
-      directories.includes(join(component.directory, component.name))
-    )
+    return directories.includes(component.directory) || directories.includes(join(component.directory, component.name))
   }
 
-  async function inspectComponents(names, project) {
-    const own = components(project)
-    const discovered = names.filter(name => !suppliedToSession(own.view(name), project))
+  async function inspectComponents(names, project, own = components(project)) {
+    const discovered = names.filter(name => {
+      const component = own.view(name)
+      return (
+        ![componentFolder(project), sharedComponentFolder()].includes(component.directory) &&
+        !suppliedToSession(component, project)
+      )
+    })
     if (discovered.length === 0) return { copies: [], problem: null }
     return installed ? installed(discovered) : installedCopies(discovered, { cwd: project })
   }
 
   function componentProblem(component, project, inspection) {
     if (suppliedToSession(component, project)) return null
-    if (component.directory === componentFolder(project))
-      return 'This folder is loaded by the lab launcher. Start a session with npx claude-mod-lab run in this project to use these mods.'
+    if ([componentFolder(project), sharedComponentFolder()].includes(component.directory))
+      return `This folder is loaded by the lab launcher. Start a session with npx claude-mod-lab run${component.directory === componentFolder(project) ? ' --local' : ''} to use these mods.`
     const copy = inspection.copies.find(one => one.name === component.name || one.id.split('@')[0] === component.name)
     return inspection.problem ?? (copy === undefined ? null : skillsCopyNote(copy))
   }
@@ -154,11 +162,18 @@ export function createBuildApi({
     const snapshot = hub.snapshot()
     const commands = snapshot.mirror.commands
     const connected = snapshot.session?.isConnected && snapshot.session.facts.cwd === project
-    const commandAvailable =
-      connected && Array.isArray(commands)
+    const isSupplied = suppliedToSession(component, project)
+    const commandEligible =
+      isSupplied || ![componentFolder(project), sharedComponentFolder()].includes(component.directory)
+    const commandAvailable = !commandEligible
+      ? false
+      : connected && Array.isArray(commands)
         ? commands.some(one => one?.name === component.command && one?.plugin === component.name)
         : null
-    return { ...component, commandAvailable }
+    const scope = [componentFolder(project), join(project, '.claude', 'skills')].includes(component.directory)
+      ? 'local'
+      : 'shared'
+    return { ...component, commandAvailable, scope, isSupplied, commandEligible }
   }
 
   async function componentsInfo() {
@@ -166,43 +181,82 @@ export function createBuildApi({
     if (selected.project === null)
       return { ...selected, dir: null, components: [], error: 'Connect a session to add components to its project.' }
     const own = components(selected.project)
-    const plugins = compat()?.plugins ?? {}
-    const available = own.list()
-    const inspection = await inspectComponents(
-      available.map(one => one.name),
-      selected.project,
-    )
-    context.requireProject(selected.project)
-    const list = available.map(one => ({
-      ...withCommandStatus(one, selected.project),
-      since: plugins[one.name]?.since ?? null,
-      loadProblem: one.isAdded ? componentProblem(one, selected.project, inspection) : null,
-    }))
-    return { ...selected, dir: own.dir, components: list }
+    const describe = async collection => {
+      const available = collection.list()
+      const inspection = await inspectComponents(
+        available.map(one => one.name),
+        selected.project,
+        collection,
+      )
+      return available.map(one => ({
+        ...withCommandStatus(one, selected.project),
+        loadProblem: one.isAdded ? componentProblem(one, selected.project, inspection) : null,
+      }))
+    }
+    const primary = await describe(own)
+    const shared = await describe(components(selected.project, 'shared'))
+    let local
+    try {
+      local = await describe(components(selected.project, 'local'))
+    } catch (error) {
+      local = shared.map(one => ({
+        ...one,
+        scope: 'local',
+        directory: componentFolder(selected.project),
+        isAdded: false,
+        isEdited: false,
+        isSupplied: false,
+        commandEligible: false,
+        commandAvailable: false,
+        loadProblem: null,
+        unavailable: error.message,
+      }))
+    }
+    const destinations = [shared, local]
+    if (context.snapshot().project !== selected.project)
+      throw new Error('The connected project changed. Refresh this page before changing its files.')
+    return {
+      ...selected,
+      dir: own.dir,
+      components: primary.map(one => ({
+        ...one,
+        destinations: destinations.map(list => list.find(item => item.name === one.name)),
+      })),
+    }
   }
 
-  function requireComponentDestination(project, name, expected) {
-    if (expected !== undefined && expected !== components(project).view(name).directory)
+  function requireComponentDestination(project, name, expected, scope) {
+    if (scope !== undefined && !['shared', 'local'].includes(scope))
+      throw new Error('Choose shared or local for the component scope.')
+    if ((scope !== undefined || expected !== undefined) && expected !== components(project, scope).view(name).directory)
       throw new Error('The component destination changed. Refresh this page before changing its files.')
   }
 
-  async function addComponent(own, name, project, directory) {
+  function requireComponentProject(expected, scope) {
+    if (scope !== 'shared') return context.requireProject(expected)
+    const current = context.snapshot().project
+    if (current === null || current !== expected)
+      throw new Error('The connected project changed. Refresh this page before changing its files.')
+    return current
+  }
+
+  async function addComponent(own, name, project, directory, scope) {
     const sessionId = hub.snapshot().session?.facts.id
-    const before = await inspectComponents([name], project)
-    context.requireProject(project)
+    const before = await inspectComponents([name], project, own)
+    requireComponentProject(project, scope)
     if (hub.snapshot().session?.facts.id !== sessionId)
       throw new Error('The connected session changed. Refresh this page before adding a component.')
-    requireComponentDestination(project, name, directory)
+    requireComponentDestination(project, name, directory, scope)
     const component = own.add(name)
     const inspection =
-      componentProblem(component, project, before) === null ? await inspectComponents([name], project) : before
+      componentProblem(component, project, before) === null ? await inspectComponents([name], project, own) : before
     const loadProblem = componentProblem(component, project, inspection)
     if (loadProblem !== null)
       return {
         component: { ...withCommandStatus(component, project), loadProblem },
         reload: { isReloaded: false, note: loadProblem },
       }
-    context.requireProject(project)
+    requireComponentProject(project, scope)
     if (hub.snapshot().session?.facts.id !== sessionId)
       throw new Error('Files copied, but the connected session changed. Refresh this page before reloading.')
     const reload = await reloadSession(project)
@@ -213,15 +267,26 @@ export function createBuildApi({
     if (url.pathname === '/api/components' && req.method === 'GET') return send(res, 200, await componentsInfo())
     if (req.method !== 'POST') return send(res, 404, { error: 'not found' })
     const body = await readBody(req)
-    const project = context.requireProject(body.project)
-    const own = components(project)
+    const project = requireComponentProject(body.project, body.scope)
+    const own = components(project, body.scope)
     const name = String(body.name ?? '')
-    requireComponentDestination(project, name, body.directory)
+    requireComponentDestination(project, name, body.directory, body.scope)
     if (url.pathname === '/api/components/add')
-      return send(res, 200, await addComponent(own, name, project, body.directory))
+      return send(res, 200, await addComponent(own, name, project, body.directory, body.scope))
     if (url.pathname === '/api/components/remove') {
+      const previous = own.view(name)
+      const shouldReload =
+        suppliedToSession(previous, project) ||
+        ![componentFolder(project), sharedComponentFolder()].includes(previous.directory)
       const component = own.remove(name, { force: body.force === true })
-      return send(res, 200, { component, reload: component.isRefused ? null : await reloadSession(project) })
+      return send(res, 200, {
+        component: withCommandStatus(component, project),
+        reload: component.isRefused
+          ? null
+          : shouldReload
+            ? await reloadSession(project)
+            : { isReloaded: false, note: 'Copy removed. This folder was not loaded in the connected session.' },
+      })
     }
     return send(res, 404, { error: 'not found' })
   }

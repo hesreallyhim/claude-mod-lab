@@ -1,0 +1,10 @@
+{
+  "name": "keycast-mod",
+  "version": "0.2.0-beta.1",
+  "description": "Displays keystrokes above the prompt box for screen recordings and pairing",
+  "author": {
+    "name": "Really Him"
+  },
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

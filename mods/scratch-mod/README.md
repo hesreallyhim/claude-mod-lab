@@ -1,6 +1,20 @@
 # scratch-mod
 
-Six small hook patterns in `hooks/register.ts`, each with a test in `tests/patterns.test.ts` that shows what it does. Change a pattern or its test and run `claude plugin test mods/scratch-mod` to see what holds.
+Six small hook patterns to edit and test. Each pattern is in `hooks/register.ts`, with a test in `tests/patterns.test.ts` that shows what it does. Paths in this README refer to your copy of scratch-mod unless stated otherwise.
+
+From your project directory, add a copy:
+
+```sh
+npx claude-mod-lab examples add scratch-mod --local
+```
+
+This creates `.claude/mod-lab/scratch-mod/`, including the hooks and tests. Edit those files, then run the tests from your project directory:
+
+```sh
+claude plugin test .claude/mod-lab/scratch-mod
+```
+
+If your terminal is already inside the scratch-mod directory, use `claude plugin test .` instead. No repository clone is needed.
 
 | Pattern | Hook | What the test shows |
 | --- | --- | --- |
@@ -18,14 +32,16 @@ Things to try:
 - In "answer a `$` call", drop the `next.origin` check and think about what that would do to every other plugin in a session.
 - In "frames", set a timer inside the `/scratch-frames` command hook and wait for it there before answering, and see that timer's call reach the plugin's own hook.
 
-`claude --plugin-dir mods/scratch-mod` loads the mod into Claude Code to try `/scratch-count`, `/scratch-home` and `/scratch-frames` by hand. The guard and the prompt rewrite apply to that whole session.
+To try your copy in a lab session, run this from your project directory:
 
-## Install
-
-scratch-mod is not in the marketplace. Its patterns are meant to be edited, which an installed copy cannot usefully be, and installed, its hooks would run in every session: the rewrite adds a context line to each prompt, and the guard refuses writes under `secrets/`. Take a copy to edit instead:
-
-```
-npx claude-mod-lab add scratch-mod
+```sh
+npx claude-mod-lab run --local
 ```
 
-which copies it into `.claude/skills/scratch-mod/`, or clone this repository and use `claude plugin test mods/scratch-mod`.
+Then try `/scratch-count`, `/scratch-home`, and `/scratch-frames`. In a session already started with `run --local`, use `/reload-plugins` after adding or editing the mod. A session started in shared mode needs to be restarted with `--local` to load this project copy.
+
+Unlike the prepared Gallery examples, scratch-mod’s sample hooks take effect as soon as it loads: the prompt rewrite trims submitted text and adds a context line, and the guard refuses Write calls whose path contains `/secrets/`. They apply throughout that session, without an activation command.
+
+To load just scratch-mod without the lab, run `claude --plugin-dir .claude/mod-lab/scratch-mod` from your project directory. If you used `examples add scratch-mod --to <folder>`, use that destination for both `claude plugin test` and `--plugin-dir`.
+
+scratch-mod is distributed as an editable starter rather than a marketplace plugin. Keeping a project copy lets you experiment with its hooks without sharing those changes across your other lab sessions.

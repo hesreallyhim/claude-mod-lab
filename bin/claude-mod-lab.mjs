@@ -9,12 +9,13 @@ import { constants, homedir } from 'node:os'
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path'
 
 import { copyMod } from '../web/lib/components.mjs'
-import { componentFolder, legacyComponentFolders } from '../web/lib/component-folders.mjs'
+import { componentFolder, legacyComponentFolders, sharedComponentFolder } from '../web/lib/component-folders.mjs'
 import { installedCopies, sessionCopyNote, sideloadRefusal, skillsCopyNote } from '../web/lib/installed.mjs'
 import { isWorkspace, labFolder, makeWorkspace, PACKAGE_ROOT, workspaceRoot } from '../web/lib/roots.mjs'
-import { templateNames } from '../web/lib/sandbox.mjs'
+import { exampleNames } from '../web/lib/sandbox.mjs'
 import { packageFacts, sessionFolders } from '../web/lib/session-folders.mjs'
 import { BRIDGE_PROTOCOL } from '../web/lib/hub.mjs'
+import { ensureLessonCollection, ensureLocalLessonCollection } from '../web/lib/lesson-loading.mjs'
 
 // A git checkout loads the lab's folders in place, an npm install copies of them (web/lib/session-folders.mjs).
 const { version, inPlace } = packageFacts(PACKAGE_ROOT)
@@ -22,7 +23,8 @@ const { version, inPlace } = packageFacts(PACKAGE_ROOT)
 const HELP = `Usage: claude-mod-lab [--no-open] [--port <port>]
        claude-mod-lab run [project] [options] [-- claude options]
        claude-mod-lab init-lessons <directory> [--pin]
-       claude-mod-lab learn|add ...
+       claude-mod-lab learn ...
+       claude-mod-lab examples list|add ...
 
   (no command), serve  open a running explorer, or start one in this terminal.
                        No project files are created. Ctrl-C stops a new explorer.
@@ -32,7 +34,8 @@ const HELP = `Usage: claude-mod-lab [--no-open] [--port <port>]
   run [project]        start Claude Code with the lab in an existing project,
                        defaulting to the current directory. Connect to an available
                        explorer, or start one that ends with the session.
-                       Creates .claude/mod-lab/ for mods you add.
+                       Loads examples from ~/.claude-mod-lab/examples/.
+    --local            use this project's .claude/mod-lab/ examples instead
     --new              start a separate explorer even if one is available
     --no-open          do not open the browser for this session
     --port <port>      connect to the explorer selected with this port
@@ -48,17 +51,32 @@ const HELP = `Usage: claude-mod-lab [--no-open] [--port <port>]
     --dir <folder>     check this folder instead of workshop/<mod>
     --no-types         skip the TypeScript step
 
-  add [template]       copy a template to .claude/skills/<name>/ in this project;
-                       with no name, list available templates
+  examples list        list runnable examples and the starter mod
+  examples add <name>  copy one to ~/.claude-mod-lab/examples/<name>/
+    --local            copy it to this project's .claude/mod-lab/<name>/ instead
     --to <folder>      copy it to this folder instead
 
   -h, --help           this text
   -v, --version        the package's version
 
 Only an initialized lesson workspace loads workshop/ when run starts a session.
-learn and add use MOD_LAB_WORKSPACE when set, otherwise the current directory.
+learn and examples add --local use MOD_LAB_WORKSPACE when set, otherwise the current directory.
+Prepared examples are available across projects; activate each one with its /command.
+The scratch-mod starter’s sample hooks take effect when loaded; use --local for project work.
 The launcher keeps plugin copies and connection information in ~/.claude-mod-lab/.
 Claude Code (claude) must be on PATH to start sessions.`
+
+const EXAMPLES_HELP = `Usage: claude-mod-lab examples list
+       claude-mod-lab examples add <name> [--local | --to <folder>]
+
+  list                list runnable examples and the scratch-mod starter
+  add <name>          copy one to ~/.claude-mod-lab/examples/<name>/
+    --local           use this project's .claude/mod-lab/<name>/ instead
+    --to <folder>     copy it to this folder instead
+
+Your copy is yours to edit. Shared examples are available across projects.
+Use claude-mod-lab run (or run --local for local copies), then activate an example
+with its /command in each session. MOD_LAB_WORKSPACE overrides the --local project.`
 
 /** How to get the lab without --plugin-dir: from its marketplace, as the README's install has it. */
 const MARKETPLACE = `  claude plugin marketplace add hesreallyhim/claude-mod-lab
@@ -166,6 +184,7 @@ function explorerOption(options, args, index, allowClaude) {
   const [flag] = split(args[index])
   if (flag === '--no-open') options.noOpen = true
   else if (flag === '--new' && allowClaude) options.own = true
+  else if (flag === '--local' && allowClaude) options.local = true
   else if (flag === '--port') {
     const { value, end } = valueOf(args, index, 'a port')
     options.port = portNumber(value)
@@ -177,7 +196,7 @@ function explorerOption(options, args, index, allowClaude) {
 
 /** Reads explorer options without consuming options meant for Claude. */
 function explorerOptions(args, allowClaude = false) {
-  const options = { noOpen: false, own: false, port: undefined, passed: [] }
+  const options = { noOpen: false, own: false, local: false, port: undefined, passed: [] }
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--' && allowClaude) {
       options.passed.push(...args.slice(i + 1))
@@ -275,13 +294,14 @@ async function connectionFor(options) {
 }
 
 /** Loads the lab and authoring skills, with a workshop added only for an initialized lesson directory. */
-async function sessionPlugins(project, lessons) {
+async function sessionPlugins(project, lessons, lessonCollection) {
   const { folders, names, copyRoot, missing } = sessionFolders({
     packageRoot: PACKAGE_ROOT,
     home: homedir(),
     version,
     inPlace,
     workspace: lessons,
+    lessonCollection: lessonCollection || null,
   })
   for (const name of missing) console.error(`claude-mod-lab is missing a bundled plugin: ${name}.`)
   if (copyRoot !== null) console.error(`claude-mod-lab: the lab's folders are copies in ${copyRoot}`)
@@ -307,6 +327,7 @@ function sessionEnvironment(connection, options, lessons, isInteractive, compone
     MOD_LAB_LESSONS: lessons ?? '',
     MOD_LAB_LESSON_COLLECTION: lessonCollection,
     MOD_LAB_COMPONENT_DIRS: JSON.stringify(componentDirs),
+    MOD_LAB_EXAMPLES_DIR: componentDirs[0] ?? '',
     MOD_LAB_BRIDGE_FILE: connection?.bridgeFile ?? '',
     MOD_LAB_OPEN: isInteractive && connection === null ? '1' : '',
     MOD_LAB_NO_OPEN: options.noOpen ? '1' : '',
@@ -324,11 +345,10 @@ function announceConnection(connection, options, isInteractive) {
 }
 
 /** Creates the collection before Claude starts watching it; old copies remain in place. */
-function projectComponents(project) {
-  if (project === realpathSync(homedir())) return []
-  const collection = componentFolder(project)
+function projectComponents(project, local) {
+  const collection = local ? ensureLocalLessonCollection(project) : sharedComponentFolder()
   mkdirSync(collection, { recursive: true })
-  return [collection, ...legacyComponentFolders(project, PACKAGE_ROOT)]
+  return [collection, ...(local ? legacyComponentFolders(project, PACKAGE_ROOT) : [])]
 }
 
 /** Starts a project session with an explicit collection for components added through the explorer. */
@@ -342,10 +362,12 @@ async function startSession(args) {
     console.error(`${refusal}\n\nInstall the lab from its marketplace where your organization permits it:\n\n${MARKETPLACE}`)
     return 1
   }
+  if (options.local && project === realpathSync(homedir())) throw new UsageError('run --local needs a project directory other than your home folder.')
   const connection = await connectionFor(options)
-  const folders = await sessionPlugins(project, lessons)
-  const componentDirs = projectComponents(project)
-  const lessonCollection = lessons !== null && folders.includes(componentFolder(project)) ? componentFolder(project) : ''
+  const [examplesDir, ...legacyDirs] = projectComponents(project, options.local)
+  const lessonCollection = options.local ? examplesDir : project === realpathSync(homedir()) ? '' : ensureLessonCollection(project)
+  const folders = await sessionPlugins(project, lessons, lessonCollection)
+  const componentDirs = [...new Set([examplesDir, ...(lessonCollection === '' ? [] : [lessonCollection]), ...legacyDirs])]
   const isInteractive = !options.passed.some(arg => arg === '-p' || arg === '--print')
   announceConnection(connection, options, isInteractive)
   return run('claude', [...[...new Set([...folders, ...componentDirs])].flatMap(dir => ['--plugin-dir', dir]), ...options.passed], {
@@ -376,10 +398,10 @@ function learn(args) {
   return run(process.execPath, checker, { cwd: process.cwd() })
 }
 
-/** What `add` copies, by name: the templates and scratch-mod, which the marketplace leaves out to be copied. */
+/** What `examples add` copies: runnable examples and the scratch-mod starter. */
 function addable() {
-  const templates = join(PACKAGE_ROOT, 'templates')
-  const sources = new Map(templateNames(templates).map(name => [name, join(templates, name)]))
+  const examples = join(PACKAGE_ROOT, 'examples')
+  const sources = new Map(exampleNames(examples).map(name => [name, join(examples, name)]))
   sources.set('scratch-mod', join(PACKAGE_ROOT, 'mods', 'scratch-mod'))
   return sources
 }
@@ -392,33 +414,54 @@ function description(dir) {
   }
 }
 
-async function add(args) {
+function addLoadingNote(dest) {
+  const parent = dirname(dest)
+  const project = dirname(dirname(parent))
+  if (parent === sharedComponentFolder()) {
+    return 'This shared copy is available across projects. Start a session with claude-mod-lab run, or /reload-plugins in an existing launcher session.'
+  }
+  if (parent === componentFolder(project)) {
+    return `Start a session with claude-mod-lab run --local in ${where(project)} to load it. In a session already started with --local, run /reload-plugins.`
+  }
+  if (basename(parent) === 'skills' && basename(dirname(parent)) === '.claude') {
+    return `A session started in ${where(project)} loads it; in one already running there, /reload-plugins.`
+  }
+  return `Load it with claude --plugin-dir ${shown(dest)}.`
+}
+
+function addOptions(args) {
   let name = null
   let to = null
+  let local = false
   for (let i = 0; i < args.length; i += 1) {
-    if (split(args[i])[0] === '--to') {
+    if (args[i] === '--local') local = true
+    else if (split(args[i])[0] === '--to') {
       const { value, end } = valueOf(args, i, 'a folder')
       to = resolve(value)
       i = end
     } else if (!args[i].startsWith('-') && name === null) name = args[i]
-    else throw new UsageError(`unknown option ${args[i]} for add`)
+    else throw new UsageError(`unknown option ${args[i]} for examples add`)
   }
+  if (name === null) throw new UsageError('examples add needs a name: claude-mod-lab examples add <name>. Use claude-mod-lab examples list to choose one.')
+  if (local && to !== null) throw new UsageError('examples add accepts either --local or --to, not both.')
+  return { name, to, local }
+}
+
+async function add(args) {
+  const { name, to, local } = addOptions(args)
   const sources = addable()
-  if (name === null) {
-    const width = Math.max(...[...sources.keys()].map(one => one.length))
-    console.log('What add copies (claude-mod-lab add <name>):\n')
-    for (const [one, dir] of [...sources].sort(([a], [b]) => a.localeCompare(b))) {
-      console.log(`  ${one.padEnd(width)}  ${description(dir)}`)
-    }
-    return 0
-  }
   const source = sources.get(name)
   if (source === undefined) {
-    console.error(`No template is named ${name}. claude-mod-lab add, with no name, lists them.`)
+    console.error(`No example or starter mod is named ${name}. Use claude-mod-lab examples list to choose one.`)
     return 1
   }
-  const workspace = to === null ? workspaceRoot() : null
-  const dest = to ?? join(workspace, '.claude', 'skills', name)
+  const workspace = local ? workspaceRoot() : null
+  const dest = to ?? join(local ? componentFolder(workspace) : sharedComponentFolder(), name)
+  const legacy = workspace === null ? null : join(workspace, '.claude', 'skills', name)
+  if (legacy !== null && existsSync(legacy)) {
+    console.error(`${shown(legacy)} is already there, so nothing was copied. Keep your existing copy, move it to ${shown(dest)}/, or choose another destination with --to <folder>.`)
+    return 1
+  }
   if (existsSync(dest)) {
     console.error(`${shown(dest)} is already there, so nothing was copied. Remove it, or copy elsewhere with --to <folder>.`)
     return 1
@@ -426,13 +469,10 @@ async function add(args) {
   copyMod(source, dest)
   const isSkills = basename(dirname(dest)) === 'skills' && basename(dirname(dirname(dest))) === '.claude'
   console.log(`Copied ${name} to ${shown(dest)}/, yours to edit. Its tests: claude plugin test ${shown(dest)}`)
-  console.log(
-    isSkills
-      ? `A session started in ${where(dirname(dirname(dirname(dest))))} loads it; in one already running there, /reload-plugins.`
-      : basename(dirname(dest)) === 'workshop'
-        ? `The lab started in ${where(dirname(dirname(dest)))} loads it from workshop/.`
-        : `The lab loads the mods in a workspace's workshop/; on its own, claude --plugin-dir ${shown(dest)} loads it.`,
-  )
+  console.log(addLoadingNote(dest))
+  console.log(name === 'scratch-mod'
+    ? 'This starter’s sample hooks take effect when loaded. Use --local to keep your work in one project.'
+    : 'Activate the example with its /command in each session.')
   const { copies, problem } = await installedCopies([name], { cwd: workspace ?? process.cwd() })
   if (problem !== null) console.error(`Not checked for an installed copy of ${name}: ${problem}`)
   for (const copy of copies) {
@@ -445,7 +485,30 @@ async function add(args) {
   return 0
 }
 
-const COMMANDS = { serve, run: startSession, attach: startSession, 'init-lessons': initLessons, learn, add }
+function listExamples(args) {
+  if (args.length > 0) throw new UsageError('examples list takes no arguments. Use claude-mod-lab examples add <name> to copy one.')
+  const sources = addable()
+  const width = Math.max(...[...sources.keys()].map(name => name.length))
+  console.log('Runnable examples (claude-mod-lab examples add <name>):\n')
+  for (const [name, dir] of [...sources].sort(([a], [b]) => a.localeCompare(b))) {
+    if (name !== 'scratch-mod') console.log(`  ${name.padEnd(width)}  ${description(dir)}`)
+  }
+  console.log(`\nStarter mod:\n\n  ${'scratch-mod'.padEnd(width)}  ${description(sources.get('scratch-mod'))}`)
+  return 0
+}
+
+function examples(args) {
+  const [command, ...rest] = args
+  if (command === undefined || args.includes('--help') || args.includes('-h')) {
+    console.log(EXAMPLES_HELP)
+    return 0
+  }
+  if (command === 'list') return listExamples(rest)
+  if (command === 'add') return add(rest)
+  throw new UsageError(`Unknown examples command ${command}. Use claude-mod-lab examples list or claude-mod-lab examples add <name>.`)
+}
+
+const COMMANDS = { serve, run: startSession, attach: startSession, 'init-lessons': initLessons, learn, examples }
 
 async function main(argv) {
   const ours = argv.includes('--') ? argv.slice(0, argv.indexOf('--')) : argv
@@ -454,6 +517,7 @@ async function main(argv) {
     console.log(version)
     return 0
   }
+  if (command === 'examples') return examples(rest)
   if (ours.includes('-h') || ours.includes('--help')) {
     console.log(HELP)
     return 0

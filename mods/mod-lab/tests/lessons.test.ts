@@ -17,7 +17,7 @@ function setup(on: On, variables: Record<string, string> = {}, failure?: string)
     if (failure) return { value: { content: [{ type: 'text', text: failure }], isError: true } }
     if (e.tool === 'init-lessons') {
       expect(e.args.cwd).toBe(CWD)
-      if (variables.MOD_LAB_LESSONS !== CWD) expect(e.args.collection).toBe(COLLECTION)
+      if (variables.MOD_LAB_LESSONS !== CWD) expect(e.args.collection).toBe(variables.MOD_LAB_LESSON_COLLECTION || COLLECTION)
       return { value: { content: [{ type: 'text', text: JSON.stringify({ workspace: CWD }) }], isError: false } }
     }
     return { value: { content: [{ type: 'text', text: 'The explorer is at http://localhost:4999.' }], isError: false } }
@@ -65,4 +65,15 @@ test('a denied session update is reported rather than claiming lessons are activ
   setup(on)
   on('env.set', () => ({ value: { deny: 'blocked by policy' } }))
   expect((await $.command.run(slash('init-lessons', ''))).text).toContain('blocked by policy')
+})
+
+
+test('a prospective private collection enables lessons during a shared-example session', async ($, on) => {
+  const collection = '/home/user/.claude-mod-lab/projects/project-key/lessons'
+  const calls = setup(on, { MOD_LAB_LESSON_COLLECTION: collection, MOD_LAB_COMPONENT_DIRS: JSON.stringify([collection]) })
+  const writes: Record<string, string | undefined> = {}
+  on('env.set', ($, e) => { writes[e.name] = e.value; return { value: {} } })
+  expect((await $.command.run(slash('init-lessons', ''))).text).toContain('Lessons enabled')
+  expect(writes).toEqual({ MOD_LAB_LESSON_COLLECTION: collection, MOD_LAB_LESSONS: CWD })
+  expect(calls).toEqual(['init-lessons', 'start'])
 })

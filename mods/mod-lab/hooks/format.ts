@@ -1,6 +1,5 @@
 import type { LabDispatch, LabIntercept, LabLink, LabProbe, LabRun, LabTap } from '../types'
 import { censusLines, censusOf } from './census'
-import { NEEDS_NEWER } from './compat'
 import { describeIntercept, isLapsed } from './intercept'
 import { compact, pretty } from './json'
 import { availableProbes } from './probes'
@@ -41,16 +40,14 @@ export function chainBrief(links: readonly LabLink[]): string {
   return links.map(link => (PLAIN_OUTCOMES.has(link.outcome) ? link.plugin : `${link.plugin} ${link.outcome}`)).join(' > ')
 }
 
-/** A run's outcome in a word: a feature the capability table kept from running is "not run", not "failed". */
-export function runStatus(run: LabRun): 'ok' | 'not run' | 'failed' {
-  if (run.ok) return 'ok'
-  return run.error?.startsWith(NEEDS_NEWER) === true ? 'not run' : 'failed'
+/** A run's outcome in a word. */
+export function runStatus(run: LabRun): 'ok' | 'failed' {
+  return run.ok ? 'ok' : 'failed'
 }
 
 /** A run as the transcript and the model read it. */
 export function formatRun(run: LabRun, probe: LabProbe | undefined): string {
   const status = runStatus(run)
-  if (status === 'not run') return [`${run.probe}: not run, ${run.error}`, ...(probe === undefined ? [] : ['', 'source:', probe.source])].join('\n')
   const lines = [`${run.probe}: ${status} in ${run.ms} ms`]
   lines.push(run.ok ? pretty(run.value) : `error: ${run.error}`)
   if (run.dispatches.length === 0) {

@@ -5,10 +5,10 @@ import { join, relative } from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-import { BLANK, createSandbox, MAX_FILE, templateFiles, typeErrors } from '../lib/sandbox.mjs'
+import { BLANK, createSandbox, MAX_FILE, exampleFiles, typeErrors } from '../lib/sandbox.mjs'
 import { startServer } from '../server.mjs'
 
-const TEMPLATES = fileURLToPath(new URL('../../templates', import.meta.url))
+const EXAMPLES = fileURLToPath(new URL('../../examples', import.meta.url))
 
 function filesUnder(dir) {
   const found = []
@@ -48,19 +48,19 @@ test('a missing or oversized file is refused, and nothing is written', () => {
   assert.equal(existsSync(dir), false)
 })
 
-test("a template comes in under the sandbox's name, and a name that is not a template is refused", () => {
-  const files = templateFiles(TEMPLATES, 'svg-mod')
+test("an example comes in under the sandbox's name, and a name that is not an example is refused", () => {
+  const files = exampleFiles(EXAMPLES, 'svg-mod')
 
   assert.ok(files.module.includes("atom({ plugin: 'sandbox-mod', key: 'counts' }"))
   assert.ok(files.contract.includes("'sandbox-mod': {"))
   assert.ok(!Object.values(files).some(text => /['"`/]svg-mod/.test(text)))
   assert.equal(
-    templateFiles(TEMPLATES, 'brackets-mod').contract,
+    exampleFiles(EXAMPLES, 'brackets-mod').contract,
     BLANK.contract,
-    'a template without a contract of its own comes in with the blank one',
+    'an example without a contract of its own comes in with the blank one',
   )
-  assert.equal(templateFiles(TEMPLATES, '../mods'), null)
-  assert.equal(templateFiles(TEMPLATES, 'no-such-mod'), null)
+  assert.equal(exampleFiles(EXAMPLES, '../mods'), null)
+  assert.equal(exampleFiles(EXAMPLES, 'no-such-mod'), null)
 })
 
 test("tsc's lines become errors at a file and line, named as the page names them", () => {
@@ -89,8 +89,8 @@ test("the server's Sandbox is the mod workshop/sandbox-mod in its workspace, whe
     const offered = await (await fetch(`${server.url}/api/sandbox`, { headers })).json()
     assert.equal(offered.dir, join(workspace, 'workshop', 'sandbox-mod'))
     assert.deepEqual(offered.files, BLANK)
-    assert.ok(offered.templates.includes('raster-mod'))
-    assert.equal((await fetch(`${server.url}/api/sandbox/template?name=../mods`, { headers })).status, 404)
+    assert.ok(offered.examples.includes('raster-mod'))
+    assert.equal((await fetch(`${server.url}/api/sandbox/example?name=../mods`, { headers })).status, 404)
     const save = files =>
       fetch(`${server.url}/api/sandbox/save`, {
         method: 'POST',

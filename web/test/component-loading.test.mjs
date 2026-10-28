@@ -145,3 +145,18 @@ test('session command status verifies the providing plugin and distinguishes fai
     assert.equal((await gallery()).commandAvailable, null)
   })
 })
+
+test('explicit destinations reject missing paths, stale paths, and unknown scopes before writing', async () => {
+  await withProject(async ({ project, collection, server, request }) => {
+    connect(server, project, [collection])
+    for (const body of [
+      { scope: 'local' },
+      { scope: 'local', directory: join(project, 'elsewhere') },
+      { scope: 'elsewhere', directory: collection },
+    ]) {
+      const result = await request('/add', { name: 'gallery-mod', ...body })
+      assert.ok(result.error)
+      assert.equal(existsSync(join(collection, 'gallery-mod')), false)
+    }
+  })
+})

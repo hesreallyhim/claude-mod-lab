@@ -1,7 +1,7 @@
 {
   "name": "mod-lab",
   "version": "0.2.0-beta.2",
-  "description": "Run calls on $ in a live session and see what each one dispatched and returned",
+  "description": "Run mod API calls in a live session and inspect their results and dispatched events",
   "license": "MIT",
   "author": {
     "name": "Really Him"

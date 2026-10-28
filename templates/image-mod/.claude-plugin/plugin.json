@@ -1,9 +1,0 @@
-{
-  "name": "image-mod",
-  "version": "0.2.0-beta.1",
-  "description": "An Image in a pane whose pixels are made here and swapped by $.ui.blit",
-  "author": {
-    "name": "Really Him"
-  },
-  "license": "MIT"
-}

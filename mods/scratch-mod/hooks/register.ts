@@ -1,6 +1,6 @@
 // scratch-mod: small hook patterns, each with a test in ../tests that shows what
-// it does. Change one, run `claude plugin test mods/scratch-mod`, and read
-// what the tests say.
+// it does. From this mod’s directory, run `claude plugin test .` after changing
+// a pattern, and read what the tests say.
 // ../README.md lists the patterns and what to try.
 
 import { atom, update } from 'claude-code'

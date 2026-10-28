@@ -1,37 +1,48 @@
-// The templates, and the gallery mod, as components the explorer adds to a session: each copied
-// whole into the project's collection passed with --plugin-dir, or its
-// .claude/skills/ for sessions started without the lab launcher.
+// The examples, and the gallery mod, as components the explorer adds to a session: each copied
+// whole into the shared or project collection passed with --plugin-dir, or
+// legacy .claude/skills/ for sessions started without the lab launcher.
 // The copy is the person's to edit; a watched session reloads it on save.
 
 import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs'
 import { dirname, join, relative, sep } from 'node:path'
 
-import { templateNames } from './sandbox.mjs'
+import { exampleNames } from './sandbox.mjs'
 
-/** What to do once a component is in the session, by its name. web/test/components.test.mjs fails on a template without one. */
+/** What to do once a component is in the session, by its name. web/test/components.test.mjs fails on an example without one. */
 export const HOW_TO_TRY = {
-  'brackets-mod': 'Type ( in the prompt box: its partner goes in after the cursor.',
-  'draft-keeper-mod': 'Type a prompt, clear it with Ctrl+C, then press Tab in the empty box to bring it back.',
-  'keycast-mod': 'Type in the prompt box: each key shows above it as you press it. /keycast-mod off hides them.',
+  'brackets-mod':
+    '/brackets-mod enables this example; /brackets-mod off disables it. Type ( in the prompt box: its partner goes in after the cursor.',
+  'draft-keeper-mod':
+    '/draft-keeper-mod enables this example; /draft-keeper-mod off disables it. Type a prompt, clear it with Ctrl+C, then press Tab in the empty box to bring it back.',
+  'keycast-mod':
+    '/keycast-mod enables this example; /keycast-mod off disables it. Type in the prompt box: each key shows above it as you press it.',
   'paint-mod':
-    'Type /con in the prompt box: the rest of a command follows as ghost text, and a word no command starts with is underlined.',
+    '/paint-mod enables this example; /paint-mod off disables it. Type /con in the prompt box: the rest of a command follows as ghost text, and a word no command starts with is underlined.',
   'paste-guard-mod':
-    'Paste a key-shaped string, such as ghp_ and 36 letters: it is painted red, and Enter holds the prompt back once.',
+    '/paste-guard-mod enables this example; /paste-guard-mod off disables it. Paste a key-shaped string, such as ghp_ and 36 letters: it is painted red, and Enter holds the prompt back once.',
   'shortcodes-mod':
-    'Type :te in the prompt box: the rest shows as ghost text, and the closing colon writes the prompt :tests: stands for.',
-  'band-mod': 'A line above the prompt counts tool calls; /band-mod off hides it.',
+    '/shortcodes-mod enables this example; /shortcodes-mod off disables it. Type :te in the prompt box: the rest shows as ghost text, and the closing colon writes the prompt :tests: stands for.',
+  'band-mod':
+    '/band-mod enables this example; /band-mod off disables it. A line above the prompt counts tool calls while enabled.',
   'hover-mod':
     '/hover-mod opens a pane of three words. Point at one with the mouse: a card explaining that part of the technique appears above it.',
   'image-mod': '/image-mod opens a picture in a pane, on a terminal that shows images; /image-mod stop ends it.',
   'links-mod': '/links-mod opens a pane; click a link to turn its page.',
   'raster-mod': '/raster-mod opens a wave in a pane; /raster-mod stop ends it.',
-  'sites-mod': 'After a tool call, ctrl+o shows a line under its row saying how long it ran.',
+  'sites-mod':
+    '/sites-mod enables this example; /sites-mod off disables it. After a tool call, ctrl+o shows a line under its row saying how long it ran.',
   'svg-mod': '/svg-mod opens a bar chart of tool calls, drawn as an Svg on desktop, VS Code and mobile.',
   'gallery-mod': '/mod-gallery opens every technique in one pane, a tab each; /mod-gallery raster opens one tab.',
 }
 
-// Commands these mods register; prompt-only mods have no command to verify.
+// Commands used to activate each example in the connected session.
 const COMMANDS = {
+  'brackets-mod': 'brackets-mod',
+  'draft-keeper-mod': 'draft-keeper-mod',
+  'paint-mod': 'paint-mod',
+  'paste-guard-mod': 'paste-guard-mod',
+  'shortcodes-mod': 'shortcodes-mod',
+  'sites-mod': 'sites-mod',
   'gallery-mod': 'mod-gallery',
   'band-mod': 'band-mod',
   'keycast-mod': 'keycast-mod',
@@ -42,7 +53,7 @@ const COMMANDS = {
   'svg-mod': 'svg-mod',
 }
 
-// Files the engine writes beside a mod it loads; never the template's, so never compared or copied.
+// Files the engine writes beside a mod it loads; never the example's, so never compared or copied.
 export const isEngineFile = path =>
   path === 'tsconfig.json' || path.startsWith(`.claude-plugin${sep}types`) || path.endsWith('.DS_Store')
 
@@ -55,7 +66,7 @@ export function filesOf(dir) {
     .sort()
 }
 
-/** Copies a mod's folder to `to`, without the files the engine laid in it. `claude-mod-lab add` copies with this too. */
+/** Copies a mod's folder to `to`, without the files the engine laid in it. `claude-mod-lab examples add` copies with this too. */
 export function copyMod(from, to) {
   const manifest = join('.claude-plugin', 'plugin.json')
   // A watched collection discovers a plugin once its manifest exists. Publish it last.
@@ -78,30 +89,30 @@ function manifestOf(dir) {
 }
 
 /**
- * The components: every template in `templatesDir`, and each mod in `others`, by its name, a folder
- * outside the templates (the gallery mod, from mods/).
+ * The components: every example in `examplesDir`, and each mod in `others`, by its name, a folder
+ * outside the examples (the gallery mod, from mods/).
  */
-export function createComponents({ templatesDir, skillsDir, legacyDir = null, others = {} }) {
-  const templateDir = name => (Object.hasOwn(others, name) ? others[name] : join(templatesDir, name))
+export function createComponents({ examplesDir, skillsDir, legacyDir = null, others = {} }) {
+  const exampleDir = name => (Object.hasOwn(others, name) ? others[name] : join(examplesDir, name))
   const copyDir = name => {
     const target = join(skillsDir, name)
     if (existsSync(target) || legacyDir === null) return target
     const legacy = join(legacyDir, name)
     return manifestOf(legacy)?.name === name ? legacy : target
   }
-  const names = () => [...templateNames(templatesDir), ...Object.keys(others)]
+  const names = () => [...exampleNames(examplesDir), ...Object.keys(others)]
 
   function known(name) {
     if (!names().includes(name)) throw new Error(`no component is named ${name}`)
   }
 
-  /** Whether the copy differs from the template: a file changed, added or removed. */
+  /** Whether the copy differs from the example: a file changed, added or removed. */
   function isEdited(name) {
-    const theirs = filesOf(templateDir(name))
+    const theirs = filesOf(exampleDir(name))
     const ours = filesOf(copyDir(name))
     if (theirs.join('\n') !== ours.join('\n')) return true
     return theirs.some(
-      path => readFileSync(join(templateDir(name), path), 'utf8') !== readFileSync(join(copyDir(name), path), 'utf8'),
+      path => readFileSync(join(exampleDir(name), path), 'utf8') !== readFileSync(join(copyDir(name), path), 'utf8'),
     )
   }
 
@@ -115,7 +126,7 @@ export function createComponents({ templatesDir, skillsDir, legacyDir = null, ot
       name,
       directory: dirname(at),
       command: COMMANDS[name] ?? null,
-      description: manifestOf(templateDir(name))?.description ?? '',
+      description: manifestOf(exampleDir(name))?.description ?? '',
       howToTry: HOW_TO_TRY[name] ?? null,
       isAdded,
       isEdited: isAdded && isEdited(name),
@@ -131,11 +142,11 @@ export function createComponents({ templatesDir, skillsDir, legacyDir = null, ot
       return view(name)
     },
 
-    /** Copies the template into the skills folder; refused where a folder of that name is already there. */
+    /** Copies the example into the skills folder; refused where a folder of that name is already there. */
     add(name) {
       known(name)
       if (existsSync(copyDir(name))) throw new Error(`${copyDir(name)} is already there`)
-      copyMod(templateDir(name), copyDir(name))
+      copyMod(exampleDir(name), copyDir(name))
       return view(name)
     },
 

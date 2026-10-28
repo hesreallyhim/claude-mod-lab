@@ -1,9 +1,4 @@
-// Claude Code versions on the page: the version line beside the pill, the
-// one notice (update, below compat.json's floor), and whether a template or a
-// lesson needs a newer version than the session runs, which the page hides
-// rather than explains. No DOM here; web/test/versions.test.mjs checks it.
-
-const NEEDS_NEWER = 'needs a newer version of Claude Code'
+// Runtime version reporting and the lesson catalog's declared minimum versions.
 
 /** Negative, zero or positive as `a` is older than, the same release as, or newer than `b`; a build's suffix (`-dev...`) is left out. */
 export function compareVersions(a, b) {
@@ -27,17 +22,7 @@ export function engineText(session) {
   return version === null ? null : `Claude Code ${version}`
 }
 
-/** The notice beside the version line: below compat.json's floor, to update; null at or above it. Past the version tested through says nothing. */
-export function updateText(version, compat) {
-  return compareVersions(version, compat.floor) < 0 ? 'Update Claude Code to use mod-lab.' : null
-}
-
-/** Whether a template or a lesson needs a newer version than the session runs; false without a minimum, or with no session to compare. */
+/** Whether a lesson needs a newer version than the session runs; false without a minimum, or with no session to compare. */
 export function needsNewer(since, version) {
   return typeof since === 'string' && version !== null && compareVersions(version, since) < 0
-}
-
-/** A run the lab's capability table kept from running: it was not run, rather than failed. */
-export function isNotRun(run) {
-  return run.ok === false && typeof run.error === 'string' && run.error.startsWith(NEEDS_NEWER)
 }

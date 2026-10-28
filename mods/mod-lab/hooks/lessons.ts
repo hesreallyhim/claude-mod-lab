@@ -9,8 +9,9 @@ type LessonSession = { cwd: string; collection: string | null }
 async function lessonSession($: EngineInterface): Promise<LessonSession> {
   const cwd = await $.session.cwd()
   const existing = (await $.env.get('MOD_LAB_LESSONS')) === cwd
-  if (existing && !(await $.env.get('MOD_LAB_LESSON_COLLECTION'))) return { cwd, collection: null }
-  const collection = `${cwd}/.claude/mod-lab`
+  const advertised = await $.env.get('MOD_LAB_LESSON_COLLECTION')
+  if (existing && !advertised) return { cwd, collection: null }
+  const collection = advertised || `${cwd}/.claude/mod-lab`
   const directories: unknown = JSON.parse((await $.env.get('MOD_LAB_COMPONENT_DIRS')) || '[]')
   if (!Array.isArray(directories) || !directories.includes(collection)) {
     throw new Error('This session has no lab plugin folder to load lesson mods. Start it with npx claude-mod-lab run in this project, then use /init-lessons.')

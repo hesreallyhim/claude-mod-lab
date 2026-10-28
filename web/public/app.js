@@ -27,7 +27,7 @@ import { turnsPage } from './turns.js'
 import { modsPage } from './mods.js'
 import { lessonPage, lessonsPage, stopWatching } from './lessons.js'
 import { prependToFeed, refreshTrace, renderFeed } from './feed.js'
-import { engineText, sessionVersion, updateText } from './versions.js'
+import { engineText } from './versions.js'
 
 /** What each mirrored value of the lab's state is before the session has sent it. */
 const MIRROR_DEFAULTS = {
@@ -120,14 +120,11 @@ function renderReference(session) {
   }
 }
 
-/** The session's Claude Code version in the lamp's tooltip, the page's one place for the version number; below compat.json's floor, a word to update. */
+/** The session's Claude Code version, shown with its connection details. */
 function renderEngine(session) {
   const engine = document.getElementById('engine')
   const text = session === null ? null : engineText(session)
-  const update = text === null || !session.compat ? null : updateText(sessionVersion(session), session.compat)
-  engine.replaceChildren(
-    ...(text === null ? [] : [sessionFact('Runtime', update === null ? text : `${text}. ${update}`)]),
-  )
+  engine.replaceChildren(...(text === null ? [] : [sessionFact('Runtime', text)]))
 }
 
 function ledgerPage() {

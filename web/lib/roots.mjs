@@ -1,5 +1,5 @@
 // The two roots the explorer and the checker work from. The package root is
-// where this code is installed, and is only read: web/, learn/, templates/,
+// where this code is installed, and is only read: web/, learn/, examples/,
 // mods/ and the docs. The workspace is the person's own folder, for what they
 // make: workshop/, .claude/skills/, the Sandbox and lesson progress. A clone
 // supplies the package; lessons normally use a separate initialized workspace.

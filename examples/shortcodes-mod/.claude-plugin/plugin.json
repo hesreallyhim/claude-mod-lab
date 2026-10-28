@@ -1,0 +1,9 @@
+{
+  "name": "shortcodes-mod",
+  "version": "0.2.0-beta.1",
+  "description": "Expands shortcuts such as :tests: into saved prompts, with previews as you type",
+  "author": {
+    "name": "Really Him"
+  },
+  "license": "MIT"
+}

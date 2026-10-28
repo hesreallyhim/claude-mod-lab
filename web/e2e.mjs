@@ -91,10 +91,6 @@ try {
     typeof session.engine?.version === 'string' && Array.isArray(session.engine.surfaces),
     `the hello reported the engine's version and surfaces (${JSON.stringify(session.engine)})`,
   )
-  expect(
-    session.compat?.floor !== undefined && session.compat.testedThrough !== undefined,
-    `the hello carried the bridge's compat.json (${session.compat?.floor} through ${session.compat?.testedThrough})`,
-  )
 
   const cwd = await runProbe('session.cwd', {})
   expect(cwd?.ok === true && cwd.value === REPO, 'session.cwd ran in the session and answered its directory')

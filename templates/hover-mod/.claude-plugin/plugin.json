@@ -1,9 +1,0 @@
-{
-  "name": "hover-mod",
-  "version": "0.2.0-beta.1",
-  "description": "Three words in a pane; pointing at one shows a card over the rows above it, drawn hidden and revealed by a hover group, with no hook running",
-  "author": {
-    "name": "Really Him"
-  },
-  "license": "MIT"
-}

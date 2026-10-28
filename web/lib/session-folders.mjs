@@ -113,9 +113,10 @@ export function refreshCopy(from, to) {
  * @param {string} options.version the package's version, which names the copies' folder
  * @param {boolean} options.inPlace load the package's own folders, as in a git checkout
  * @param {string | null} [options.workspace] an initialized lesson folder whose workshop/ loads beneath the lab
+ * @param {string | null} [options.lessonCollection] collection explicitly selected by the launcher
  * @returns {{ folders: string[], names: string[], copyRoot: string | null, missing: string[] }}
  */
-export function sessionFolders({ packageRoot, home, version, inPlace, workspace = null }) {
+export function sessionFolders({ packageRoot, home, version, inPlace, workspace = null, lessonCollection = null }) {
   const modsDir = join(packageRoot, 'mods')
   const { names: mods, missing } = labPlugins(modsDir)
   const sources = mods.map(name => ({ name, dir: join(modsDir, name) }))
@@ -131,5 +132,10 @@ export function sessionFolders({ packageRoot, home, version, inPlace, workspace 
     refreshCopy(dir, join(copyRoot, name))
     return join(copyRoot, name)
   })
-  return { folders: [...lab, ...(workspace === null ? [] : lessonPluginFolders(workspace))], names, copyRoot, missing }
+  return {
+    folders: [...lab, ...(workspace === null ? [] : lessonPluginFolders(workspace, home, lessonCollection))],
+    names,
+    copyRoot,
+    missing,
+  }
 }

@@ -1,6 +1,6 @@
 // The bin's commands as a person types them, run in temporary folders. Starting
 // the lab runs a stand-in claude and npm, put first on the PATH, which record how
-// they were run; `add` asks the real `claude plugin list` for an installed copy
+// they were run; `examples add` asks the real `claude plugin list` for an installed copy
 // when claude is there, and says so when it is not. `npm run test:bin`.
 
 import assert from 'node:assert/strict'
@@ -92,7 +92,7 @@ const pluginDirs = args => args.flatMap((arg, i) => (arg === '--plugin-dir' ? [a
 test('--help describes separate explorer, session and lesson commands', () => {
   const help = bin(['--help'])
   assert.equal(help.status, 0)
-  for (const command of ['run [project]', 'init-lessons <dir>', '--pin', 'learn [lesson]', 'add [template]']) {
+  for (const command of ['run [project]', 'init-lessons <dir>', '--pin', 'learn [lesson]', 'examples list', 'examples add <name>']) {
     assert.ok(help.out.includes(command), `the help names ${command}`)
   }
   assert.equal(bin(['run', '--help']).out, help.out)
@@ -116,9 +116,12 @@ test('init-lessons scaffolds explicitly without starting Claude, and run loads i
     const folders = pluginDirs(session.args)
     assert.deepEqual(folders.slice(0, 3), ['mod-lab', 'mod-lab-bridge', 'mod-lab-target'].map(name => join(PACKAGE_ROOT, 'mods', name)))
     assert.ok(folders.includes(join(PACKAGE_ROOT, 'plugins', 'mod-bootstrap')), 'mod-bootstrap is loaded without a marketplace install')
-    assert.ok(folders.includes(join(workspace, 'workshop')))
-    assert.equal(folders.at(-1), join(workspace, '.claude', 'mod-lab'))
-    assert.deepEqual(JSON.parse(session.env.MOD_LAB_COMPONENT_DIRS), [folders.at(-1)])
+    const collection = session.env.MOD_LAB_LESSON_COLLECTION
+    const examples = join(dir, 'home', '.claude-mod-lab', 'examples')
+    assert.ok(collection.startsWith(join(dir, 'home', '.claude-mod-lab', 'projects')))
+    assert.ok(folders.includes(collection))
+    assert.ok(!folders.includes(join(workspace, 'workshop')))
+    assert.deepEqual(JSON.parse(session.env.MOD_LAB_COMPONENT_DIRS), [examples, collection])
     assert.deepEqual(session.args.slice(-2), ['--model', 'haiku'])
     assert.equal(session.env.MOD_LAB_NODE, process.execPath)
     assert.equal(session.env.MOD_LAB_PACKAGE_ROOT, PACKAGE_ROOT)
@@ -126,7 +129,7 @@ test('init-lessons scaffolds explicitly without starting Claude, and run loads i
     assert.equal(session.env.MOD_LAB_OPEN, '1')
   }))
 
-test('run prepares only the component collection in an ordinary project and never loads an unrelated workshop', () =>
+test('run shares examples across projects without writing project files or loading unrelated workshops', () =>
   inTemp(dir => {
     const { lab, sessions } = standIns(dir)
     const project = join(dir, 'project')
@@ -134,22 +137,28 @@ test('run prepares only the component collection in an ordinary project and neve
     writeFileSync(join(project, 'README.md'), 'Their project.\n')
     const result = lab(['run'], { cwd: project, env: { MOD_LAB_WORKSPACE: '/old/lesson/path', MOD_LAB_LESSON_COLLECTION: '/old/lesson/collection', MOD_LAB_COMPONENT_DIRS: '["/old/components"]' } })
     assert.equal(result.status, 0, result.err)
-    assert.deepEqual(readdirSync(project).sort(), ['.claude', 'README.md', 'workshop'])
-    const collection = join(project, '.claude', 'mod-lab')
+    assert.deepEqual(readdirSync(project).sort(), ['README.md', 'workshop'])
+    const collection = join(dir, 'home', '.claude-mod-lab', 'examples')
     assert.deepEqual(readdirSync(collection), [])
     assert.ok(pluginDirs(sessions()[0].args).includes(collection))
-    assert.deepEqual(JSON.parse(sessions()[0].env.MOD_LAB_COMPONENT_DIRS), [collection])
+    assert.deepEqual(JSON.parse(sessions()[0].env.MOD_LAB_COMPONENT_DIRS), [collection, sessions()[0].env.MOD_LAB_LESSON_COLLECTION])
+    assert.equal(sessions()[0].env.MOD_LAB_EXAMPLES_DIR, collection)
     assert.equal(readFileSync(join(project, 'README.md'), 'utf8'), 'Their project.\n')
     assert.ok(!pluginDirs(sessions()[0].args).some(path => path.endsWith('/workshop')))
     assert.equal(sessions()[0].env.MOD_LAB_LESSONS, '')
-    assert.equal(sessions()[0].env.MOD_LAB_LESSON_COLLECTION, '')
+    assert.ok(sessions()[0].env.MOD_LAB_LESSON_COLLECTION.startsWith(join(dir, 'home', '.claude-mod-lab', 'projects')))
     assert.equal(sessions()[0].env.MOD_LAB_WORKSPACE, '')
-    assert.equal(lab(['run'], { cwd: project }).status, 0)
+    const second = join(dir, 'second-project')
+    mkdirSync(second)
+    assert.equal(lab(['run'], { cwd: second }).status, 0)
+    assert.equal(sessions()[1].env.MOD_LAB_EXAMPLES_DIR, collection)
+    assert.notEqual(sessions()[1].env.MOD_LAB_LESSON_COLLECTION, sessions()[0].env.MOD_LAB_LESSON_COLLECTION)
+    assert.deepEqual(readdirSync(second), [])
     assert.equal(sessions()[1].env.MOD_LAB_LESSONS, '')
     assert.ok(!pluginDirs(sessions()[1].args).some(path => path.endsWith('/workshop')))
   }))
 
-test('run explicitly loads known legacy component copies in place, skipping unrelated and duplicate copies', () =>
+test('run --local explicitly loads known legacy component copies in place, skipping unrelated and duplicate copies', () =>
   inTemp(dir => {
     const { lab, sessions } = standIns(dir)
     const project = join(dir, 'project')
@@ -168,12 +177,16 @@ test('run explicitly loads known legacy component copies in place, skipping unre
     const foreign = plugin(legacy, 'band-mod', 'different-plugin')
     const duplicate = plugin(legacy, 'hover-mod')
     plugin(collection, 'hover-mod')
-    const result = lab(['run', project])
+    const result = lab(['run', project, '--local'])
     assert.equal(result.status, 0, result.err)
     const folders = pluginDirs(sessions()[0].args)
     for (const included of [collection, gallery, raster]) assert.ok(folders.includes(included), included)
     for (const skipped of [unrelated, foreign, duplicate]) assert.ok(!folders.includes(skipped), skipped)
     assert.deepEqual(JSON.parse(sessions()[0].env.MOD_LAB_COMPONENT_DIRS), [collection, raster, gallery])
+    assert.equal(sessions()[0].env.MOD_LAB_EXAMPLES_DIR, collection)
+    const shared = lab(['run', project])
+    assert.equal(shared.status, 0, shared.err)
+    for (const local of [collection, gallery, raster]) assert.ok(!pluginDirs(sessions()[1].args).includes(local), local)
     assert.equal(readFileSync(join(gallery, 'mine.txt'), 'utf8'), 'My edited copy.\n')
     assert.ok(!existsSync(join(collection, 'gallery-mod')), 'legacy copies are not moved or duplicated')
   }))
@@ -181,10 +194,10 @@ test('run explicitly loads known legacy component copies in place, skipping unre
 test('run forwards Claude arguments after -- and headless sessions do not open an explorer', () =>
   inTemp(dir => {
     const { lab, sessions } = standIns(dir)
-    const result = lab(['run', '--', '-p', '/mod-lab explorer', '--model', 'haiku'])
+    const result = lab(['run', '--', '-p', '/mod-lab explorer', '--model', 'haiku', '--local'])
     assert.equal(result.status, 0, result.err)
     assert.equal(sessions()[0].env.MOD_LAB_OPEN, '')
-    assert.deepEqual(sessions()[0].args.slice(-4), ['-p', '/mod-lab explorer', '--model', 'haiku'])
+    assert.deepEqual(sessions()[0].args.slice(-5), ['-p', '/mod-lab explorer', '--model', 'haiku', '--local'])
     assert.equal(lab(['run', '--no-open']).status, 0)
     assert.equal(sessions()[1].env.MOD_LAB_OPEN, '1', 'the explorer still starts')
     assert.equal(sessions()[1].env.MOD_LAB_NO_OPEN, '1', 'only the browser opening is suppressed')
@@ -199,7 +212,7 @@ test('a home directory with application state is not mistaken for a lesson works
     assert.equal(result.status, 0, result.err)
     assert.equal(sessions()[0].env.MOD_LAB_LESSONS, '')
     assert.equal(sessions()[0].env.MOD_LAB_LESSON_COLLECTION, '')
-    assert.deepEqual(JSON.parse(sessions()[0].env.MOD_LAB_COMPONENT_DIRS), [])
+    assert.deepEqual(JSON.parse(sessions()[0].env.MOD_LAB_COMPONENT_DIRS), [join(home, '.claude-mod-lab', 'examples')])
     assert.ok(!existsSync(join(home, '.claude', 'mod-lab')))
     assert.ok(!pluginDirs(sessions()[0].args).some(path => path.endsWith('/workshop')))
     assert.ok(!existsSync(join(home, 'workshop')))
@@ -280,36 +293,105 @@ test('run reports managed sideload restrictions before loading plugins or creati
     assert.ok(!existsSync(join(dir, 'missing')))
   }))
 
-test('add copies a template into the workspace .claude/skills/, then refuses to copy over it', () =>
+test('examples shows focused help and rejects incomplete or invalid commands', () =>
   inTemp(dir => {
-    const listed = bin(['add'], { cwd: dir })
-    assert.equal(listed.status, 0)
-    assert.match(listed.out, /brackets-mod {2,}Closes brackets/)
-    assert.match(listed.out, /scratch-mod {2,}/)
-    const added = bin(['add', 'brackets-mod'], { cwd: dir })
-    assert.equal(added.status, 0, added.err)
-    assert.match(added.out, /Copied brackets-mod to \.claude\/skills\/brackets-mod\//)
-    assert.ok(existsSync(join(dir, '.claude', 'skills', 'brackets-mod', '.claude-plugin', 'plugin.json')))
-    const again = bin(['add', 'brackets-mod'], { cwd: dir })
-    assert.equal(again.status, 1)
-    assert.match(again.err, /already there, so nothing was copied/)
-    assert.equal(bin(['add', 'no-such-template'], { cwd: dir }).status, 1)
+    const help = bin(['examples'], { cwd: dir })
+    assert.equal(help.status, 0, help.err)
+    assert.match(help.out, /Usage: claude-mod-lab examples list/)
+    assert.equal(bin(['examples', '--help'], { cwd: dir }).out, help.out)
+    assert.equal(bin(['examples', 'add', '--help'], { cwd: dir }).out, help.out)
+    for (const args of [
+      ['add'],
+      ['add', '--to', 'mine'],
+      ['add', 'band-mod', '--to'],
+      ['add', 'band-mod', '--unknown'],
+      ['add', 'band-mod', '--local', '--to', 'mine'],
+      ['list', 'band-mod'],
+      ['unknown'],
+    ]) {
+      const result = bin(['examples', ...args], { cwd: dir })
+      assert.equal(result.status, 2, `${args.join(' ')}: ${result.err}`)
+      assert.match(result.err, /examples|--to needs a folder/)
+    }
+    assert.deepEqual(readdirSync(dir), [], 'help and invalid commands do not copy files')
   }))
 
-test('add --to copies scratch-mod where it is told, and MOD_LAB_WORKSPACE moves the default', () =>
+test('examples add shares editable copies across projects and works from HOME', () =>
   inTemp(dir => {
-    const to = bin(['add', 'scratch-mod', '--to', 'mine/scratch'], { cwd: dir })
+    const { lab, sessions } = standIns(dir)
+    const home = join(dir, 'home')
+    const shared = join(home, '.claude-mod-lab', 'examples')
+    const first = join(dir, 'first')
+    const second = join(dir, 'second')
+    mkdirSync(first)
+    mkdirSync(second)
+    const added = lab(['examples', 'add', 'band-mod'], { cwd: first })
+    assert.equal(added.status, 0, added.err)
+    assert.match(added.out, /shared copy is available across projects/)
+    assert.match(added.out, /Activate the example with its \/command in each session/)
+    assert.ok(existsSync(join(shared, 'band-mod', '.claude-plugin', 'plugin.json')))
+    assert.deepEqual(readdirSync(first), [])
+    const again = lab(['examples', 'add', 'band-mod'], { cwd: second })
+    assert.equal(again.status, 1)
+    assert.match(again.err, /already there/)
+    assert.equal(lab(['run'], { cwd: second }).status, 0)
+    assert.equal(sessions()[0].env.MOD_LAB_EXAMPLES_DIR, shared)
+    assert.deepEqual(readdirSync(second), [])
+    assert.equal(lab(['examples', 'add', 'brackets-mod'], { cwd: home }).status, 0)
+    assert.ok(existsSync(join(shared, 'brackets-mod', '.claude-plugin', 'plugin.json')))
+    assert.equal(lab(['run', '--local'], { cwd: home }).status, 2)
+  }))
+
+test('examples add --local copies an example into the project collection loaded by run, then refuses to copy over it', () =>
+  inTemp(dir => {
+    const { lab, sessions } = standIns(dir)
+    const listed = bin(['examples', 'list'], { cwd: dir })
+    assert.equal(listed.status, 0)
+    const { description } = JSON.parse(readFileSync(join(PACKAGE_ROOT, 'examples', 'brackets-mod', '.claude-plugin', 'plugin.json'), 'utf8'))
+    const entry = listed.out.split('\n').find(line => /^\s+brackets-mod\s{2,}/.test(line))
+    assert.equal(entry?.replace(/^\s+brackets-mod\s+/, ''), description)
+    assert.match(listed.out, /Starter mod:\n\n  scratch-mod {2,}/)
+    const added = lab(['examples', 'add', 'brackets-mod', '--local'])
+    assert.equal(added.status, 0, added.err)
+    assert.match(added.out, /Copied brackets-mod to \.claude\/mod-lab\/brackets-mod\//)
+    assert.match(added.out, /claude-mod-lab run/)
+    const collection = join(dir, '.claude', 'mod-lab')
+    assert.ok(existsSync(join(collection, 'brackets-mod', '.claude-plugin', 'plugin.json')))
+    const started = lab(['run', '--local'])
+    assert.equal(started.status, 0, started.err)
+    assert.ok(pluginDirs(sessions()[0].args).includes(collection))
+    const again = lab(['examples', 'add', 'brackets-mod', '--local'])
+    assert.equal(again.status, 1)
+    assert.match(again.err, /already there, so nothing was copied/)
+    assert.equal(bin(['examples', 'add', 'no-such-example'], { cwd: dir }).status, 1)
+  }))
+
+test('examples add --to copies scratch-mod where it is told, and MOD_LAB_WORKSPACE selects the --local project', () =>
+  inTemp(dir => {
+    const to = bin(['examples', 'add', 'scratch-mod', '--to', 'mine/scratch'], { cwd: dir })
     assert.equal(to.status, 0, to.err)
     assert.ok(existsSync(join(dir, 'mine', 'scratch', 'tests')))
     mkdirSync(join(dir, 'elsewhere'))
-    const moved = bin(['add', 'band-mod'], { cwd: dir, env: { MOD_LAB_WORKSPACE: 'elsewhere' } })
+    const moved = bin(['examples', 'add', 'band-mod', '--local'], { cwd: dir, env: { MOD_LAB_WORKSPACE: 'elsewhere', HOME: join(dir, 'home') } })
     assert.equal(moved.status, 0, moved.err)
-    assert.ok(existsSync(join(dir, 'elsewhere', '.claude', 'skills', 'band-mod')))
+    assert.ok(existsSync(join(dir, 'elsewhere', '.claude', 'mod-lab', 'band-mod')))
   }))
 
-test('add refuses the home folder as a workspace, with the reason alone', () =>
+test('examples add preserves an existing legacy copy instead of shadowing it with a new example', () =>
   inTemp(dir => {
-    const refused = bin(['add', 'band-mod'], { cwd: dir, env: { HOME: dir } })
+    const legacy = join(dir, '.claude', 'skills', 'band-mod')
+    mkdirSync(legacy, { recursive: true })
+    writeFileSync(join(legacy, 'mine.txt'), 'My edited copy.\n')
+    const result = bin(['examples', 'add', 'band-mod', '--local'], { cwd: dir, env: { HOME: join(dir, 'home') } })
+    assert.equal(result.status, 1)
+    assert.match(result.err, /Keep your existing copy, move it to \.claude\/mod-lab\/band-mod\//)
+    assert.equal(readFileSync(join(legacy, 'mine.txt'), 'utf8'), 'My edited copy.\n')
+    assert.ok(!existsSync(join(dir, '.claude', 'mod-lab', 'band-mod')))
+  }))
+
+test('examples add --local refuses the home folder as a workspace, with the reason alone', () =>
+  inTemp(dir => {
+    const refused = bin(['examples', 'add', 'band-mod', '--local'], { cwd: dir, env: { HOME: dir } })
     assert.equal(refused.status, 1)
     assert.match(refused.err, /^The workspace cannot be your home folder/)
     assert.ok(!refused.err.includes('    at '), 'no stack trace')
@@ -488,9 +570,19 @@ test('run reuses lesson links without loading the same workshop plugins twice', 
     assert.equal(started.status, 0, started.err)
     const [session] = sessions()
     const folders = pluginDirs(session.args)
-    assert.equal(folders.filter(path => path === collection).length, 1)
+    const lessonCollection = session.env.MOD_LAB_LESSON_COLLECTION
+    assert.equal(folders.filter(path => path === lessonCollection).length, 1)
+    assert.ok(!folders.includes(collection))
     assert.equal(folders.includes(join(project, 'workshop')), false)
-    assert.equal(session.env.MOD_LAB_LESSON_COLLECTION, collection)
+    assert.ok(lessonCollection.startsWith(join(dir, 'home', '.claude-mod-lab', 'projects')))
     assert.equal(session.env.MOD_LAB_LESSONS, project)
+    assert.equal(realpathSync(join(lessonCollection, 'another')), join(project, 'workshop', 'another'))
+    const local = lab(['run', project, '--local'])
+    assert.equal(local.status, 0, local.err)
+    const localFolders = pluginDirs(sessions()[1].args)
+    assert.equal(localFolders.filter(path => path === collection).length, 1)
+    assert.ok(!localFolders.includes(lessonCollection))
+    assert.ok(!localFolders.includes(join(project, 'workshop')))
+    assert.equal(sessions()[1].env.MOD_LAB_LESSON_COLLECTION, collection)
     assert.equal(realpathSync(join(collection, 'another')), join(project, 'workshop', 'another'))
   }))

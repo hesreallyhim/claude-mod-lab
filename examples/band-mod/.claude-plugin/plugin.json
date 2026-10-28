@@ -1,0 +1,10 @@
+{
+  "name": "band-mod",
+  "version": "0.2.0-beta.1",
+  "description": "Displays a tool call count and the most recently used tool above the prompt box",
+  "author": {
+    "name": "Really Him"
+  },
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

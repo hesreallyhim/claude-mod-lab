@@ -11,7 +11,6 @@ import { labCommand } from './commands'
 import { initLessonsCommand } from './lessons'
 import { ARGUMENT_HINT, drawHelpBox, HELP_INTRO } from './help'
 import { registerExplorer } from './explorer'
-import { checkVersion } from './compat'
 import { noteRequest, registerCompactor } from './compactor'
 import { registerConfig } from './config'
 import { inspect, replay } from './inspect'
@@ -118,7 +117,6 @@ export const register: Register = (on, options) => {
   })
 
   // Each step stands alone, so one that a build refuses leaves the others running.
-  // The version check reads compat.json before the intercepts are restored, so none acts on that read.
   on('session.start', async ($, e, next) => {
     await startStep($, 'the /mod-lab command', () =>
       $.command.register({
@@ -131,7 +129,6 @@ export const register: Register = (on, options) => {
       $.command.register({ name: 'init-lessons', description: 'Enable lessons in this project without leaving the session' }),
     )
     await startStep($, "the model's tools", () => registerTools($))
-    await startStep($, 'the version check', () => checkVersion($))
     await startStep($, 'tracing', () => startTracing($))
     await startStep($, 'the intercepts', () => startIntercepts($))
     noteTrace($, next, e, { cwd: e.cwd })

@@ -7,7 +7,6 @@ import { pageHead } from './areas.js'
 import { componentControl, forgetComponents } from './components.js'
 import { capOf, explain, hookLines, kindOf, notesOf, runsOf, shortOf, summaryOf, TRIES } from './keys-rows.js'
 import { helpButton } from './page.js'
-import { sessionVersion } from './versions.js'
 import { clockTime, el } from './view.js'
 
 // Rows the ribbon draws, the newest last.
@@ -418,9 +417,13 @@ export function keysPage(ctx) {
     el(
       'p',
       {},
-      'Each of these is a small mod. Add one to the session and try it: it runs beneath the lab, so its rewrites and paint show in the log above. Add copies it into ',
-      el('code', {}, '.claude/skills/'),
-      ', where your copy is yours to change, and each session started in this folder loads it until you remove it.',
+      'Each example is a small mod whose prompt changes appear in the log above after you activate it. Add to lab copies it into ',
+      el('code', {}, '~/.claude-mod-lab/examples/'),
+      ', shared by your lab sessions. Run the example’s command to enable it in this session; use ',
+      el('code', {}, 'off'),
+      ' to disable it. Start the lab with ',
+      el('code', {}, 'run --local'),
+      ' to load copies made with Add to project instead.',
     ),
     el(
       'div',
@@ -437,7 +440,7 @@ export function keysPage(ctx) {
             ...idea.uses.map(name => el('a', { href: hrefOf(name) }, el('code', {}, name))),
             idea.more === undefined ? null : el('a', { href: idea.more[1], class: 'more' }, `${idea.more[0]} →`),
           ),
-          idea.component === undefined ? null : componentControl(idea.component, sessionVersion(state.session)),
+          idea.component === undefined ? null : componentControl(idea.component),
         ),
       ),
     ),

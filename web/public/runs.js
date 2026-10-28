@@ -6,7 +6,6 @@
 import { api } from './api.js'
 import { reportView } from './page.js'
 import { hrefFor, memberOf } from './reference.js'
-import { isNotRun } from './versions.js'
 import { chainTable, clockTime, compact, el, jsonTree, logRow, openTextDialog, payloadView } from './view.js'
 
 /** Where each job's result is drawn once the session answers it. */
@@ -132,7 +131,6 @@ export function ejectButton(run) {
 /** A run's outcome in a word, and the mark and colour that go with it. */
 function readingOf(run) {
   if (run.ok) return { status: 'ok', mark: 'ok', tone: 'ok' }
-  if (isNotRun(run)) return { status: 'not run', mark: 'notrun', tone: 'muted' }
   return { status: 'failed', mark: 'failed', tone: 'bad' }
 }
 
@@ -162,7 +160,7 @@ export function runRow(state, run) {
     src: run.from,
     chainTitle: null,
     parts: [
-      runResult(run, status),
+      runResult(run),
       [`API calls (${dispatches.length})`, calls],
       [
         'Reference and testing',
@@ -183,12 +181,9 @@ function runSummary(run) {
   return value.length <= 60 ? jsonTree(run.value) : null
 }
 
-function runResult(run, status) {
+function runResult(run) {
   if (run.ok) return ['Result', payloadView(run.value)]
-  return [
-    status === 'not run' ? 'Not run' : 'Error',
-    el('p', { class: status === 'failed' ? 'error' : 'muted' }, run.error),
-  ]
+  return ['Error', el('p', { class: 'error' }, run.error)]
 }
 
 function extraCalls(count) {
@@ -217,11 +212,10 @@ function runCalls(state, dispatches) {
 
 export function runCard(state, run) {
   const href = memberOf(state, run.probe) !== undefined ? `#/$/${run.probe}` : '#/probes'
-  // A run the capability table kept from running was not run, which is not a failure.
-  const status = run.ok ? 'ok' : isNotRun(run) ? 'not run' : 'failed'
+  const status = run.ok ? 'ok' : 'failed'
   return el(
     'article',
-    { class: status === 'not run' ? 'run' : `run ${status}` },
+    { class: `run ${status}` },
     el(
       'header',
       {},
@@ -236,11 +230,7 @@ export function runCard(state, run) {
         run.at ? el('span', { class: 'run-time' }, clockTime(run.at)) : null,
       ),
     ),
-    el(
-      'div',
-      { class: 'outcome' },
-      run.ok ? jsonTree(run.value) : el('p', { class: status === 'not run' ? 'muted' : 'error' }, run.error),
-    ),
+    el('div', { class: 'outcome' }, run.ok ? jsonTree(run.value) : el('p', { class: 'error' }, run.error)),
     el(
       'div',
       { class: 'dispatch-head' },
@@ -396,11 +386,10 @@ export function updateJob(state, job) {
   const marker = inlinePending.get(job.id)
   if (marker !== undefined && ['done', 'lost'].includes(job.status)) {
     const ok = job.status === 'done' && (job.kind === 'command' || job.run?.ok)
-    const outcome = ok ? 'ok' : job.run && isNotRun(job.run) ? 'needs a newer Claude Code' : 'failed'
+    const outcome = ok ? 'ok' : 'failed'
     if (job.status === 'done' && job.kind === 'command') marker.replaceChildren(' ', inlineAnswer(job.answer ?? ''))
     else marker.textContent = job.status === 'lost' ? ' lost' : ` ${outcome}, see Runs`
-    marker.className =
-      outcome === 'needs a newer Claude Code' ? 'inline-result' : `inline-result ${ok ? 'ok' : 'failed'}`
+    marker.className = `inline-result ${outcome}`
     inlinePending.delete(job.id)
   }
   const waiting = pending.get(job.id)

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 
-import { BRIDGE_PROTOCOL, compatOf, createHub, protocolMessage } from '../lib/hub.mjs'
+import { BRIDGE_PROTOCOL, createHub, protocolMessage } from '../lib/hub.mjs'
 
 function clockAt(start = 1_000) {
   const clock = { now: start }
@@ -267,35 +267,20 @@ test("the session's record keeps the bridge's and the lab's roots from the hello
   assert.equal(hub.snapshot().session.lab, null)
 })
 
-test("the session's record keeps the hello's engine and compat.json, the entries of another shape left out", () => {
+test("the session's record keeps the hello's engine and its valid surface names", () => {
   const hub = createHub()
   hub.hello({
     protocol: BRIDGE_PROTOCOL,
     session: { id: 's-1', version: '2.1.303' },
     engine: { version: '2.1.303', surfaces: ['terminal', 7] },
-    compat: {
-      floor: '2.1.299',
-      testedThrough: '2.1.303',
-      plugins: { 'paint-mod': { since: '2.1.300', uses: ['PromptDecoration.virtualText'] }, broken: { since: 'soon' } },
-      capabilities: { 'future.thing': { since: '2.1.310', uses: ['future.thing'] } },
-    },
   })
   const { session } = hub.snapshot()
   assert.deepEqual(session.engine, { version: '2.1.303', surfaces: ['terminal'] })
-  assert.deepEqual(session.compat, {
-    floor: '2.1.299',
-    testedThrough: '2.1.303',
-    plugins: { 'paint-mod': { since: '2.1.300', uses: ['PromptDecoration.virtualText'] } },
-    capabilities: { 'future.thing': { since: '2.1.310', uses: ['future.thing'] } },
-  })
 
-  // A bridge that sends neither, or a compat.json without its range, leaves them null.
   hub.hello({
     protocol: BRIDGE_PROTOCOL,
     session: { id: 's-1' },
     engine: { surfaces: [] },
-    compat: { floor: '2.1.299' },
   })
-  assert.deepEqual([hub.snapshot().session.engine, hub.snapshot().session.compat], [null, null])
-  assert.equal(compatOf(null), null)
+  assert.equal(hub.snapshot().session.engine, null)
 })

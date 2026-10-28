@@ -73,7 +73,6 @@ export const ACCENT: Color = 'claude'
 export const NAME: Color = 'suggestion'
 export const OUTCOME: Readonly<Record<ReturnType<typeof runStatus>, Color>> = {
   ok: 'success',
-  'not run': 'warning',
   failed: 'error',
 }
 

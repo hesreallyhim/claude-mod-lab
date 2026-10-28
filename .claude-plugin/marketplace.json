@@ -3,102 +3,83 @@
   "owner": {
     "name": "Really Him"
   },
-  "description": "Mods for learning the Claude Code mod API by running it: the mod-lab and its explorer bridge, a gallery of rendering techniques, small mods to start from, and a skill that scaffolds a new mod",
+  "description": "A comprehensive workbench for Claude Code mods: explore the mod API, trace the interaction of mods in a live session, and learn how to build your own mods from the ground up",
   "plugins": [
     {
       "name": "mod-lab",
-      "source": "./mods/mod-lab",
-      "description": "Run calls on $ in a live session and see what each one dispatched and returned"
+      "source": "./mods/mod-lab"
     },
     {
       "name": "mod-lab-bridge",
-      "source": "./mods/mod-lab-bridge",
-      "description": "Serves the mod-lab explorer page from this session and connects it: runs the probes it asks for and forwards runs and traces"
+      "source": "./mods/mod-lab-bridge"
     },
     {
       "name": "mod-lab-target",
-      "source": "./mods/mod-lab-target",
-      "description": "A companion to mod-lab whose hooks fail on request, so /mod-lab verify can check what a failed hook leaves standing"
+      "source": "./mods/mod-lab-target"
     },
     {
       "name": "mod-lab-keys",
-      "source": "./mods/mod-lab-keys",
-      "description": "Keeps each change to the prompt box that came another way than an edit (a recalled prompt, a clear, a plugin's fill) for /mod-lab keys; it needs Claude Code 2.1.300"
+      "source": "./mods/mod-lab-keys"
     },
     {
       "name": "gallery-mod",
-      "source": "./mods/gallery-mod",
-      "description": "Rendering techniques for mods, one tab each, drawn as well as the surface allows"
+      "source": "./mods/gallery-mod"
     },
     {
       "name": "raster-mod",
-      "source": "./templates/raster-mod",
-      "description": "A Raster in a pane, repainted by $.ui.blit with no render pass"
+      "source": "./examples/raster-mod"
     },
     {
       "name": "image-mod",
-      "source": "./templates/image-mod",
-      "description": "An Image in a pane whose pixels are made here and swapped by $.ui.blit"
+      "source": "./examples/image-mod"
     },
     {
       "name": "svg-mod",
-      "source": "./templates/svg-mod",
-      "description": "The session's tool calls as an Svg bar chart where the surface has Svg, and block glyphs on the terminal"
+      "source": "./examples/svg-mod"
     },
     {
       "name": "links-mod",
-      "source": "./templates/links-mod",
-      "description": "A Markdown in a pane whose links the mod answers itself"
+      "source": "./examples/links-mod"
     },
     {
       "name": "hover-mod",
-      "source": "./templates/hover-mod",
-      "description": "Three words in a pane; pointing at one shows a card over the rows above it, drawn hidden and revealed by a hover group, with no hook running"
+      "source": "./examples/hover-mod"
     },
     {
       "name": "band-mod",
-      "source": "./templates/band-mod",
-      "description": "A line above the prompt: the session's tool calls and the last one"
+      "source": "./examples/band-mod"
     },
     {
       "name": "sites-mod",
-      "source": "./templates/sites-mod",
-      "description": "A line under each finished tool call's row saying how long it ran"
+      "source": "./examples/sites-mod"
     },
     {
       "name": "brackets-mod",
-      "source": "./templates/brackets-mod",
-      "description": "Closes brackets as they are typed in the prompt box, steps over a closer, and paints the bracket beside the cursor with its partner"
+      "source": "./examples/brackets-mod"
     },
     {
       "name": "keycast-mod",
-      "source": "./templates/keycast-mod",
-      "description": "The keys you press in the prompt box, drawn above it as you press them, for screen recordings and pairing"
+      "source": "./examples/keycast-mod"
     },
     {
       "name": "shortcodes-mod",
-      "source": "./templates/shortcodes-mod",
-      "description": "Shortcodes of your own in the prompt box: type :tests: and the closing colon writes the prompt it stands for; a half-typed one shows the rest as ghost text"
+      "source": "./examples/shortcodes-mod"
     },
     {
       "name": "paint-mod",
-      "source": "./templates/paint-mod",
-      "description": "Paints slash commands in the prompt box as they are typed: a known one bold, an unknown one underlined, the rest of a partial one as ghost text"
+      "source": "./examples/paint-mod"
     },
     {
       "name": "paste-guard-mod",
-      "source": "./templates/paste-guard-mod",
-      "description": "Paints anything shaped like an API key in the prompt box red as it goes in, and holds back a prompt holding one until Enter is pressed again"
+      "source": "./examples/paste-guard-mod"
     },
     {
       "name": "draft-keeper-mod",
-      "source": "./templates/draft-keeper-mod",
-      "description": "Keeps the draft Ctrl+C clears from the prompt box and offers it back as a suggestion that Tab takes"
+      "source": "./examples/draft-keeper-mod"
     },
     {
       "name": "mod-bootstrap",
-      "source": "./plugins/mod-bootstrap",
-      "description": "A skill that scaffolds a new mod: its manifest, hooks.json, a hooks module with one command, a type contract, a test and a README"
+      "source": "./plugins/mod-bootstrap"
     }
   ]
 }

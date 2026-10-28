@@ -143,7 +143,7 @@ function shownLine(kept: number, left: number): string {
 function runBrief(run: LabRun): string {
   const status = runStatus(run)
   const args = Object.keys(run.args).length === 0 ? '' : ` ${compact(run.args, 120)}`
-  const lines = [`#${run.seq} ${clock(run.at)} ${run.probe}${args}, from ${run.from}: ${status}${status === 'not run' ? '' : ` in ${run.ms} ms`}`]
+  const lines = [`#${run.seq} ${clock(run.at)} ${run.probe}${args}, from ${run.from}: ${status} in ${run.ms} ms`]
   lines.push(run.ok ? `  value: ${compact(run.value, 240)}` : `  error: ${clip(run.error ?? '', 240)}`)
   if (run.dispatches.length === 0) lines.push(`  dispatches: ${quietNote(findProbe(run.probe))}`)
   for (const dispatch of run.dispatches.slice(0, MAX_DISPATCHES)) {

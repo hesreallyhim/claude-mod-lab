@@ -6,7 +6,6 @@ import { api } from './api.js'
 import { pageHead } from './areas.js'
 import { componentControl, forgetComponents } from './components.js'
 import { markdown } from './markdown.js'
-import { sessionVersion } from './versions.js'
 import { el, openTextDialog } from './view.js'
 
 const SURFACE_LABEL = { terminal: 'terminal', desktop: 'desktop', vscode: 'VS Code', mobile: 'mobile' }
@@ -37,20 +36,20 @@ function showWorkings(id) {
 }
 
 /** A technique as a card: what its mod does, where it draws, how to see it in the gallery, and Add to project. */
-function card(tab, version) {
+function card(tab) {
   return el(
     'article',
     { class: 'card technique-card' },
     el('h3', {}, tab.title),
-    el('p', {}, tab.template?.description ?? ''),
-    tab.template?.where ? el('p', { class: 'meta' }, `Draws on ${tab.template.where}.`) : null,
+    el('p', {}, tab.example?.description ?? ''),
+    tab.example?.where ? el('p', { class: 'meta' }, `Draws on ${tab.example.where}.`) : null,
     el(
       'p',
       { class: 'uses' },
       el('code', { title: 'The same technique in the gallery mod' }, `/mod-gallery ${tab.id}`),
       el('button', { type: 'button', class: 'link more', onclick: () => showWorkings(tab.id) }, 'How it works ↓'),
     ),
-    tab.template === null ? null : componentControl(tab.template.name, version),
+    tab.example === null ? null : componentControl(tab.example.name),
   )
 }
 
@@ -102,7 +101,7 @@ function matrix(elements) {
 }
 
 /** The technique's mod as a snippet that writes it into workshop/, for someone who would rather paste than add. */
-function snippetRow(template) {
+function snippetRow(example) {
   const status = el('span', { class: 'copy-status muted' })
   const copy = el(
     'button',
@@ -111,8 +110,8 @@ function snippetRow(template) {
       class: 'quiet',
       onclick: async () => {
         try {
-          await navigator.clipboard.writeText(template.snippet)
-          status.textContent = ` Copied. Paste it in a terminal in your workspace: it writes workshop/${template.name}/.`
+          await navigator.clipboard.writeText(example.snippet)
+          status.textContent = ` Copied. Paste it in a terminal in your workspace: it writes workshop/${example.name}/.`
         } catch {
           status.textContent = ' The page cannot reach the clipboard here. Open View snippet to select and copy it.'
         }
@@ -125,9 +124,9 @@ function snippetRow(template) {
       'p',
       {},
       'A snippet that writes ',
-      el('code', {}, `templates/${template.name}`),
+      el('code', {}, `examples/${example.name}`),
       ' into ',
-      el('code', {}, `workshop/${template.name}`),
+      el('code', {}, `workshop/${example.name}`),
       ', to paste rather than add.',
     ),
     el(
@@ -140,7 +139,7 @@ function snippetRow(template) {
           type: 'button',
           class: 'quiet',
           'aria-haspopup': 'dialog',
-          onclick: () => openTextDialog(`${template.name} snippet`, template.snippet, 'Close snippet'),
+          onclick: () => openTextDialog(`${example.name} snippet`, example.snippet, 'Close snippet'),
         },
         'View snippet',
       ),
@@ -189,16 +188,15 @@ function workings(tab) {
           ),
         ),
       ),
-      tab.template === null
+      tab.example === null
         ? null
-        : [el('dt', {}, 'As a mod'), el('dd', { class: 'as-mod' }, ...snippetRow(tab.template))],
+        : [el('dt', {}, 'As a mod'), el('dd', { class: 'as-mod' }, ...snippetRow(tab.example))],
     ),
   )
 }
 
-export async function galleryPage(ctx) {
+export async function galleryPage() {
   forgetComponents()
-  const version = sessionVersion(ctx.state.session)
   const { elements, tabs, problems } = await api('/api/gallery')
   return el(
     'div',
@@ -216,17 +214,21 @@ export async function galleryPage(ctx) {
       el('code', {}, '/mod-gallery raster'),
       '.',
     ),
-    componentControl('gallery-mod', version),
+    componentControl('gallery-mod'),
     ...problems.map(problem => el('p', { class: 'error' }, problem)),
     el('h2', {}, 'Techniques'),
     el(
       'p',
       {},
-      'Add one and the session loads it a second later. Add copies it into ',
-      el('code', {}, '.claude/skills/'),
-      ', where your copy is yours to change, and each session started in this folder loads it until you remove it.',
+      'Add to lab copies an example into ',
+      el('code', {}, '~/.claude-mod-lab/examples/'),
+      ', shared by your lab sessions. Run its command to activate it in the session you want to try it in. Start the lab with ',
+      el('code', {}, 'run --local'),
+      ' to load project copies made with Add to project in ',
+      el('code', {}, '.claude/mod-lab/'),
+      ' instead. Each example shows its destination and how to try it.',
     ),
-    el('div', { class: 'cards list' }, ...tabs.map(tab => card(tab, version))),
+    el('div', { class: 'cards list' }, ...tabs.map(card)),
     el('h2', {}, 'What each surface draws'),
     el(
       'p',

@@ -1,7 +1,7 @@
 {
   "name": "gallery-mod",
   "version": "0.2.0-beta.1",
-  "description": "Rendering techniques for mods, one tab each, drawn as well as the surface allows",
+  "description": "Demonstrations of various rendering techniques for mods and how they are handled by different clients",
   "license": "MIT",
   "author": {
     "name": "Really Him"

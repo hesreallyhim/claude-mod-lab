@@ -18,7 +18,7 @@ import { BRIDGE_PROTOCOL } from '../lib/hub.mjs'
 import { startServer } from '../server.mjs'
 
 const dir = realpathSync(mkdtempSync(join(tmpdir(), 'mod-lab-server-')))
-// What `claude plugin list` answers on a machine with none of the templates installed.
+// What `claude plugin list` answers on a machine with none of the examples installed.
 const NONE_INSTALLED = { copies: [], problem: null }
 const bridgeFile = join(dir, 'bridge', 'bridge.json')
 const typesPath = join(dir, 'claude-code.d.ts')
@@ -193,14 +193,6 @@ test("adding a component copies it into the workspace's skills folder and has th
       [false, { isReloaded: true, note: 'Reloaded: 6 plugins' }],
     )
 
-    const listed = await (await fetch(`${own.url}/api/components`, { headers: { 'x-lab-token': own.token } })).json()
-    const since = Object.fromEntries(listed.components.map(one => [one.name, one.since]))
-    assert.deepEqual(
-      [since['paint-mod'], since['brackets-mod']],
-      ['2.1.300', null],
-      "a template's minimum from compat.json",
-    )
-
     const refused = await page('/api/components/add', { name: '../mods/mod-lab' })
     assert.match((await refused.json()).error, /no component is named/)
   } finally {
@@ -208,7 +200,7 @@ test("adding a component copies it into the workspace's skills folder and has th
   }
 })
 
-test('Add to project says when an installed copy of the template keeps the copy from loading, and has no reload', async () => {
+test('Add to project says when an installed copy of the example keeps the copy from loading, and has no reload', async () => {
   const workspace = realpathSync(mkdtempSync(join(tmpdir(), 'server-installed-')))
   const asked = []
   const installed = async names => {

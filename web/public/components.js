@@ -1,10 +1,10 @@
-// Add to project: a mod from templates/ copied into the project's
-// component collection, which the session picks up when the lab runs
-// /reload-plugins for it. The copy is the person's to edit; Remove deletes
-// it, asking first when it holds changes. Used by the Prompt box and Gallery pages.
+// Add to lab or project: a mod from examples/ copied into the selected
+// component collection. Watched collections can reload in this session; other
+// copies need a session started with the matching launcher scope. The copy is
+// the person's to edit; Remove asks first when it holds changes. Used by the
+// Prompt box and Gallery pages.
 
 import { api } from './api.js'
-import { needsNewer } from './versions.js'
 import { el } from './view.js'
 
 // The server's list, asked for once per page drawn.
@@ -37,9 +37,9 @@ function addedLine(component, directory) {
     'p',
     {
       class: 'component-state',
-      title: 'Files are present in this project. Check the reload result and try the mod below.',
+      title: 'Files are present in the selected collection. Check the reload result and activate the mod below.',
     },
-    '✓ Added to project: ',
+    component.scope === 'shared' ? '✓ Added to your lab: ' : '✓ Added to project: ',
     where,
     edited,
   )
@@ -59,13 +59,16 @@ function commandStatus(component) {
       class: 'component-command muted',
       'data-component-command': component.command,
       'data-command-plugin': component.name,
+      'data-command-supplied': String(component.commandEligible ?? true),
       role: 'status',
     },
     commandText(
       component.command,
-      latestCommands === undefined
-        ? component.commandAvailable
-        : commandAvailable(latestCommands, component.command, component.name),
+      component.commandEligible === false
+        ? false
+        : latestCommands === undefined
+          ? component.commandAvailable
+          : commandAvailable(latestCommands, component.command, component.name),
     ),
   )
 }
@@ -76,30 +79,32 @@ export function refreshComponentCommands(commands) {
   for (const node of document.querySelectorAll('[data-component-command]')) {
     const command = node.getAttribute('data-component-command')
     const plugin = node.getAttribute('data-command-plugin')
-    const available = commandAvailable(commands, command, plugin)
+    const available =
+      node.getAttribute('data-command-supplied') === 'false' ? false : commandAvailable(commands, command, plugin)
     node.textContent = commandText(command, available)
   }
 }
 
-function addedParts(component, directory, busy, remove) {
-  return [
-    addedLine(component, directory),
-    commandStatus(component),
-    component.howToTry === null ? null : el('p', { class: 'component-try' }, component.howToTry),
-    el(
-      'div',
-      { class: 'component-actions' },
-      el(
-        'button',
-        { type: 'button', class: 'quiet', disabled: busy !== null, onclick: () => remove(false) },
-        busy ?? 'Remove',
-      ),
-    ),
-  ].filter(part => part !== null)
-}
-
 function componentNotes(component, reload, problem) {
   const notes = []
+  if (component.scope === 'shared') {
+    notes.push(
+      el(
+        'p',
+        { class: 'muted' },
+        'Shared across lab sessions. Activate it separately in each session; editing or removing the files affects every session using this copy.',
+      ),
+    )
+  }
+  if (!component.isAdded && component.isSupplied === false) {
+    notes.push(
+      el(
+        'p',
+        { class: 'muted' },
+        `This session does not load this folder. After adding, start a session with npx claude-mod-lab run${component.scope === 'local' ? ' --local' : ''} to use this copy.`,
+      ),
+    )
+  }
   if (component.loadProblem) notes.push(el('p', { class: 'error', role: 'status' }, component.loadProblem))
   if (reload?.note && reload.note !== component.loadProblem) notes.push(el('p', { class: 'muted' }, reload.note))
   if (problem !== null) notes.push(el('p', { class: 'error' }, problem))
@@ -108,77 +113,127 @@ function componentNotes(component, reload, problem) {
 
 const componentDirectory = (component, fallback) => component.directory ?? fallback
 
-/** The control for one component, drawn from the server's last answer. */
-function draw(box, component, dir, project, { reload = null, busy = null, isConfirming = false, problem = null } = {}) {
-  const directory = componentDirectory(component, dir)
-  const redraw = (shown, options) => draw(box, shown, dir, project, options)
+/** Mutations update only this destination, retaining the other copy's status. */
+function destinationActions(copy, directory, { component, destinations, states, project, redraw }) {
+  const key = copy.scope ?? 'local'
   const act = async (path, body, label) => {
-    redraw(component, { busy: label })
+    redraw(component, { ...states, [key]: { busy: label } })
     try {
       const answer = await api(path, {
         method: 'POST',
-        body: JSON.stringify({ name: component.name, project, directory, ...body }),
+        body: JSON.stringify({ name: copy.name, project, directory, scope: copy.scope, ...body }),
       })
       forgetComponents()
-      // Only the list carries the minimum, so it is kept from the component as listed.
-      const shown = { ...answer.component, since: component.since }
-      redraw(shown, answer.component.isRefused ? { isConfirming: true } : { reload: answer.reload })
+      const shown =
+        destinations.length > 1
+          ? { ...component, destinations: destinations.map(one => (one.scope === key ? answer.component : one)) }
+          : answer.component
+      redraw(shown, {
+        ...states,
+        [key]: answer.component.isRefused ? { isConfirming: true } : { reload: answer.reload },
+      })
     } catch (error) {
-      redraw(component, { problem: error.message })
+      redraw(component, { ...states, [key]: { problem: error.message } })
     }
   }
-  const add = () => act('/api/components/add', {}, 'Adding…')
-  const remove = force => act('/api/components/remove', { force }, 'Removing…')
-
-  const parts = []
-  if (component.isForeign) {
-    parts.push(
-      el(
-        'p',
-        { class: 'muted' },
-        el('code', {}, `${directory}/${component.name}`),
-        ' is a folder of another plugin or skill, so this one is not added there.',
-      ),
-    )
-  } else if (!component.isAdded) {
-    parts.push(
-      el(
-        'div',
-        { class: 'component-actions' },
-        el('button', { type: 'button', disabled: busy !== null, onclick: add }, busy ?? 'Add to project'),
-      ),
-      el(
-        'p',
-        { class: 'muted' },
-        'A copy of ',
-        el('code', {}, `templates/${component.name}`),
-        ' in ',
-        el('code', {}, directory),
-        ', yours to edit.',
-      ),
-    )
-  } else if (isConfirming) {
-    parts.push(
-      el('p', {}, el('code', {}, `${directory}/${component.name}`), ' has changes of yours. Remove it and them?'),
-      el(
-        'div',
-        { class: 'component-actions' },
-        el('button', { type: 'button', onclick: () => remove(true) }, 'Remove with changes'),
-        el('button', { type: 'button', class: 'quiet', onclick: () => redraw(component) }, 'Keep it'),
-      ),
-    )
-  } else {
-    parts.push(...addedParts(component, directory, busy, remove))
+  return {
+    add: () => act('/api/components/add', {}, 'Adding…'),
+    remove: force => act('/api/components/remove', { force }, 'Removing…'),
+    keep: () => redraw(component, { ...states, [key]: {} }),
   }
-  box.replaceChildren(...parts, ...componentNotes(component, reload, problem))
 }
 
-/**
- * Add to project for the component of this name; it draws nothing where the
- * server has none, or the template needs a newer Claude Code than the
- * session's `version` (null when no session is connected).
- */
-export function componentControl(name, version = null) {
+function destinationButton(copy, state, busy, dual, { add, remove }) {
+  if (copy.isForeign) return null
+  const destination = copy.scope === 'shared' ? 'lab' : 'project'
+  const label = copy.isAdded ? (dual ? `Remove from ${destination}` : 'Remove') : `Add to ${destination}`
+  return el(
+    'button',
+    {
+      type: 'button',
+      class: copy.isAdded ? 'quiet' : '',
+      disabled: busy || state.isConfirming === true || Boolean(copy.unavailable),
+      onclick: () => (copy.isAdded ? remove(false) : add()),
+    },
+    state.busy ?? label,
+  )
+}
+
+function removalConfirmation(copy, directory, busy, { remove, keep }) {
+  return [
+    el('p', {}, el('code', {}, `${directory}/${copy.name}`), ' has changes of yours. Remove it and them?'),
+    el(
+      'div',
+      { class: 'component-actions' },
+      el('button', { type: 'button', disabled: busy, onclick: () => remove(true) }, 'Remove with changes'),
+      el('button', { type: 'button', class: 'quiet', disabled: busy, onclick: keep }, 'Keep it'),
+    ),
+  ]
+}
+
+function destinationContent(copy, state, directory, busy, actions) {
+  if (copy.unavailable) return el('p', { class: 'muted' }, copy.unavailable)
+  if (copy.isForeign) {
+    return el(
+      'p',
+      { class: 'muted' },
+      el('code', {}, `${directory}/${copy.name}`),
+      ' belongs to another plugin or skill and will be left alone.',
+    )
+  }
+  if (state.isConfirming) return removalConfirmation(copy, directory, busy, actions)
+  if (copy.isAdded) {
+    return [
+      addedLine(copy, directory),
+      commandStatus(copy),
+      copy.howToTry ? el('p', { class: 'component-try' }, copy.howToTry) : null,
+    ]
+  }
+  return el(
+    'p',
+    { class: 'muted' },
+    `${copy.scope === 'shared' ? 'Lab' : 'Project'} copy: `,
+    el('code', {}, directory),
+    ', yours to edit.',
+  )
+}
+
+/** Keep a destination's action and details together while rendering them in separate rows. */
+function destinationControl(copy, context) {
+  const key = copy.scope ?? 'local'
+  const state = context.states[key] ?? {}
+  const directory = componentDirectory(copy, context.dir)
+  const actions = destinationActions(copy, directory, context)
+  return {
+    button: destinationButton(copy, state, context.busy, context.destinations.length > 1, actions),
+    panel: el(
+      'div',
+      { 'data-component-scope': key },
+      destinationContent(copy, state, directory, context.busy, actions),
+      copy.unavailable ? null : componentNotes(copy, state.reload ?? null, state.problem ?? null),
+    ),
+  }
+}
+
+/** One row of destination actions, followed by independent copy status and safeguards. */
+function draw(box, component, dir, project, states = {}) {
+  const destinations = component.destinations ?? [component]
+  const busy = Object.values(states).some(state => state.busy)
+  const redraw = (shown = component, next = states) => draw(box, shown, dir, project, next)
+  const context = { component, dir, project, states, destinations, busy, redraw }
+  const controls = destinations.map(copy => destinationControl(copy, context))
+  box.replaceChildren(
+    el(
+      'div',
+      { class: 'component-actions' },
+      controls.map(control => control.button),
+    ),
+    ...controls.map(control => control.panel),
+  )
+}
+
+/** Shared and local controls for this component; draws nothing when the server has none. */
+export function componentControl(name) {
   const box = el('div', { class: 'component', 'data-component': name })
   void list().then(({ dir, components, project, error }) => {
     if (error || !project) {
@@ -186,8 +241,7 @@ export function componentControl(name, version = null) {
       return
     }
     const component = components.find(one => one.name === name)
-    // A template that needs a newer Claude Code than the session runs is not offered.
-    if (component === undefined || (!component.isForeign && needsNewer(component.since, version))) box.remove()
+    if (component === undefined) box.remove()
     else draw(box, component, dir, project)
   })
   return box

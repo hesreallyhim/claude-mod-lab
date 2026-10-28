@@ -144,7 +144,7 @@ sync-from-*
 **/claude-code-tools/
 **/claude-code-mcp/
 mods/*/tsconfig.json
-templates/*/tsconfig.json
+examples/*/tsconfig.json
 learn/**/tsconfig.json
 
 # Local lesson state, if created while developing; clones are not lesson workspaces by default.

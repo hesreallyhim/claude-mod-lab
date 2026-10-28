@@ -13,11 +13,12 @@ const ABOUT = {
   session:
     'Live views of the connected session: its turns, streams, stored rows, model input, model calls, agents, prompt box and settings, and what you can change for each one.',
   build:
-    'Browse mod templates and lessons. Create a dedicated lesson workspace when you want to work through an exercise or use the Sandbox.',
+    'Browse mod examples and lessons. Create a dedicated lesson workspace when you want to work through an exercise or use the Sandbox.',
 }
 
 const TOAST = 'Hello from the mod-lab!'
-const DRAFT = 'Hello from the explorer: a mod wrote this.'
+const DRAFT = 'A mod wrote this.'
+const EDITED_DRAFT = 'A mod EDITED this.'
 /** The first lesson's pane, as its README draws it. */
 const STOPWATCH = [
   '███   ███ ███',
@@ -37,14 +38,14 @@ const INTERCEPT = `intercept ui.toast rewrite lab ${JSON.stringify({ text: REWRI
 /** The first lesson, where a newcomer starts. */
 const firstLesson = () => el('a', { href: '#/learn/tick' }, 'A stopwatch you can click')
 
-/** A numbered action with its own result, so repeating the toast preserves the first run. */
-function toastStep({ title, description, label, disabled, run }) {
+/** A numbered action with its own result, shared by the API and Session cards. */
+function tryStep({ title, description, descriptionClass = '', label, disabled, run }) {
   const result = el('div', { class: 'result', 'aria-live': 'polite' })
   return el(
     'li',
     {},
     el('h3', {}, title),
-    el('p', {}, description),
+    el('p', { class: descriptionClass }, description),
     el('button', { type: 'button', class: 'try-action', disabled, onclick: () => void run(result) }, label),
     result,
   )
@@ -88,7 +89,7 @@ function toastWalkthrough({ state, queueRun, sendCommand }) {
     el(
       'ol',
       { class: 'try-steps' },
-      steps.map(step => toastStep({ ...step, disabled: !ready })),
+      steps.map(step => tryStep({ ...step, disabled: !ready })),
     ),
     el(
       'p',
@@ -100,51 +101,61 @@ function toastWalkthrough({ state, queueRun, sendCommand }) {
   ]
 }
 
+/** Keep each prompt action beside its code and result. */
+function promptStep(ctx, probe, { title, text, mode, label }) {
+  const ready = Boolean(ctx.state.session?.isConnected && probe !== undefined)
+  const args = { text, mode }
+  return tryStep({
+    title,
+    descriptionClass: 'step-code',
+    description: el(
+      'code',
+      {},
+      ready
+        ? `$.prompt.fill({ text: ${JSON.stringify(text)}, mode: "${mode}" })`
+        : `/mod-lab prompt.fill ${JSON.stringify(args)}`,
+    ),
+    label,
+    disabled: !ready,
+    run: result => ctx.queueRun(probe.id, args, result),
+  })
+}
+
 /**
  * One thing to try in an area. Live actions are available when a session
  * supplies their probes; otherwise the page explains how to get started.
  */
 function tryIt(ctx, area) {
-  const { state, queueRun } = ctx
+  const { state } = ctx
   if (area === 'api') return toastWalkthrough(ctx)
   if (area === 'session') {
     const probe = (state.session?.probes ?? []).find(one => one.id === 'prompt.fill')
-    const result = el('div', { class: 'result' })
     const page = el('a', { href: '#/keys' }, 'Prompt box')
     const after = el(
       'p',
-      { class: 'step' },
+      { class: 'try-footnote' },
       "The text lands in the session's prompt box as a draft. The ",
       page,
       ' page shows each key you press there as the event a mod sees.',
     )
-    if (state.session?.isConnected && probe !== undefined)
-      return [
-        el('p', { class: 'step' }, 'Write into the prompt box:'),
-        el(
-          'p',
-          { class: 'step-code' },
-          el('code', {}, `$.prompt.fill({ text: ${JSON.stringify(DRAFT)}, mode: "append" })`),
-        ),
-        el(
-          'p',
-          {},
-          el(
-            'button',
-            {
-              type: 'button',
-              class: 'try-action',
-              onclick: () => void queueRun(probe.id, { text: DRAFT, mode: 'append' }, result),
-            },
-            'Fill prompt box',
-          ),
-        ),
-        result,
-        after,
-      ]
     return [
-      el('p', { class: 'step' }, 'In a connected session, write into the prompt box:'),
-      el('p', { class: 'step-code' }, el('code', {}, `/mod-lab prompt.fill ${DRAFT}`)),
+      state.session?.isConnected ? null : el('p', { class: 'try-hint' }, 'Connect a session to try these steps.'),
+      el(
+        'ol',
+        { class: 'try-steps' },
+        promptStep(ctx, probe, {
+          title: 'Write into the prompt box',
+          text: DRAFT,
+          mode: 'append',
+          label: 'Fill prompt box',
+        }),
+        promptStep(ctx, probe, {
+          title: 'Edit the prompt box',
+          text: EDITED_DRAFT,
+          mode: 'replace',
+          label: 'Edit prompt box',
+        }),
+      ),
       after,
     ]
   }

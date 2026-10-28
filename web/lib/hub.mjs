@@ -20,7 +20,6 @@ const NOT_CONNECTED = 'no session is connected: start Claude Code with both mods
 const MAX_COMMAND_CHARS = 2_000
 const MIRROR_KEY = /^[a-z][A-Za-z]{0,31}$/
 const MAX_MIRRORED = 16
-const VERSION = /^\d+\.\d+\.\d+$/
 
 /** What a bridge with another protocol number is told, and the page shows: the two numbers and which side to update. */
 export function protocolMessage(theirs) {
@@ -38,28 +37,6 @@ function engineOf(engine) {
   if (typeof engine?.version !== 'string') return null
   const surfaces = Array.isArray(engine.surfaces) ? engine.surfaces.filter(surface => typeof surface === 'string') : []
   return { version: engine.version, surfaces }
-}
-
-/** A table of compat.json's: the entries shaped { since, uses }, the rest left out. */
-function needsOf(table) {
-  if (table === null || typeof table !== 'object') return {}
-  return Object.fromEntries(
-    Object.entries(table).filter(
-      ([, need]) =>
-        typeof need?.since === 'string' &&
-        VERSION.test(need.since) &&
-        Array.isArray(need.uses) &&
-        need.uses.every(use => typeof use === 'string'),
-    ),
-  )
-}
-
-/** The bridge's compat.json as mods/mod-lab/hooks/compat.ts reads it; null without a floor and tested-through version. */
-export function compatOf(compat) {
-  const { floor, testedThrough, plugins, capabilities } = compat ?? {}
-  if (typeof floor !== 'string' || !VERSION.test(floor)) return null
-  if (typeof testedThrough !== 'string' || !VERSION.test(testedThrough)) return null
-  return { floor, testedThrough, plugins: needsOf(plugins), capabilities: needsOf(capabilities) }
 }
 
 export function createHub({ now = Date.now, staleMs = 5_000, jobTimeoutMs = 60_000 } = {}) {
@@ -89,7 +66,6 @@ export function createHub({ now = Date.now, staleMs = 5_000, jobTimeoutMs = 60_0
           plugin: session.plugin,
           lab: session.lab,
           engine: session.engine,
-          compat: session.compat,
           probes: session.probes,
           interceptable: session.interceptable,
           isConnected: isConnected(),
@@ -177,7 +153,6 @@ export function createHub({ now = Date.now, staleMs = 5_000, jobTimeoutMs = 60_0
         plugin: body?.plugin ?? null,
         lab: body?.lab ?? null,
         engine: engineOf(body?.engine),
-        compat: compatOf(body?.compat),
         probes: Array.isArray(body?.probes) ? body.probes : [],
         interceptable: Array.isArray(body?.interceptable) ? body.interceptable : [],
         lastSeen: now(),

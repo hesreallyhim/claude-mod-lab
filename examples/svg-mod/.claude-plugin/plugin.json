@@ -1,0 +1,10 @@
+{
+  "name": "svg-mod",
+  "version": "0.2.0-beta.1",
+  "description": "The session's tool calls as an SVG bar chart, if SVG is available, or as block glyphs on the terminal",
+  "author": {
+    "name": "Really Him"
+  },
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

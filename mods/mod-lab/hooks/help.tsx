@@ -50,6 +50,18 @@ export const SUBCOMMANDS = [
     ],
   },
   {
+    name: 'add',
+    args: '<example> [--local]',
+    kind: 'start',
+    does: 'copy a runnable example to your shared lab, or this project with --local',
+    details: [
+      '/mod-lab add gallery adds the complete gallery mod; then /mod-gallery opens it.',
+      'Other examples use their full name, such as /mod-lab add raster-mod.',
+      'Shared copies go to ~/.claude-mod-lab/examples/; --local copies to .claude/mod-lab/ in this project. Existing copies are preserved.',
+      'A session watching the destination loads the plugin automatically. Otherwise restart with npx claude-mod-lab run (or run --local for a project copy).',
+    ],
+  },
+  {
     name: 'list',
     args: '',
     kind: 'start',

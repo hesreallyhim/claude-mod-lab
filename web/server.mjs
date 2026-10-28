@@ -18,7 +18,7 @@ import { createWorkspaceContext } from './lib/workspace-context.mjs'
 import { createStubs } from './lib/stubs.mjs'
 import { FILLER_WORDS, fillerText } from './lib/filler.mjs'
 import { readGallery } from './lib/gallery.mjs'
-import { BRIDGE_PROTOCOL, compatOf, createHub } from './lib/hub.mjs'
+import { BRIDGE_PROTOCOL, createHub } from './lib/hub.mjs'
 import { PACKAGE_ROOT } from './lib/roots.mjs'
 import { labFolders, packageFacts } from './lib/session-folders.mjs'
 import { findRecord, isUuid, transcriptPath } from './lib/transcript.mjs'
@@ -45,15 +45,6 @@ const CONTENT_SECURITY_POLICY = [
   "frame-ancestors 'none'",
   "object-src 'none'",
 ].join('; ')
-
-/** The package's compat.json, for the templates' minimums; null where it cannot be read. */
-function readCompat() {
-  try {
-    return compatOf(JSON.parse(readFileSync(join(PACKAGE_ROOT, 'compat.json'), 'utf8')))
-  } catch {
-    return null
-  }
-}
 
 function send(res, status, body, type = 'application/json') {
   const text = typeof body === 'string' ? body : JSON.stringify(body)
@@ -182,7 +173,6 @@ export async function startServer({
     send,
     readBody,
     currentTypes: () => catalog?.path ?? null,
-    compat: readCompat,
     sandboxDir,
     skillsDir,
     lessonChecks,

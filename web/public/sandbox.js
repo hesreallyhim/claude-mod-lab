@@ -133,13 +133,13 @@ export async function sandboxPage() {
     'select',
     { name: 'start' },
     el('option', { value: '' }, 'the blank mod'),
-    ...info.templates.map(name => el('option', { value: name }, name)),
+    ...info.examples.map(name => el('option', { value: name }, name)),
   )
   const load = async () => {
     const chosen =
       start.value === ''
         ? info.blank
-        : (await api(`/api/sandbox/template?name=${encodeURIComponent(start.value)}`)).files
+        : (await api(`/api/sandbox/example?name=${encodeURIComponent(start.value)}`)).files
     for (const [role] of ROLES) editors[role].set(chosen[role])
     report.replaceChildren(
       el('p', { class: 'muted' }, `${start.value || 'The blank mod'} is in the editors, not saved yet.`),

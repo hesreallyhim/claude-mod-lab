@@ -6,10 +6,11 @@ import type { EngineInterface } from 'claude-code'
 import type { LabRunSource } from '../types'
 import { agentCommand } from './agents'
 import { parseArgText, splitCommand } from './args'
-import { engineLine, isAvailable, NEEDS_NEWER } from './compat'
+import { engineLine } from './session-info'
 import { compactCommand, compactorCommand } from './compactor'
 import { configCommand } from './config'
 import { explorerCommand, explorerPage } from './explorer'
+import { addExampleCommand } from './examples'
 import { formatList, formatRun } from './format'
 import { helpText, SUBCOMMANDS } from './help'
 import { setView } from './pane-state'
@@ -72,8 +73,6 @@ async function probeCommand($: Dollar, id: string, rest: string, from: LabRunSou
 /** What `/mod-lab <args>` does, and the text it shows; a probe it runs is recorded as from `from`. */
 export async function labCommand($: Dollar, args: string, from: LabRunSource): Promise<string> {
   const { head, rest } = splitCommand(args)
-  // A probe is checked against the capability table where it runs (runner.ts), from the pane and the tool too.
-  if (findProbe(head) === undefined && !isAvailable(head)) return `/mod-lab ${head} ${NEEDS_NEWER}.`
   try {
     return await dispatch($, head, rest, from)
   } catch (error) {
@@ -92,6 +91,8 @@ async function dispatch($: Dollar, head: string, rest: string, from: LabRunSourc
       return explorerCommand($, rest, from)
     case 'init-lessons':
       return initLessonsCommand($, rest)
+    case 'add':
+      return addExampleCommand($, rest)
     case 'verify':
       return verifyCommand($)
     case 'list':

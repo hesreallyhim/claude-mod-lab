@@ -86,15 +86,6 @@ async function surfacesOf($: Dollar): Promise<readonly string[]> {
   }
 }
 
-/** The bridge's copy of compat.json, which scripts/sync-compat.mjs keeps, as it is; null where it cannot be read. */
-async function compatOf($: Dollar): Promise<unknown> {
-  try {
-    return JSON.parse(await $.fs.read(`${$.plugin.root}/compat.json`))
-  } catch {
-    return null
-  }
-}
-
 /** Collection and legacy plugin paths explicitly passed by the lab launcher on macOS/Linux. */
 async function componentDirsOf($: Dollar): Promise<string[]> {
   try {
@@ -124,6 +115,7 @@ async function greeting($: Dollar, selected?: LessonSelection) {
       root: await labRootOf($),
       ...(selected ?? (await lessonSelection($))),
       componentDirs: await componentDirsOf($),
+      examplesDir: (await $.env.get('MOD_LAB_EXAMPLES_DIR')) || null,
     },
     session: {
       id: await $.session.id(),
@@ -131,9 +123,8 @@ async function greeting($: Dollar, selected?: LessonSelection) {
       model: await $.session.model(),
       version,
     },
-    // For the explorer's header: the build and what it draws on, and the supported range and capability table it is checked against.
+    // The engine version and attached clients help identify the session in bug reports.
     engine: { version, surfaces: await surfacesOf($) },
-    compat: await compatOf($),
     probes: await probesOf($),
     interceptable: await interceptableOf($),
   }

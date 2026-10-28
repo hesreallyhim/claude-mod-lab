@@ -61,27 +61,16 @@ export function lastRun(recorded: Recorded): Run | undefined {
   return recorded.runs.at(-1)?.at(-1)
 }
 
-/** compat.json's text as the lab reads its copy, with the given fields over an empty one. */
-export function compatText(fields: { floor: string; testedThrough: string; plugins?: object; capabilities?: object }): string {
-  return JSON.stringify({ plugins: {}, capabilities: {}, ...fields })
-}
-
-/** The build a test's session runs: its version, the lab's compat.json, and the registration to refuse, if any. Change it between starts. */
-export type Build = { version: string; compat: string; refuse?: 'tool.register' }
-
 /**
  * session.start as the engine raises it once the lab loads, its calls answered
- * from the bottom: the build's version, the lab's compat.json, and the command
- * and tool registered unless `refuse` names one. `logged` holds every line the
+ * from the bottom: the command and tool registered unless `refuse` names one. `logged` holds every line the
  * lab logs from then on.
  */
-export function labStart($: unknown, on: On, build: Build): { logged: string[]; start: () => Promise<void> } {
+export function labStart($: unknown, on: On, options: { refuse?: 'tool.register' } = {}): { logged: string[]; start: () => Promise<void> } {
   const logged: string[] = []
   on('session.start', ($, e) => ({ cwd: e.cwd }))
-  on('session.version', () => ({ value: { version: build.version, base: build.version, builtAt: '' } }) as never)
-  on('fs.read', () => ({ value: build.compat }))
   on('command.register', ($, e) => ({ value: { command: e.name } }))
-  on('tool.register', ($, e) => (build.refuse === 'tool.register' ? { deny: 'refused-r1' } : { value: { tool: `mcp__mod-lab__${e.name}` } }))
+  on('tool.register', ($, e) => (options.refuse === 'tool.register' ? { deny: 'refused-r1' } : { value: { tool: `mcp__mod-lab__${e.name}` } }))
   on('ui.log', ($, e) => {
     logged.push(e.text)
     return { value: undefined }

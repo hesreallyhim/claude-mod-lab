@@ -40,18 +40,17 @@ try {
     // eslint-disable-next-line no-undef -- This callback runs in the browser.
     document.body.append(homePage({ state, queueRun: (probe, args, target) => queueRun(state, probe, args, target) }))
   })
-  const buttons = page.getByRole('button', { name: 'Run in your session', exact: true })
-  assert.equal(await buttons.count(), 2)
-  for (let index = 0; index < 2; index++) {
+  for (const label of ['Send toast', 'Fill prompt box', 'Edit prompt box']) {
     const response = page.waitForResponse('http://home.test/api/run')
-    await buttons.nth(index).click()
+    await page.getByRole('button', { name: label, exact: true }).click()
     await response
   }
   assert.deepEqual(requests, [
     { probe: 'ui.toast', args: { text: 'Hello from the mod-lab!' } },
-    { probe: 'prompt.fill', args: { text: 'Hello from the explorer: a mod wrote this.', mode: 'append' } },
+    { probe: 'prompt.fill', args: { text: 'A mod wrote this.', mode: 'append' } },
+    { probe: 'prompt.fill', args: { text: 'A mod EDITED this.', mode: 'replace' } },
   ])
-  console.log('Both home-page buttons send probe IDs and the expected arguments.')
+  console.log('Home-page toast, write, and edit actions send the expected probe arguments.')
 } finally {
   await browser.close()
 }

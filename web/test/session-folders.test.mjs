@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
 
+import { ensureLessonCollection, ensureLocalLessonCollection } from '../lib/lesson-loading.mjs'
 import { labFolders, labPlugins, packageFacts, refreshCopy, sessionFolders } from '../lib/session-folders.mjs'
 
 function inTemp(fn) {
@@ -24,14 +25,14 @@ function plugin(dir, name, manifest = {}) {
   return dir
 }
 
-/** A package root with the lab's three mods, the authoring skill, gallery-mod and one template. */
+/** A package root with the lab's three mods, the authoring skill, gallery-mod and one example. */
 function packageIn(dir, labManifest = {}) {
   const root = join(dir, 'package')
   plugin(join(root, 'mods', 'mod-lab'), 'mod-lab', labManifest)
   plugin(join(root, 'mods', 'mod-lab-bridge'), 'mod-lab-bridge', { dependencies: ['mod-lab'] })
   plugin(join(root, 'mods', 'mod-lab-target'), 'mod-lab-target')
   plugin(join(root, 'mods', 'gallery-mod'), 'gallery-mod')
-  plugin(join(root, 'templates', 'band-mod'), 'band-mod')
+  plugin(join(root, 'examples', 'band-mod'), 'band-mod')
   const name = 'mod-bootstrap'
   const folder = join(root, 'plugins', name)
   mkdirSync(join(folder, '.claude-plugin'), { recursive: true })
@@ -174,4 +175,19 @@ test('packageFacts reads the version, and loads in place where the package is a 
       join(root, 'mods', 'mod-lab-target'),
     ])
     assert.ok(!existsSync(home), 'labFolders writes nothing')
+  }))
+
+test('an explicit lesson collection overrides a prior home collection when choosing plugin folders', () =>
+  inTemp(dir => {
+    const packageRoot = packageIn(dir)
+    const workspace = join(dir, 'work')
+    const home = join(dir, 'home')
+    mkdirSync(home)
+    mkdirSync(join(workspace, '.claude-mod-lab'), { recursive: true })
+    plugin(join(workspace, 'workshop', 'tick'), 'tick')
+    ensureLessonCollection(workspace, home)
+    const lessonCollection = ensureLocalLessonCollection(workspace)
+    const loaded = sessionFolders({ packageRoot, home, version: '1.2.3', inPlace: true, workspace, lessonCollection })
+    assert.deepEqual(loaded.folders.slice(4), [lessonCollection])
+    assert.equal(readFileSync(join(lessonCollection, 'tick', 'hooks', 'hooks.json'), 'utf8'), '{}')
   }))

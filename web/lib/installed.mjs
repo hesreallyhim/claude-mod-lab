@@ -1,12 +1,12 @@
 // Installed copies of a plugin, as `claude plugin list --json` reports them for
 // a folder. Of several copies of one name the engine loads one: a --plugin-dir
 // copy over an installed one, and an installed one over a copy in the project's
-// .claude/skills/, which then does not load. `claude-mod-lab add` and the
+// .claude/skills/, which then does not load. `claude-mod-lab examples add` and the
 // launcher, and the explorer's Add to session, check here and say what that
 // means for the copy they made or load.
 // In a folder the person has trusted, the list also names each copy in the
 // project's .claude/skills/, as `<name>@skills-dir`: those are the copies
-// `add` makes, not installed ones, and are left out.
+// older versions added, not installed ones, and are left out.
 //
 // The same list, asked for with --plugin-dir, also says whether managed
 // settings forbid that flag (disableSideloadFlags), which the launcher needs.

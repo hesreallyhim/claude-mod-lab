@@ -15,7 +15,14 @@ import { join, relative } from 'node:path'
 import { test } from 'node:test'
 
 import { componentFolder } from '../lib/component-folders.mjs'
-import { lessonPluginFolders, prepareLessonLink } from '../lib/lesson-loading.mjs'
+import {
+  ensureLessonCollection,
+  ensureLocalLessonCollection,
+  lessonCollectionFolder,
+  lessonPluginFolders,
+  prepareLessonLink,
+  validateLessonCollection,
+} from '../lib/lesson-loading.mjs'
 
 function fixture(t) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'mod-lab-lesson-loading-')))
@@ -155,4 +162,63 @@ test('an unrelated collection symlink does not switch the workspace loader', t =
   symlinkSync(root, join(collection, 'other'))
   assert.deepEqual(lessonPluginFolders(root), [join(root, 'workshop')])
   assert.equal(lstatSync(join(collection, 'tick'), { throwIfNoEntry: false }), undefined)
+})
+
+test('private collections isolate projects and publish initialized workshop plugins on restart', t => {
+  const { root } = fixture(t)
+  const home = join(root, 'home')
+  const other = join(root, 'other-project')
+  mkdirSync(home)
+  mkdirSync(other)
+  mkdirSync(join(root, '.claude-mod-lab'))
+  const tick = plugin(root, 'tick')
+  const collection = ensureLessonCollection(root, home)
+  const otherCollection = ensureLessonCollection(other, home)
+  assert.notEqual(collection, otherCollection)
+  assert.equal(collection, lessonCollectionFolder(root, home))
+  assert.equal(realpathSync(join(collection, 'tick')), tick)
+  assert.deepEqual(lessonPluginFolders(root, home), [collection])
+  const egg = plugin(root, 'egg')
+  prepareLessonLink(root, 'egg', collection, home)()
+  assert.equal(realpathSync(join(collection, 'egg')), egg)
+  assert.throws(() => validateLessonCollection(other, collection, home), /current project/)
+  assert.throws(
+    () => prepareLessonLink(root, 'tick', join(home, '.claude-mod-lab', 'examples'), home),
+    /current project/,
+  )
+})
+
+test('prospective collection creation leaves unrelated project files untouched', t => {
+  const { root } = fixture(t)
+  const home = join(root, 'home')
+  mkdirSync(home)
+  rmSync(join(root, 'workshop'), { recursive: true })
+  writeFileSync(join(root, 'workshop'), 'unrelated project file')
+  const collection = ensureLessonCollection(root, home)
+  assert.equal(lstatSync(collection).isDirectory(), true)
+  assert.equal(readFileSync(join(root, 'workshop'), 'utf8'), 'unrelated project file')
+})
+
+test('private collection parents cannot redirect lesson links through symlinks', t => {
+  const { root } = fixture(t)
+  const home = join(root, 'home')
+  mkdirSync(home)
+  const collection = ensureLessonCollection(root, home)
+  rmSync(join(home, '.claude-mod-lab', 'projects'), { recursive: true })
+  symlinkSync(root, join(home, '.claude-mod-lab', 'projects'))
+  assert.throws(() => ensureLessonCollection(root, home), /not a file or symbolic link/)
+  assert.throws(() => prepareLessonLink(root, 'tick', collection, home), /not a file or symbolic link/)
+})
+
+test('explicit local selection loads lessons only through the local collection even after a shared run', t => {
+  const { root, collection } = fixture(t)
+  const home = join(root, 'home')
+  mkdirSync(home)
+  mkdirSync(join(root, '.claude-mod-lab'))
+  const tick = plugin(root, 'tick')
+  const privateCollection = ensureLessonCollection(root, home)
+  assert.equal(ensureLocalLessonCollection(root), collection)
+  assert.deepEqual(lessonPluginFolders(root, home, collection), [collection])
+  assert.equal(realpathSync(join(collection, 'tick')), tick)
+  assert.equal(realpathSync(join(privateCollection, 'tick')), tick)
 })

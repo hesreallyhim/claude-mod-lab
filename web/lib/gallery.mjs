@@ -1,7 +1,7 @@
 // The gallery mod's techniques, for the explorer's Gallery page: each tab as
 // the mod's README describes it, the source that draws it, read from the
 // mod's own files so the page shows the code as it stands, and the technique
-// as a mod of its own from templates/, as a snippet that writes it.
+// as a mod of its own from examples/, as a snippet that writes it.
 
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -100,8 +100,8 @@ export function excerptOf(text, file, excerpt) {
         .trimEnd()
 }
 
-// A template's files the snippet writes: the mod itself, not its tests.
-const TEMPLATE_FILES = ['.claude-plugin/plugin.json', 'hooks/hooks.json', 'hooks/register.tsx', 'types/index.d.ts']
+// An example's files the snippet writes: the mod itself, not its tests.
+const EXAMPLE_FILES = ['.claude-plugin/plugin.json', 'hooks/hooks.json', 'hooks/register.tsx', 'types/index.d.ts']
 const END = 'MOD'
 
 /** A shell snippet that writes a mod's files under workshop/<name>/, pasted in the workspace. */
@@ -115,11 +115,11 @@ export function modSnippet(name, files) {
     ...files.map(
       file => `cat > ${base}/${file.path} <<'${END}'\n${file.text.endsWith('\n') ? file.text : `${file.text}\n`}${END}`,
     ),
-    `# The lab's session loads it from workshop/; then /${name} there. Its test is in templates/${name}/tests.`,
+    `# Load with claude --plugin-dir ${base}, then run /${name}. Its test is in examples/${name}/tests.`,
   ].join('\n')
 }
 
-/** Where each template draws, by its name, from the templates README's table whose header starts `| Mod | Technique | Where it draws |`. */
+/** Where each example draws, by its name, from the examples README's table whose header starts `| Mod | Technique | Where it draws |`. */
 export function whereRows(readme) {
   const lines = readme.split('\n')
   const start = lines.findIndex(line => line.startsWith('| Mod | Technique | Where it draws |'))
@@ -137,12 +137,12 @@ export function whereRows(readme) {
   return rows
 }
 
-/** The technique's mod in templates/: its description, where it draws, and a snippet that writes it; null where there is none. */
-export function templateOf(templatesDir, id, where = {}) {
+/** The technique's mod in examples/: its description, where it draws, and a snippet that writes it; null where there is none. */
+export function exampleOf(examplesDir, id, where = {}) {
   const name = `${id}-mod`
-  const dir = join(templatesDir, name)
+  const dir = join(examplesDir, name)
   if (!existsSync(dir)) return null
-  const files = TEMPLATE_FILES.filter(path => existsSync(join(dir, path))).map(path => ({
+  const files = EXAMPLE_FILES.filter(path => existsSync(join(dir, path))).map(path => ({
     path,
     text: readFileSync(join(dir, path), 'utf8'),
   }))
@@ -150,12 +150,12 @@ export function templateOf(templatesDir, id, where = {}) {
   return { name, description, where: where[name] ?? null, snippet: modSnippet(name, files) }
 }
 
-/** Each tab with its description, source and template; `problems` names any the README or the files no longer have. */
-export function readGallery(dir, templatesDir = join(dir, '..', '..', 'templates')) {
+/** Each tab with its description, source and example; `problems` names any the README or the files no longer have. */
+export function readGallery(dir, examplesDir = join(dir, '..', '..', 'examples')) {
   const problems = []
   const rows = tabRows(readFileSync(join(dir, 'README.md'), 'utf8'))
-  const templatesReadme = join(templatesDir, 'README.md')
-  const where = existsSync(templatesReadme) ? whereRows(readFileSync(templatesReadme, 'utf8')) : {}
+  const examplesReadme = join(examplesDir, 'README.md')
+  const where = existsSync(examplesReadme) ? whereRows(readFileSync(examplesReadme, 'utf8')) : {}
   const tabs = Object.entries(EXCERPTS).map(([id, excerpts]) => {
     const row = rows.find(one => one.id === id)
     if (row === undefined) problems.push(`the README's table has no row for the ${id} tab`)
@@ -164,7 +164,7 @@ export function readGallery(dir, templatesDir = join(dir, '..', '..', 'templates
       title: row?.title ?? id,
       terminal: row?.terminal ?? '',
       elsewhere: row?.elsewhere ?? '',
-      template: templateOf(templatesDir, id, where),
+      example: exampleOf(examplesDir, id, where),
       excerpts: excerpts.map(excerpt => {
         const label = excerpt.name ?? `on('${excerpt.hook.event}', { component: '${excerpt.hook.component}' })`
         const text = excerptOf(readFileSync(join(dir, 'hooks', excerpt.file), 'utf8'), excerpt.file, excerpt)

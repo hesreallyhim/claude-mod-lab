@@ -26,8 +26,8 @@ claude plugin install mod-lab@claude-mod-lab
 - `/mod-lab spend` lists every model call a plugin made in the session: which plugin, the tokens in, out, written to the cache and read from it, and whether the call reached the model at all. `/mod-lab free on` sets two intercepts that answer the lab's own `model.complete` and `model.fork` calls with no request sent, and `/mod-lab free off` lifts them. The explorer's Model workbench uses both.
 - `/mod-lab agent` lists the session's agents: the types the lab registered, every spawn its hook saw (the model's own included) and each one's answer. `/mod-lab agent register {json}` registers a type, `/mod-lab agent spawn <type> <prompt>` starts one, `/mod-lab agent hide|show <type>` keeps a type from the model or offers it again, `/mod-lab agent route <model>|off` sends every new spawn to one model, and `/mod-lab agent transcript <agentId>` shows an agent's conversation. The explorer's Agents page uses them.
 - `/mod-lab rows` lists append events captured since the lab loaded, with an audience inferred from row metadata. `/mod-lab note <text>` adds model context hidden from the chat display; `/mod-lab notice <text>` adds a chat notice whose row is excluded from model input. Both are saved in JSONL when session persistence is enabled, and neither starts a model turn. The explorer's Conversation X-ray shows these events and can look up their JSONL records; it is not a full model-request capture. The [Session Lens lesson](../../learn/tutorials/7-session-lens/README.md) explores these distinctions through a mod you can build and inspect.
-- `/mod-lab compactor keep <n>` makes the lab answer compactions itself: the first message, a summary it writes from counts (no model call), and the last n messages; `/mod-lab compactor off` leaves them to the engine, and `/mod-lab compactor` lists the session's compactions with who answered each, the messages before and after, the sizes and what the summarizer cost. `/compact` compacts; `/mod-lab compact` does the same from the explorer, since the engine refuses a compaction from a typed command, which holds the turn. A compaction is not undone. Where an organization manages Claude Code, the lab's hook on compactions does not run in a copy the person installed, as the section on versions below says.
-- `/mod-lab keys` lists the prompt box's newest edits as the lab's `prompt.edit` hook saw them pass, and the changes that came another way (`prompt.change`), which mod-lab-keys ([mods/mod-lab-keys](../mod-lab-keys)) keeps: each key by name, the splice, the lengths before and after, and the decorations the plugins beneath painted. A character typed plain is kept as `text`, and the draft itself is not kept. The explorer's Prompt box page draws them. On a build older than 2.1.300, mod-lab-keys does not load, and the command says change rows need that build.
+- `/mod-lab compactor keep <n>` makes the lab answer compactions itself: the first message, a summary it writes from counts (no model call), and the last n messages; `/mod-lab compactor off` leaves them to the engine, and `/mod-lab compactor` lists the session's compactions with who answered each, the messages before and after, the sizes and what the summarizer cost. `/compact` compacts; `/mod-lab compact` does the same from the explorer, since the engine refuses a compaction from a typed command, which holds the turn. A compaction is not undone. Where an organization manages Claude Code, the lab's hook on compactions does not run in a copy the person installed, as the Runtime diagnostics section below explains.
+- `/mod-lab keys` lists the prompt box's newest edits as the lab's `prompt.edit` hook saw them pass, and the changes that came another way (`prompt.change`), which mod-lab-keys ([mods/mod-lab-keys](../mod-lab-keys)) keeps: each key by name, the splice, the lengths before and after, and the decorations the plugins beneath painted. A character typed plain is kept as `text`, and the draft itself is not kept. The explorer's Prompt box page draws them.
 - `/mod-lab config [filter]` lists the session's `/config` rows by owner, the engine's and each plugin's `userConfig` fields, with kind, value, options and lock. `/mod-lab config set <key> <value>` writes one as `/config` does, through every plugin's `config.set` hook but the lab's, and says when a hook changed the value or refused it. It changes your settings file. The explorer's Settings page draws the rows.
 - The model can run probes through the tool `mcp__mod-lab__probe`, so you can ask Claude to run one and explain what it shows. Three more tools read what the lab recorded and run nothing: `mcp__mod-lab__runs` (the probes run so far, from anywhere, with their dispatches and chains), `mcp__mod-lab__trace` (the session events traced, with their chains) and `mcp__mod-lab__intercepts` (the intercepts in force and the calls they acted on), so you can ask Claude what happened. Each answers the newest records that fit in about two thousand tokens. A fourth, `mcp__mod-lab__lesson`, reads the lesson state in the session's folder (`.claude-mod-lab/progress.json`): the lesson you are on and the report of its last check, which the explorer runs each time you save.
 - Other plugins can run probes with `$.lab.run({ probe, args })` and list them with `$.lab.probes()`, do anything else `/mod-lab` does with `$.lab.command({ text })` (`text` being what follows `/mod-lab`, the answer the text the command shows), list the events it can intercept with `$.lab.interceptable()`, and ask for the lab's folder with `$.lab.root()`; the contract is in `types/index.d.ts`. The explorer page uses these through mod-lab-bridge.
@@ -71,26 +71,11 @@ Intercepts are kept in `$.state`, so they survive a reload. The calls they acted
 
 Estimates are in tokens at the system prompt's measured rate of characters per token. Only plugins beneath the lab are in the chains it reads, which `npx claude-mod-lab run` arranges by loading it first. Where an organization manages Claude Code, `prompt.context` and `prompt.attachment` hooks do not run for plugins the person installed.
 
-## Claude Code versions
+## Runtime diagnostics
 
-mod-lab supports Claude Code 2.1.299 and newer, and was last tested on 2.1.308. The two numbers are in `compat.json` at the repository root, the one place they are edited. `npm run sync-compat` copies it into this folder, since an installed plugin reads only its own, and `npm run check` fails when the copy differs.
+Use a current Claude Code build with mod support. The engine version appears in `/mod-lab verify` and the explorer header; the header also identifies the attached clients. Include those details and the failed command or probe when reporting an issue.
 
-- At session start the lab reads its copy and the version (`$.session.version()`). Below the floor, a line in the transcript says to update Claude Code, once per version: the store remembers which versions were told. Nothing is switched off. `testedThrough` is a record of the last version checked; nothing is said about a version past it.
-- The version number shows in `/mod-lab verify` and in the explorer's header, and nowhere else.
-- The lab hooks only events the floor has. Its one hook on a newer event, `prompt.change`, is mod-lab-keys': on an older version that plugin alone is refused, and `/mod-lab keys` says change rows need a newer version of Claude Code.
-- The capability table names each feature that calls a noun or method newer than the floor, by what follows `/mod-lab` (a probe id or a command), with the version it arrived in. Where the session runs an older version, the feature is left out of `/mod-lab list`, the pane, the probe tool and the explorer; asked for by name, it answers "needs a newer version of Claude Code" and does not run. A call that fails anyway is caught and reported as the run's error.
-- Each step of `session.start` (the command, the tools, the version check, tracing, the intercepts) runs on its own: one that fails is logged in the transcript, and the others run.
-
-The file's shape, where `plugins` holds each plugin of this repository that needs more than the floor (mod-lab-keys, and templates above it) and `capabilities` each lab feature that does:
-
-```json
-{
-  "floor": "2.1.299",
-  "testedThrough": "2.1.308",
-  "plugins": { "mod-lab-keys": { "since": "2.1.300", "uses": ["prompt.change"] } },
-  "capabilities": { "<probe id or command>": { "since": "<the build it arrived in>", "uses": ["<noun.method>"] } }
-}
-```
+`/mod-lab verify` checks specific engine behavior in the current session. Calls that fail are caught and reported as run errors. Each step of `session.start` (commands, tools, tracing, and intercepts) runs independently: a failure is logged in the transcript, and the remaining steps still run.
 
 Where an organization manages Claude Code, hooks on `session.compact`, `prompt.context`, `prompt.attachment` and `settings.read` do not run in plugins the person installed. There the compactor neither lists compactions nor answers them, the ledger misses what plugins and the engine add, and the `settings.read` probe records no dispatch; each says so in its text.
 
@@ -115,14 +100,13 @@ Where an organization manages Claude Code, hooks on `session.compact`, `prompt.c
 | `hooks/compactor.ts` | the lab's compactor and the session's compactions |
 | `hooks/streams.ts` | the `process.spawn` probe, and a stream's arrivals in brief |
 | `hooks/keys.ts` | the prompt box's edits, and the changes mod-lab-keys keeps, in brief |
-| `hooks/compat.ts` | the versions the lab supports, from `compat.json`: the check at session start, `/mod-lab`'s line, the capability table |
+| `hooks/session-info.ts` | the attached clients described by `/mod-lab` |
 | `hooks/config.ts` | the `/config` rows and `/mod-lab config` |
 | `hooks/eject.ts` | a run's calls as bottom hooks for a test |
 | `hooks/verify.ts` | what the lab relies on about the engine, as the claims `/mod-lab verify` checks |
 | `hooks/pane.tsx` | the pane's drawing, from data the render hook reads; `pane-parts.tsx` holds what every view is built from, `pane-intercept.tsx` the Intercept tab |
 | `hooks/trace.ts`, `format.ts`, `args.ts`, `json.ts` | the trace summary, transcript text, argument parsing, and safe JSON |
 | `types/index.d.ts` | the state contract and the `$.lab` noun |
-| `compat.json` | a copy of the repository root's, written by `npm run sync-compat` |
 
 To add a probe: write a top-level function in `probes.ts`, add a `case` for it in `runProbe`, and an entry in `PROBES`. If it calls a method no other probe calls, register `inspect` on that event in `register.tsx` so its dispatches are recorded. The test "every probe in the catalog is reachable by its id" fails if the `case` is missing.
 

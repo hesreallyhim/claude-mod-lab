@@ -13,7 +13,6 @@ const TICK = 400
 const IDLE = TICK * 8
 // The explorer's MCP server, as /mcp lists it.
 const SERVER = 'plugin:mod-lab-bridge:explorer'
-const COMPAT = { floor: '9.9.1', testedThrough: '9.9.9', plugins: {}, capabilities: { 'future.thing': { since: '9.9.5', uses: ['future.thing'] } } }
 
 type Request = { path: string; method: string; body: unknown; auth: string | undefined }
 type Answer = { status: number; text: string }
@@ -27,8 +26,7 @@ function server(on: On, answers: { hello?: () => Answer; next?: () => Answer } =
   // `fileUrl` is what the bridge file names, where that is not the server itself: a file left by an explorer that has gone.
   const state = { url: URL, token: TOKEN, isUp: true, hasFile: false, fileUrl: null as string | null, requests: [] as Request[] }
   on('fs.exists', ($, e) => ({ value: state.hasFile && state.isUp && e.path === FILE }))
-  // The bridge reads its bridge file, and its own compat.json for the hello.
-  on('fs.read', ($, e) => ({ value: JSON.stringify(e.path.endsWith('/compat.json') ? COMPAT : { url: state.fileUrl ?? state.url, token: state.token }) }))
+  on('fs.read', () => ({ value: JSON.stringify({ url: state.fileUrl ?? state.url, token: state.token }) }))
   on('http.fetch', ($, e) => {
     if (!state.isUp || !e.url.startsWith(state.url)) return { deny: `nothing answers at ${e.url}` }
     const path = e.url.slice(state.url.length)
@@ -102,7 +100,7 @@ test("the bridge finds its session's explorer through the MCP server, says hello
   const [helloRequest, ...rest] = explorerServer.requests
   expect(helloRequest).toMatchObject({ path: '/bridge/hello', method: 'POST', auth: `Bearer ${TOKEN}` })
   expect(helloRequest?.body).toMatchObject({ protocol: PROTOCOL, session: { id: 'session-q1', cwd: '/work/q1', model: 'model-q1', version: '9.9.9' } })
-  expect(helloRequest?.body).toMatchObject({ engine: { version: '9.9.9', surfaces: ['terminal'] }, compat: COMPAT })
+  expect(helloRequest?.body).toMatchObject({ engine: { version: '9.9.9', surfaces: ['terminal'] } })
   expect(helloRequest?.body).toMatchObject({ lab: { lessons: '/work/q1', componentDirs: [] } })
   // Without the lab there is no root of its to report.
   expect(helloRequest?.body).toMatchObject({ lab: { root: null } })

@@ -84,13 +84,13 @@ export function typeErrors(output, dir) {
 }
 
 /**
- * A template from templates/, its name changed to the sandbox's where it is
+ * An example from examples/, its name changed to the sandbox's where it is
  * spelled in code (after a quote or a slash: a plugin, a command, a pane), so
  * it validates as this mod.
  */
-export function templateFiles(templatesDir, name) {
-  if (!templateNames(templatesDir).includes(name)) return null
-  const dir = join(templatesDir, name)
+export function exampleFiles(examplesDir, name) {
+  if (!exampleNames(examplesDir).includes(name)) return null
+  const dir = join(examplesDir, name)
   const spelled = new RegExp(`(?<=['"\`/])${name}(?![\\w-])`, 'g')
   const read = path =>
     existsSync(join(dir, path)) ? readFileSync(join(dir, path), 'utf8').replace(spelled, NAME) : null
@@ -104,11 +104,11 @@ export function templateFiles(templatesDir, name) {
   }
 }
 
-/** The templates: each folder of templates/ with a plugin manifest. */
-export function templateNames(templatesDir) {
-  return existsSync(templatesDir)
-    ? readdirSync(templatesDir)
-        .filter(one => existsSync(join(templatesDir, one, '.claude-plugin', 'plugin.json')))
+/** The examples: each folder of examples/ with a plugin manifest. */
+export function exampleNames(examplesDir) {
+  return existsSync(examplesDir)
+    ? readdirSync(examplesDir)
+        .filter(one => existsSync(join(examplesDir, one, '.claude-plugin', 'plugin.json')))
         .sort()
     : []
 }

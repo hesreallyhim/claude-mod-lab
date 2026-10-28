@@ -28,14 +28,14 @@ test('the gallery mod names every tab the page shows, and the page shows every t
   assert.deepEqual(tabs.map(tab => tab.id).sort(), [...declared.matchAll(/'([a-z]+)'/g)].map(match => match[1]).sort())
 })
 
-test('every technique has a mod of its own in templates/, offered as a snippet', () => {
+test('every technique has a mod of its own in examples/, offered as a snippet', () => {
   const { tabs } = readGallery(GALLERY)
 
   for (const tab of tabs) {
-    assert.equal(tab.template?.name, `${tab.id}-mod`)
-    assert.ok(tab.template.description.length > 0, `${tab.template.name} has a description in its manifest`)
-    assert.ok(tab.template.where, `templates/README.md says where ${tab.template.name} draws`)
-    assert.ok(tab.template.snippet.includes(`cat > workshop/${tab.id}-mod/hooks/register.tsx <<'MOD'`))
+    assert.equal(tab.example?.name, `${tab.id}-mod`)
+    assert.ok(tab.example.description.length > 0, `${tab.example.name} has a description in its manifest`)
+    assert.ok(tab.example.where, `examples/README.md says where ${tab.example.name} draws`)
+    assert.ok(tab.example.snippet.includes(`cat > workshop/${tab.id}-mod/hooks/register.tsx <<'MOD'`))
   }
 })
 

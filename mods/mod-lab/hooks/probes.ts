@@ -5,7 +5,6 @@ import type { ProbeArgs } from './args'
 import { jsonOrText } from './args'
 import { SHAPE_LIMITS, summarize } from './json'
 import { processSpawn, SPAWN_CHOICES } from './streams'
-import { isAvailable } from './compat'
 import { rowOf } from './config'
 
 type Dollar = EngineInterface
@@ -630,9 +629,9 @@ export function findProbe(id: string): LabProbe | undefined {
   return PROBES.find(one => one.id === id)
 }
 
-/** The probes the session's engine has what they use for: the capability table's, as compat.ts read it at session start. */
+/** The lab's probe catalog. Runtime failures are reported by the runner. */
 export function availableProbes(): LabProbe[] {
-  return PROBES.filter(one => isAvailable(one.id))
+  return [...PROBES]
 }
 
 export function nouns(): string[] {

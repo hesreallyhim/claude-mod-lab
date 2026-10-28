@@ -1,0 +1,9 @@
+{
+  "name": "hover-mod",
+  "version": "0.2.0-beta.1",
+  "description": "Displays a popup card when you hover over a word, without running a hook on each hover",
+  "author": {
+    "name": "Really Him"
+  },
+  "license": "MIT"
+}

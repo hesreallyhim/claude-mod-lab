@@ -144,11 +144,11 @@ async function checkGallery() {
     document.body.dataset.area = 'build'
     document.getElementById('main').replaceChildren(await galleryPage({ state: { session: null } }))
   })
-  const first = gallery.tabs.find(tab => tab.excerpts.length > 0 && tab.template !== null)
+  const first = gallery.tabs.find(tab => tab.excerpts.length > 0 && tab.example !== null)
   assert.ok(first, 'real Gallery has source and a mod snippet')
   const section = page.locator(`#gallery-${first.id}`)
   await checkReader(section.getByRole('button', { name: 'View source', exact: true }).first(), first.excerpts[0].text)
-  await checkReader(section.getByRole('button', { name: 'View snippet', exact: true }), first.template.snippet)
+  await checkReader(section.getByRole('button', { name: 'View snippet', exact: true }), first.example.snippet)
 }
 
 async function checkSandbox() {
@@ -159,7 +159,7 @@ async function checkSandbox() {
     const path = new URL(route.request().url()).pathname
     let response
     if (path === '/api/sandbox')
-      response = { lessonWorkspace: '/fixture/lessons', dir: 'sandbox-mod', files, blank: files, templates: [] }
+      response = { lessonWorkspace: '/fixture/lessons', dir: 'sandbox-mod', files, blank: files, examples: [] }
     else if (path === '/api/sandbox/save') {
       assert.equal(route.request().method(), 'POST')
       saves++

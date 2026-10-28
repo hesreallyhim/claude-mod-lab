@@ -25,8 +25,8 @@
 // 5. In that workspace, a lesson's solution is checked with `learn <id>
 //    --once`, TypeScript step included. That step needs the engine's
 //    declarations: MOD_LAB_TYPES, or a plugin-authoring copy under the temp
-//    folder. Then `add scratch-mod` copies scratch-mod into the workspace's
-//    .claude/skills/.
+//    folder. Then `examples add scratch-mod` copies scratch-mod into the temporary home's
+//    .claude-mod-lab/examples/.
 //
 // Steps 4 and 5 run with HOME set to a temporary folder, so the copies go
 // there. claude keeps CLAUDE_CONFIG_DIR when it is set, and otherwise uses
@@ -61,7 +61,7 @@ const KEPT_OUT = [
 ]
 /** What it must hold: the licence and the entry points each route starts from. */
 const REQUIRED = [
-  'LICENSE', 'compat.json', 'bin/claude-mod-lab.mjs', 'web/server.mjs', 'web/public/versions.js', 'learn/check.mjs', 'scripts/tsc.mjs',
+  'LICENSE', 'bin/claude-mod-lab.mjs', 'web/server.mjs', 'web/public/versions.js', 'learn/check.mjs', 'scripts/tsc.mjs',
   ...AUTHORING_PLUGINS.flatMap(name => [`plugins/${name}/.claude-plugin/plugin.json`, `plugins/${name}/skills/${name}/SKILL.md`]),
 ]
 
@@ -262,10 +262,10 @@ async function main() {
     const env = environment(home)
     await checkSession(bin, workspace, home, env, manifest.version, labPlugins(join(installed, 'mods')).names)
     await checkLesson(bin, installed, workspace, env)
-    console.log('\n== add, from the installed package')
-    const added = run(bin, ['add', 'scratch-mod'], { cwd: workspace, env })
-    const copy = join(workspace, '.claude', 'skills', 'scratch-mod')
-    expect(added.status === 0 && existsSync(join(copy, 'tests')), `add scratch-mod copied it to ${copy}`)
+    console.log('\n== examples add, from the installed package')
+    const added = run(bin, ['examples', 'add', 'scratch-mod'], { cwd: workspace, env })
+    const copy = join(home, '.claude-mod-lab', 'examples', 'scratch-mod')
+    expect(added.status === 0 && existsSync(join(copy, 'tests')), `examples add scratch-mod copied it to ${copy}`)
   } catch (error) {
     expect(false, error instanceof Error ? error.message : String(error))
   } finally {

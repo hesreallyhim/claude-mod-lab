@@ -22,16 +22,7 @@
 //   BROWSER               the command that opens the page, in place of the platform's own
 
 import { spawn } from 'node:child_process'
-import {
-  appendFileSync,
-  existsSync,
-  lstatSync,
-  mkdirSync,
-  readFileSync,
-  realpathSync,
-  statSync,
-  truncateSync,
-} from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, readFileSync, realpathSync, statSync, truncateSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { createInterface } from 'node:readline'
@@ -50,6 +41,21 @@ const CLOSE_MS = 300
 const MAX_WAIT_SECONDS = 600
 
 const TOOLS = [
+  {
+    name: 'add-example',
+    description:
+      'Copies a bundled example into the shared lab or current project. Used by /mod-lab add. Existing copies are preserved.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        cwd: { type: 'string', description: "The session's absolute working directory." },
+        name: { type: 'string', description: 'The example name; gallery also names gallery-mod.' },
+        scope: { type: 'string', enum: ['shared', 'local'], description: 'Shared lab (default) or current project.' },
+      },
+      required: ['cwd', 'name'],
+      additionalProperties: false,
+    },
+  },
   {
     name: 'init-lessons',
     description: 'Enables lessons in the current project without replacing existing files. Used by /init-lessons.',
@@ -271,6 +277,7 @@ async function endpointAnswer(wait) {
 }
 
 async function callTool(name, args) {
+  if (name === 'add-example') return addExample(args)
   if (name === 'init-lessons') return initializeLessons(args)
   if (name === 'start') {
     const connected = await connectedSharedExplorer()
@@ -289,15 +296,32 @@ async function callTool(name, args) {
   return { content: [{ type: 'text', text: `no tool is named ${name}` }], isError: true }
 }
 
-function checkLessonCollection(cwd, collection) {
-  if (collection === undefined) return
-  const expected = join(realpathSync(cwd), '.claude', 'mod-lab')
-  if (collection !== expected)
-    throw new Error('The lesson collection must be this project’s .claude/mod-lab directory.')
-  for (const path of [dirname(expected), expected]) {
-    if (!lstatSync(path, { throwIfNoEntry: false })?.isDirectory()) {
-      throw new Error(`The lesson collection needs an existing directory without symlinks: ${path}`)
+async function addExample(args) {
+  try {
+    if (typeof args?.cwd !== 'string' || !isAbsolute(args.cwd) || !statSync(args.cwd).isDirectory()) {
+      throw new Error('add-example needs the session’s existing absolute working directory.')
     }
+    if (
+      typeof args.name !== 'string' ||
+      args.name === '' ||
+      Object.keys(args).some(key => !['cwd', 'name', 'scope'].includes(key))
+    ) {
+      throw new Error('Use add-example with cwd, name, and optional scope (shared or local).')
+    }
+    const source = findPackage()
+    if (source.root === null) throw new Error(source.problem)
+    const { exampleCollection } = await import(
+      pathToFileURL(join(source.root, 'web', 'lib', 'example-collections.mjs')).href
+    )
+    const collection = exampleCollection(
+      source.root,
+      realpathSync(args.cwd),
+      args.scope === undefined ? 'shared' : args.scope,
+    )
+    const added = collection.add(args.name === 'gallery' ? 'gallery-mod' : args.name)
+    return { content: [{ type: 'text', text: JSON.stringify(added) }], isError: false }
+  } catch (error) {
+    return { content: [{ type: 'text', text: messageOf(error) }], isError: true }
   }
 }
 
@@ -308,7 +332,12 @@ async function initializeLessons(args) {
     }
     const source = findPackage()
     if (source.root === null) throw new Error(source.problem)
-    checkLessonCollection(args.cwd, args.collection)
+    if (args.collection !== undefined) {
+      const { validateLessonCollection } = await import(
+        pathToFileURL(join(source.root, 'web', 'lib', 'lesson-loading.mjs')).href
+      )
+      validateLessonCollection(realpathSync(args.cwd), args.collection)
+    }
     const { initializeProjectLessons } = await import(pathToFileURL(join(source.root, 'web', 'lib', 'roots.mjs')).href)
     const workspace = initializeProjectLessons(args.cwd)
     return {

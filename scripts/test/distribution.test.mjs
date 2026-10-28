@@ -15,7 +15,7 @@ test('npm excludes generated declaration trees but retains authored plugin contr
   const generated = [
     'mods/example/.claude-plugin/types/claude-code/index.d.ts',
     'mods/example/.claude-plugin/types/claude-code/testing.d.ts',
-    'templates/example/.claude-plugin/types/claude-code-tools/index.d.ts',
+    'examples/example/.claude-plugin/types/claude-code-tools/index.d.ts',
     'learn/tutorials/example/starter/.claude-plugin/types/claude-code-mcp/index.d.ts',
     'plugins/mod-bootstrap/.claude-plugin/types/another-plugin/index.d.ts',
     'mods/example/copied/claude-code/index.d.ts',
@@ -41,7 +41,7 @@ test('the release guard detects relocated generated declarations without rejecti
   assert.equal(isGeneratedDeclaration('mods/x/.claude-plugin/types/other-plugin/index.d.ts'), true)
   assert.equal(isGeneratedDeclaration('web/copied/claude-code/testing.d.ts'), true)
   assert.equal(isGeneratedDeclaration('learn/copied/claude-code-tools/index.d.ts'), true)
-  assert.equal(isGeneratedDeclaration('templates/copied/claude-code-mcp/index.d.ts'), true)
+  assert.equal(isGeneratedDeclaration('examples/copied/claude-code-mcp/index.d.ts'), true)
   assert.equal(isGeneratedDeclaration('mods/x/types/renamed.d.ts', '// Written by Claude Code 0.0.0.\n'), true)
   assert.equal(isGeneratedDeclaration('mods/x/types/index.d.ts', "declare module 'claude-code' { interface Fixture {} }"), false)
 })

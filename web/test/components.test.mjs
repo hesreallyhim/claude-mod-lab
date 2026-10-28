@@ -6,10 +6,10 @@ import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 import { createComponents, HOW_TO_TRY } from '../lib/components.mjs'
-import { templateNames } from '../lib/sandbox.mjs'
+import { exampleNames } from '../lib/sandbox.mjs'
 
-const TEMPLATES = fileURLToPath(new URL('../../templates', import.meta.url))
-const GALLERY = join(TEMPLATES, '..', 'mods', 'gallery-mod')
+const EXAMPLES = fileURLToPath(new URL('../../examples', import.meta.url))
+const GALLERY = join(EXAMPLES, '..', 'mods', 'gallery-mod')
 
 function inTemp(fn) {
   const dir = mkdtempSync(join(tmpdir(), 'components-'))
@@ -20,15 +20,15 @@ function inTemp(fn) {
   }
 }
 
-test('every template, and the gallery mod, is a component with a line saying how to try it', () => {
+test('every example, and the gallery mod, is a component with a line saying how to try it', () => {
   const components = createComponents({
-    templatesDir: TEMPLATES,
+    examplesDir: EXAMPLES,
     skillsDir: '/nowhere',
     others: { 'gallery-mod': GALLERY },
   })
   assert.deepEqual(
     components.list().map(one => one.name),
-    [...templateNames(TEMPLATES), 'gallery-mod'],
+    [...exampleNames(EXAMPLES), 'gallery-mod'],
   )
   for (const one of components.list()) {
     assert.ok(HOW_TO_TRY[one.name], `${one.name} has no line in HOW_TO_TRY`)
@@ -36,10 +36,10 @@ test('every template, and the gallery mod, is a component with a line saying how
   }
 })
 
-test('add copies the template without the files the engine writes, and remove deletes the copy', () =>
+test('add copies the example without the files the engine writes, and remove deletes the copy', () =>
   inTemp(dir => {
-    const templatesDir = join(dir, 'templates')
-    const mod = join(templatesDir, 'brackets-mod')
+    const examplesDir = join(dir, 'examples')
+    const mod = join(examplesDir, 'brackets-mod')
     mkdirSync(join(mod, '.claude-plugin', 'types'), { recursive: true })
     mkdirSync(join(mod, 'hooks'))
     writeFileSync(
@@ -49,7 +49,7 @@ test('add copies the template without the files the engine writes, and remove de
     writeFileSync(join(mod, '.claude-plugin', 'types', 'index.d.ts'), 'engine')
     writeFileSync(join(mod, 'tsconfig.json'), '{}')
     writeFileSync(join(mod, 'hooks', 'register.tsx'), 'export const register = () => {}\n')
-    const components = createComponents({ templatesDir, skillsDir: join(dir, '.claude', 'skills') })
+    const components = createComponents({ examplesDir, skillsDir: join(dir, '.claude', 'skills') })
 
     const added = components.add('brackets-mod')
     const copy = join(dir, '.claude', 'skills', 'brackets-mod')
@@ -69,13 +69,13 @@ test('add copies the template without the files the engine writes, and remove de
 
 test('a copy with changes goes only when forced, and a folder that is not the component is left alone', () =>
   inTemp(dir => {
-    const templatesDir = join(dir, 'templates')
-    mkdirSync(join(templatesDir, 'keycast-mod', '.claude-plugin'), { recursive: true })
-    writeFileSync(join(templatesDir, 'keycast-mod', '.claude-plugin', 'plugin.json'), '{ "name": "keycast-mod" }')
-    mkdirSync(join(templatesDir, 'brackets-mod', '.claude-plugin'), { recursive: true })
-    writeFileSync(join(templatesDir, 'brackets-mod', '.claude-plugin', 'plugin.json'), '{ "name": "brackets-mod" }')
+    const examplesDir = join(dir, 'examples')
+    mkdirSync(join(examplesDir, 'keycast-mod', '.claude-plugin'), { recursive: true })
+    writeFileSync(join(examplesDir, 'keycast-mod', '.claude-plugin', 'plugin.json'), '{ "name": "keycast-mod" }')
+    mkdirSync(join(examplesDir, 'brackets-mod', '.claude-plugin'), { recursive: true })
+    writeFileSync(join(examplesDir, 'brackets-mod', '.claude-plugin', 'plugin.json'), '{ "name": "brackets-mod" }')
     const skillsDir = join(dir, 'skills')
-    const components = createComponents({ templatesDir, skillsDir })
+    const components = createComponents({ examplesDir, skillsDir })
 
     components.add('keycast-mod')
     writeFileSync(join(skillsDir, 'keycast-mod', 'notes.md'), 'mine')
@@ -92,5 +92,5 @@ test('a copy with changes goes only when forced, and a folder that is not the co
       [true, false],
     )
     assert.throws(() => components.remove('brackets-mod', { force: true }), /left alone/)
-    assert.throws(() => components.add('../templates'), /no component/)
+    assert.throws(() => components.add('../examples'), /no component/)
   }))

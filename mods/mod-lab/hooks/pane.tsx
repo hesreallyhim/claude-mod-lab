@@ -72,13 +72,13 @@ function runSection(ui: Ui, run: LabRun | undefined, probe: LabProbe, lines: num
     <Text wrap="wrap">
       <Text color={OUTCOME[status]}>{status}</Text>
       <Text dimColor>
-        {status === 'not run' ? '' : ` in ${run.ms} ms`}, from {run.from}
+        {` in ${run.ms} ms`}, from {run.from}
       </Text>
     </Text>,
     run.ok ? (
       <Code language="json" source={printable(clipLines(pretty(run.value), lines))} />
     ) : (
-      <Text color={status === 'failed' ? OUTCOME.failed : undefined} wrap="wrap">
+      <Text color={OUTCOME.failed} wrap="wrap">
         {oneLine(run.error ?? '')}
       </Text>
     ),

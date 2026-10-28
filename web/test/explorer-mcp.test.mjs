@@ -24,6 +24,8 @@ import { createInterface } from 'node:readline'
 import { after, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
+import { ensureLessonCollection } from '../lib/lesson-loading.mjs'
+
 const REPO = resolve(fileURLToPath(new URL('../..', import.meta.url)))
 const PLUGIN = join(REPO, 'mods', 'mod-lab-bridge')
 // Claude Code sends a server SIGKILL 500 ms after SIGINT.
@@ -127,6 +129,60 @@ async function until(what, check, ms = 10_000) {
     await new Promise(done => setTimeout(done, 50))
   }
 }
+
+test('add-example copies the gallery to the shared lab and preserves edited copies', async () => {
+  const home = mkdtempSync(join(dir, 'examples-home-'))
+  const project = mkdtempSync(join(dir, 'examples-project-'))
+  const entry = startEntry({ HOME: home, MOD_LAB_PACKAGE_ROOT: REPO })
+  try {
+    await entry.initialize()
+    const added = await entry.call('add-example', { cwd: project, name: 'gallery' })
+    assert.equal(added.isError, false, added.content[0].text)
+    const example = JSON.parse(added.content[0].text)
+    assert.equal(example.name, 'gallery-mod')
+    assert.equal(example.command, 'mod-gallery')
+    assert.equal(example.directory, join(home, '.claude-mod-lab', 'examples'))
+    const manifest = join(example.directory, example.name, '.claude-plugin', 'plugin.json')
+    assert.equal(JSON.parse(readFileSync(manifest, 'utf8')).name, 'gallery-mod')
+    const edited = join(example.directory, example.name, 'README.md')
+    writeFileSync(edited, 'My gallery changes\n')
+    const repeated = await entry.call('add-example', { cwd: project, name: 'gallery-mod' })
+    assert.equal(repeated.isError, true)
+    assert.match(repeated.content[0].text, /already there/)
+    assert.equal(readFileSync(edited, 'utf8'), 'My gallery changes\n')
+    assert.equal(existsSync(join(project, '.claude')), false)
+  } finally {
+    await entry.stop()
+  }
+})
+
+test('add-example supports local copies and rejects invalid input before copying', async () => {
+  const home = mkdtempSync(join(dir, 'local-examples-home-'))
+  const project = mkdtempSync(join(dir, 'local-examples-project-'))
+  const entry = startEntry({ HOME: home, MOD_LAB_PACKAGE_ROOT: REPO })
+  try {
+    await entry.initialize()
+    for (const args of [
+      {},
+      { cwd: '.', name: 'raster-mod' },
+      { cwd: project, name: '../raster-mod' },
+      { cwd: project, name: 'raster-mod', scope: 'elsewhere' },
+      { cwd: project, name: 'raster-mod', scope: null },
+      { cwd: project, name: 'raster-mod', destination: '/tmp/arbitrary' },
+      { cwd: typesPath, name: 'raster-mod' },
+    ]) {
+      assert.equal((await entry.call('add-example', args)).isError, true, JSON.stringify(args))
+    }
+    const added = await entry.call('add-example', { cwd: project, name: 'raster-mod', scope: 'local' })
+    assert.equal(added.isError, false, added.content[0].text)
+    const example = JSON.parse(added.content[0].text)
+    assert.equal(example.directory, join(realpathSync(project), '.claude', 'mod-lab'))
+    assert.equal(example.command, 'raster-mod')
+    assert.ok(existsSync(join(example.directory, example.name, '.claude-plugin', 'plugin.json')))
+  } finally {
+    await entry.stop()
+  }
+})
 
 test('until asked it listens on no port; asked, it serves the page, and gives the bridge its address and token', async () => {
   const port = await freePort()
@@ -373,5 +429,24 @@ test('init-lessons reports invalid arguments and unavailable packages without in
     assert.equal(existsSync(join(project, 'workshop')), false)
   } finally {
     await unavailable.stop()
+  }
+})
+
+test('init-lessons accepts only the current project private collection under home', async () => {
+  const home = realpathSync(mkdtempSync(join(dir, 'lesson-home-')))
+  const project = realpathSync(mkdtempSync(join(dir, 'private-lessons-')))
+  const other = realpathSync(mkdtempSync(join(dir, 'other-lessons-')))
+  const collection = ensureLessonCollection(project, home)
+  const entry = startEntry({ HOME: home, MOD_LAB_PACKAGE_ROOT: REPO })
+  try {
+    await entry.initialize()
+    const refused = await entry.call('init-lessons', { cwd: other, collection })
+    assert.equal(refused.isError, true)
+    assert.equal(existsSync(join(other, 'workshop')), false)
+    const result = await entry.call('init-lessons', { cwd: project, collection })
+    assert.equal(result.isError, false, result.content[0].text)
+    assert.equal(existsSync(join(project, 'workshop')), true)
+  } finally {
+    await entry.stop()
   }
 })

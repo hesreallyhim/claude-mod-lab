@@ -1,0 +1,10 @@
+{
+  "name": "sites-mod",
+  "version": "0.2.0-beta.1",
+  "description": "Displays the duration of each tool call below its transcript entry",
+  "author": {
+    "name": "Really Him"
+  },
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

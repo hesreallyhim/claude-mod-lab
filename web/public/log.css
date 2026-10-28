@@ -298,10 +298,6 @@ details.trace .line2 {
 }
 
 /* A run's row: a short value or the error under its name, and where it was run from at the line's right. */
-.mark.notrun {
-  border: 1.5px solid var(--muted);
-}
-
 .line2 .more,
 .line2 .src {
   font: var(--size-xs) var(--mono);

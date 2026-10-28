@@ -1,18 +1,17 @@
 // `npm run release -- <version> [--all-plugins] [--dry-run]`, on the maintainer's machine, from
 // a clean working tree (CONTRIBUTING.md, Releasing, step 1). In order, it:
 //
-// 1. refreshes mod-lab's copy of compat.json (npm run sync-compat);
-// 2. bumps the coupled parts to <version> together: the package (package.json
+// 1. bumps the coupled parts to <version> together: the package (package.json
 //    and package-lock.json), mod-lab, mod-lab-bridge, mod-lab-target and
-//    mod-lab-keys, which the bridge protocol and the compatibility range tie,
+//    mod-lab-keys, which the bridge protocol ties,
 //    and the claude-mod-lab version mod-lab-bridge's own package.json names
 //    (scripts/bridge-deps.mjs), dropping its lockfile for the old version;
-// 3. gives any other plugin that changed since its last release a patch bump,
+// 2. gives any other plugin that changed since its last release a patch bump,
 //    unless its version already rose;
-// 4. runs the version guard, below;
-// 5. commits the bump as "chore(release): v<version>";
-// 6. runs `npm run pack-check`, which packs that commit;
-// 7. tags each plugin whose version has no tag yet, with `claude plugin tag`
+// 3. runs the version guard, below;
+// 4. commits the bump as "chore(release): v<version>";
+// 5. runs `npm run pack-check`, which packs that commit;
+// 6. tags each plugin whose version has no tag yet, with `claude plugin tag`
 //    ({name}--v{version}), on that commit; all but mod-lab-bridge, which
 //    `npm run bridge-lock` tags once its lockfile names the published package.
 //
@@ -32,7 +31,7 @@
 // not marketplace releases and do not receive plugin tags.
 
 import { spawnSync } from 'node:child_process'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { compare, inc, valid } from 'semver'
@@ -154,14 +153,6 @@ function printPlan(version, previousVersion, bumps, allPlugins) {
   for (const bump of bumps) console.log(`   ${bump.name}  ${bump.version} -> ${bump.to}${bumpReason(bump, allPlugins)}`)
 }
 
-/** Sync before planning, so compatibility changes count as plugin changes. */
-function syncCompatibility(isDry) {
-  if (!existsSync(join(REPO, 'scripts', 'sync-compat.mjs'))) return
-  const sync = run(process.execPath, ['scripts/sync-compat.mjs', ...(isDry ? ['--check'] : [])], { quiet: true })
-  if (sync.status !== 0 && !isDry) throw new Error(`sync-compat failed:\n${sync.stdout}${sync.stderr}`)
-  if (sync.status !== 0) console.log(`would refresh mod-lab's copy of compat.json: ${sync.stderr.trim()}`)
-}
-
 function printDryRun(list) {
   const untagged = list
     .filter(one => one.taggable && one.last?.version !== one.version && one.name !== 'mod-lab-bridge')
@@ -184,7 +175,6 @@ function main(args) {
   }
   const pkg = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8'))
   if (compare(version, pkg.version) < 0) throw new Error(`the package is at ${pkg.version}, above ${version}`)
-  syncCompatibility(isDry)
   const bumps = plan(version, readPlugins(allPlugins), allPlugins)
   printPlan(version, pkg.version, bumps, allPlugins)
   // The guard runs on the versions planned, before anything is written, and again once they are.

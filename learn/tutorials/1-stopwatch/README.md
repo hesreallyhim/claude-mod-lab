@@ -295,7 +295,7 @@ With the session from step 5 still open, save these files and use a few tools, t
 
 The next tutorial, [fence](../2-fence), puts a mod between other plugins and the engine: it watches, refuses and changes their calls on `$`, and keeps the model away from files it should not read. [stopwatch-pane](../3-stopwatch-pane) comes back to stopwatch and draws it in a pane.
 
-[sites-mod](../../../templates/sites-mod) times tool calls the same way and draws each one's time under its row in the transcript, by wrapping the row the engine draws.
+[sites-mod](../../../examples/sites-mod) times tool calls the same way and draws each one's time under its row in the transcript, by wrapping the row the engine draws.
 
 Some ways to take stopwatch further, without checks:
 
