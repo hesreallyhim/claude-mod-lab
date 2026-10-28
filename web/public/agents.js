@@ -9,10 +9,10 @@ import { el, fill, openReaderDialog, openTextDialog, textPreview } from './view.
 
 const BUILT_IN = ['general-purpose', 'Explore', 'Plan']
 
-function agentPanel(title, open, ...children) {
+function agentPanel(id, title, open, ...children) {
   return el(
     'details',
-    { class: 'agent-panel', open },
+    { class: 'agent-panel', id: `agents-${id}`, open },
     el('summary', {}, el('h2', {}, title)),
     el('div', { class: 'agent-panel-body controls' }, children),
   )
@@ -74,7 +74,15 @@ function liveParts(agents, sendCommand) {
   ]
   const runs = [...agents.runs].reverse()
   return [
-    el('p', { class: 'muted readings-summary' }, facts.join(' ')),
+    el(
+      'p',
+      { class: 'muted readings-summary' },
+      el('span', { 'data-agent-types': agents.types.map(type => type.agent).join(' ') }, facts[0]),
+      ' ',
+      el('span', { 'data-hidden-types': agents.hidden.join(' ') }, facts[1]),
+      ' ',
+      facts[2],
+    ),
     runs.length === 0
       ? el('p', { class: 'muted' }, 'No agent has been spawned in this session yet: spawn one above.')
       : runs.map(run => runRow(run, sendCommand)),
@@ -189,19 +197,22 @@ export function agentsPage(ctx) {
       'div',
       { class: 'agent-panels' },
       agentPanel(
+        'spawn',
         'Spawn an agent',
         true,
         el('p', {}, 'A spawn runs in the background and spends tokens; its answer arrives with its turn.'),
         spawn,
       ),
-      agentPanel('Agents this session', false, el('div', { 'data-live': 'agents' })),
+      agentPanel('session', 'Agents this session', false, el('div', { 'data-live': 'agents' })),
       agentPanel(
+        'register',
         'Register an agent type',
         false,
         el('p', {}, "A type joins the model's Agent tool from its next turn, and a mod can spawn it itself."),
         register,
       ),
       agentPanel(
+        'routing',
         'Hide types and route spawns',
         false,
         el(

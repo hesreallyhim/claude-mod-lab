@@ -62,7 +62,7 @@ function liveCommand(state, text) {
   const button = (label, path, body) =>
     el(
       'span',
-      {},
+      { 'data-lesson-command': text.trim() },
       ' ',
       el(
         'button',
@@ -113,7 +113,13 @@ export async function lessonsPage(ctx) {
 function reportView(check, note) {
   return [
     note === null ? null : el('p', { class: 'muted' }, note),
-    check?.progress ? el('p', {}, `${check.progress.passed} of ${check.progress.total} checked steps pass.`) : null,
+    check?.progress
+      ? el(
+          'p',
+          { 'data-lesson-passed': check.progress.passed, 'data-lesson-total': check.progress.total },
+          `${check.progress.passed} of ${check.progress.total} checked steps pass.`,
+        )
+      : null,
     check === null ? null : el('div', { class: 'answer' }, textPreview('Lesson check report', check.report)),
   ]
 }
@@ -148,7 +154,7 @@ function startBox(lesson, id) {
   box.append(
     el(
       'button',
-      { type: 'button', onclick: () => void start() },
+      { type: 'button', 'data-action': 'start-lesson', onclick: () => void start() },
       lesson.isStarted
         ? 'Copy reference solution'
         : lesson.hasStarter
@@ -220,7 +226,7 @@ export async function lessonPage(ctx, id) {
   const title = content[0]?.nodeName === 'H1' ? content.shift() : el('h1', {}, lesson.title)
   return el(
     'div',
-    { class: 'page lesson' },
+    { class: 'page lesson', 'data-lesson': id },
     el(
       'p',
       { class: 'kicker' },

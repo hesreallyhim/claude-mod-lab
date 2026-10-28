@@ -200,6 +200,7 @@ function conversationRow(row) {
     {
       class: `reader-${row.reader} xray-row`,
       'data-row-seq': row.seq,
+      'data-audience': row.reader,
       onclick: event => {
         if (event.target.closest('button, a, input, select') || window.getSelection()?.toString()) return
         event.currentTarget.querySelector('button')?.focus({ preventScroll: true })
@@ -271,6 +272,7 @@ export function xrayPage(ctx) {
       'form',
       {
         class: 'inline-form',
+        'data-command': command,
         onsubmit: event => {
           event.preventDefault()
           const text = String(new FormData(event.currentTarget).get('text') ?? '').trim()

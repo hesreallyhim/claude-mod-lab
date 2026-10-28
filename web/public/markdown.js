@@ -42,14 +42,20 @@ function codeBlock(language, text) {
       title: 'Copy the code',
       onclick: async event => {
         const button = event.currentTarget
+        button.dataset.copyState = 'pending'
         try {
           await navigator.clipboard.writeText(text)
+          button.dataset.copyState = 'copied'
           button.textContent = 'Copied'
         } catch {
           getSelection().selectAllChildren(code)
+          button.dataset.copyState = 'selected'
           button.textContent = 'Selected'
         }
-        setTimeout(() => (button.textContent = 'Copy'), 1500)
+        setTimeout(() => {
+          button.textContent = 'Copy'
+          delete button.dataset.copyState
+        }, 1500)
       },
     },
     'Copy',

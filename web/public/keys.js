@@ -131,6 +131,7 @@ function promptForm(kind, queueRun, status) {
     'form',
     {
       class: 'inline-form',
+      'data-prompt-action': kind,
       onsubmit: event => {
         event.preventDefault()
         const data = new FormData(event.currentTarget)

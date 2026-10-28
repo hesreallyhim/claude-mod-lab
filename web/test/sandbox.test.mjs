@@ -1,7 +1,17 @@
 import assert from 'node:assert/strict'
-import { existsSync, mkdirSync, mkdtempSync, realpathSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  realpathSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, relative } from 'node:path'
+import { delimiter, join, relative } from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
@@ -78,8 +88,28 @@ test("tsc's lines become errors at a file and line, named as the page names them
   ])
 })
 
-test("the server's Sandbox is the mod workshop/sandbox-mod in its workspace, where a save writes it", async () => {
+test("the server's Sandbox is the mod workshop/sandbox-mod in its workspace, where a save writes it", async t => {
   const workspace = realpathSync(mkdtempSync(join(tmpdir(), 'sandbox-server-')))
+  const bin = join(workspace, 'bin')
+  const calls = join(workspace, 'validator-args.json')
+  mkdirSync(bin)
+  // Exercise the HTTP and filesystem paths without depending on an installed Claude CLI.
+  writeFileSync(
+    join(bin, 'claude'),
+    `#!/usr/bin/env node
+const fs = require('node:fs')
+fs.writeFileSync(${JSON.stringify(calls)}, JSON.stringify(process.argv.slice(2)))
+console.log(JSON.stringify({ success: true, manifest: { errors: [], notes: [] }, contents: [] }))
+`,
+    { mode: 0o755 },
+  )
+  const previousPath = process.env.PATH
+  t.after(() => {
+    if (previousPath === undefined) delete process.env.PATH
+    else process.env.PATH = previousPath
+    rmSync(workspace, { recursive: true, force: true })
+  })
+  process.env.PATH = `${bin}${delimiter}${previousPath ?? ''}`
   const typesPath = join(workspace, 'claude-code.d.ts')
   writeFileSync(typesPath, "declare module 'claude-code' { export interface CoreEngineInterface {} }\n")
   mkdirSync(join(workspace, '.claude-mod-lab'))
@@ -98,7 +128,17 @@ test("the server's Sandbox is the mod workshop/sandbox-mod in its workspace, whe
         body: JSON.stringify({ files, lessonWorkspace: workspace }),
       })
     assert.equal((await save({})).status, 400)
-    assert.equal((await save(BLANK)).status, 200)
+    const saved = await save(BLANK)
+    const report = await saved.json()
+    assert.equal(saved.status, 200, JSON.stringify(report))
+    assert.equal(report.validation.ok, true)
+    assert.equal(report.types.checked, true)
+    assert.deepEqual(JSON.parse(readFileSync(calls, 'utf8')), [
+      'plugin',
+      'validate',
+      '--json',
+      join(workspace, 'workshop', 'sandbox-mod'),
+    ])
     assert.equal(existsSync(join(workspace, 'workshop', 'sandbox-mod', '.claude-plugin', 'plugin.json')), true)
   } finally {
     await server.close()

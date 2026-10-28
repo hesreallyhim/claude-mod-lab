@@ -479,7 +479,7 @@ export function logRow(options) {
   })
   const row = el(
     'details',
-    { class: 'trace' },
+    { class: 'trace', 'data-event': name, 'data-origin': by, 'data-intercepted': intercepted },
     el(
       'summary',
       { title: `${title}: open the details` },

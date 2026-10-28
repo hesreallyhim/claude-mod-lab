@@ -69,14 +69,24 @@ async function checkDialog(button, label, visualLegend = false) {
 }
 
 async function checkActions(route) {
-  const titles = {
-    agents: ['Register an agent type', 'Hide types and route spawns'],
-    xray: ['Add a note or notice'],
-    workbench: ['Fork the conversation'],
+  const groups = {
+    agents: [
+      ['Register an agent type', page.locator('#agents-register')],
+      ['Hide types and route spawns', page.locator('#agents-routing')],
+    ],
+    xray: [['Add a note or notice', page.locator('#main details:has(form[data-command="notice"])')]],
+    workbench: [
+      [
+        'Fork the conversation',
+        page
+          .locator('#main details')
+          .filter({ has: page.getByRole('button', { name: 'Fork', exact: true, includeHidden: true }) }),
+      ],
+    ],
   }[route]
-  for (const title of titles ?? []) {
-    const group = page.locator('#main details.notes').filter({ has: page.locator('summary', { hasText: title }) })
+  for (const [title, group] of groups ?? []) {
     assert.equal(await group.count(), 1, `${title}: action group remains in the page`)
+    assert.equal(await group.locator(':scope > summary').count(), 1, `${title}: action group remains toggleable`)
     assert.ok((await group.locator('form').count()) > 0, `${title}: working controls remain available`)
   }
 }

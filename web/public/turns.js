@@ -150,7 +150,7 @@ export function turnsPage(ctx) {
       'Turns',
       { aside: turns.length === 0 ? null : el('span', { class: 'muted' }, 'newest first, the last ten') },
       turns.length === 0
-        ? el('p', { class: 'muted' }, 'No turn traced yet: send the session a prompt.')
+        ? el('p', { class: 'muted', 'data-empty': 'turns' }, 'No turn traced yet: send the session a prompt.')
         : turns.map(turn => turnView(state, turn, opened)),
     ),
   )

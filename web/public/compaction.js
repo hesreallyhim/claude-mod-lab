@@ -62,7 +62,12 @@ function compactionView(one) {
   const widest = Math.max(total(one.before), total(one.after))
   return el(
     'article',
-    { class: 'compaction' },
+    {
+      class: 'compaction',
+      'data-compactor': one.by,
+      'data-tokens-before': one.tokensBefore,
+      'data-tokens-after': one.tokensAfter,
+    },
     header,
     el(
       'div',
@@ -97,6 +102,7 @@ export function refreshCompaction(state) {
   const live = document.querySelector('[data-live="compaction"]')
   if (live === null) return
   const { keep, compactions } = state.mirror.compactor
+  live.setAttribute('data-compactor-enabled', String(keep !== null))
   const status =
     keep === null
       ? "The lab's compactor is off: compactions are the engine's, and its summarizer is a model request."
@@ -158,13 +164,22 @@ export function compactionSection(ctx) {
     {
       type: 'button',
       class: 'quiet',
+      'data-action': 'compact',
+      'data-armed': 'false',
       onclick: event => {
         const button = event.currentTarget
         const isArmed = Date.now() <= armedUntil
         armedUntil = isArmed ? 0 : Date.now() + ARM_MS
+        button.setAttribute('data-armed', String(!isArmed))
         button.textContent = isArmed ? 'Compact now' : 'Press again to compact: a compaction is not undone'
         if (isArmed) void sendCommand('compact', status)
-        else setTimeout(() => Date.now() > armedUntil && (button.textContent = 'Compact now'), ARM_MS + 50)
+        else
+          setTimeout(() => {
+            if (Date.now() > armedUntil) {
+              button.textContent = 'Compact now'
+              button.setAttribute('data-armed', 'false')
+            }
+          }, ARM_MS + 50)
       },
     },
     'Compact now',

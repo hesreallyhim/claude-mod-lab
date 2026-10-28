@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest an improvement to the lab.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe the task and where the current experience gets in your way.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Suggested improvement
+      description: Explain how you would like it to work. A concrete example or sketch is welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and context
+      description: Optional. Describe any workaround, alternatives you considered, or relevant client limitations.

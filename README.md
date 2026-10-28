@@ -1,3 +1,5 @@
+
+
 <p align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/brand/banner-dark.svg">
@@ -5,7 +7,9 @@
 </picture>
 </p>
 
-A comprehensive workbench for Claude Code mods. Explore the mod API, trace the interaction of mods in a live session, and learn how to build your own mods from the ground up. "Developer tools" for Claude Code mods.
+**A comprehensive workbench for Claude Code mods. Explore the mod API, trace the interaction of mods in a live session, and learn how to build your own mods from the ground up.**
+
+https://github.com/user-attachments/assets/0f41d1df-0edc-4ccc-bb55-82bdbe605362
 
 ## Quickstart
 

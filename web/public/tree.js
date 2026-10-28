@@ -56,6 +56,9 @@ function narrowed(state) {
 function renderCount(state, total, shown) {
   const count = document.getElementById('tree-count')
   if (count === null) return
+  count.dataset.filter = state.filter
+  count.dataset.total = String(total)
+  count.dataset.shown = String(shown)
   if (state.catalog === null) count.replaceChildren(state.catalogError ?? 'loading the reference')
   else if (state.filter === '')
     count.replaceChildren(

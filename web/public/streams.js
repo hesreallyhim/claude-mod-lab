@@ -31,7 +31,7 @@ function spawnView(run) {
   const span = Math.max(1, ms)
   return el(
     'article',
-    { class: 'run' },
+    { class: 'run', 'data-exit-code': code, 'data-exit-signal': signal ?? '' },
     header,
     el(
       'p',
