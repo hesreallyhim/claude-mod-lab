@@ -2,7 +2,7 @@
 // off, a compaction started from the page, and each compaction in the session
 // drawn as its messages before and after.
 
-import { titledNotes } from './page.js'
+import { helpButton } from './page.js'
 import { clockTime, el } from './view.js'
 
 // How long the Compact button waits for its second press.
@@ -174,7 +174,16 @@ export function compactionSection(ctx) {
   return el(
     'section',
     { class: 'compactor readings' },
-    el('div', { class: 'readings-head' }, el('h2', {}, 'Compaction')),
+    el(
+      'div',
+      { class: 'readings-head' },
+      el('h2', {}, 'Compaction'),
+      helpButton(
+        'How compaction works',
+        "A compaction puts a shorter conversation in place of the one so far, when it nears the context window or when asked (/compact). Every compaction passes session.compact. The engine answers it with a summary its summarizer writes, a model request. The lab's compactor answers it first: it keeps the first message and the last few, and writes the summary between them itself from counts.",
+        'A command typed in the session cannot compact, since it holds the turn. Where an organization manages Claude Code, session.compact hooks do not run in plugins the person installed, so there the lab neither answers compactions nor lists them here.',
+      ),
+    ),
     el(
       'p',
       { class: 'muted readings-summary' },
@@ -184,10 +193,5 @@ export function compactionSection(ctx) {
     compact,
     status,
     el('div', { 'data-live': 'compaction' }),
-    titledNotes(
-      'How compaction works',
-      "A compaction puts a shorter conversation in place of the one so far, when it nears the context window or when asked (/compact). Every compaction passes session.compact. The engine answers it with a summary its summarizer writes, a model request. The lab's compactor answers it first: it keeps the first message and the last few, and writes the summary between them itself from counts.",
-      'A command typed in the session cannot compact, since it holds the turn. Where an organization manages Claude Code, session.compact hooks do not run in plugins the person installed, so there the lab neither answers compactions nor lists them here.',
-    ),
   )
 }

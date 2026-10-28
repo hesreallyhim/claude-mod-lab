@@ -22,9 +22,18 @@
 //   BROWSER               the command that opens the page, in place of the platform's own
 
 import { spawn } from 'node:child_process'
-import { appendFileSync, existsSync, mkdirSync, readFileSync, statSync, truncateSync } from 'node:fs'
+import {
+  appendFileSync,
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+  statSync,
+  truncateSync,
+} from 'node:fs'
 import { homedir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { createInterface } from 'node:readline'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -41,6 +50,22 @@ const CLOSE_MS = 300
 const MAX_WAIT_SECONDS = 600
 
 const TOOLS = [
+  {
+    name: 'init-lessons',
+    description: 'Enables lessons in the current project without replacing existing files. Used by /init-lessons.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        cwd: { type: 'string', description: "The session's absolute working directory." },
+        collection: {
+          type: 'string',
+          description: "The current project's component directory already watched by this session.",
+        },
+      },
+      required: ['cwd'],
+      additionalProperties: false,
+    },
+  },
   {
     name: 'start',
     description:
@@ -246,6 +271,7 @@ async function endpointAnswer(wait) {
 }
 
 async function callTool(name, args) {
+  if (name === 'init-lessons') return initializeLessons(args)
   if (name === 'start') {
     const connected = await connectedSharedExplorer()
     if (connected !== null)
@@ -261,6 +287,42 @@ async function callTool(name, args) {
   if (name === 'endpoint')
     return { content: [{ type: 'text', text: JSON.stringify(await endpointAnswer(args?.wait)) }], isError: false }
   return { content: [{ type: 'text', text: `no tool is named ${name}` }], isError: true }
+}
+
+function checkLessonCollection(cwd, collection) {
+  if (collection === undefined) return
+  const expected = join(realpathSync(cwd), '.claude', 'mod-lab')
+  if (collection !== expected)
+    throw new Error('The lesson collection must be this project’s .claude/mod-lab directory.')
+  for (const path of [dirname(expected), expected]) {
+    if (!lstatSync(path, { throwIfNoEntry: false })?.isDirectory()) {
+      throw new Error(`The lesson collection needs an existing directory without symlinks: ${path}`)
+    }
+  }
+}
+
+async function initializeLessons(args) {
+  try {
+    if (typeof args?.cwd !== 'string' || !isAbsolute(args.cwd)) {
+      throw new Error('init-lessons needs the session’s absolute working directory.')
+    }
+    const source = findPackage()
+    if (source.root === null) throw new Error(source.problem)
+    checkLessonCollection(args.cwd, args.collection)
+    const { initializeProjectLessons } = await import(pathToFileURL(join(source.root, 'web', 'lib', 'roots.mjs')).href)
+    const workspace = initializeProjectLessons(args.cwd)
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify({ workspace }),
+        },
+      ],
+      isError: false,
+    }
+  } catch (error) {
+    return { content: [{ type: 'text', text: messageOf(error) }], isError: true }
+  }
 }
 
 function connectedToThisSession(session) {

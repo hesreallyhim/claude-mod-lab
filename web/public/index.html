@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="lab-token" content="__LAB_TOKEN__" />
     <title>claude-mod-lab explorer</title>
-    <link rel="icon" href="data:," />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <link rel="preload" href="/fonts/ibm-plex-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/vt323-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/style.css" />
@@ -19,6 +19,8 @@
     <link rel="stylesheet" href="/bench.css" />
     <link rel="stylesheet" href="/log.css" />
     <link rel="stylesheet" href="/pages.css" />
+    <link rel="stylesheet" href="/agents.css" />
+    <link rel="stylesheet" href="/ledger.css" />
     <link rel="stylesheet" href="/lesson-progress.css" />
     <link rel="stylesheet" href="/dialogs.css" />
     <link rel="stylesheet" href="/xray.css" />
@@ -27,13 +29,13 @@
   <body>
     <header class="bar">
       <a class="brand" href="#/" aria-label="claude-mod-lab explorer: home">
-        <!-- The mark: a flask drawn in a terminal's cells, part filled. -->
-        <svg viewBox="0 0 12 12" aria-hidden="true">
+        <!-- The mark: the brand's flask (assets/brand/src/cells.mjs), drawn in a terminal's cells, part filled. -->
+        <svg viewBox="-1.5 0 12 12" aria-hidden="true">
           <path
             class="flask-glass"
-            d="M3 0h6v1H3zM4 1h1v3H4zM7 1h1v3H7zM3 4h1v1H3zM8 4h1v1H8zM2 5h1v1H2zM9 5h1v1H9zM1 6h1v5H1zM10 6h1v5h-1zM1 11h10v1H1z"
+            d="M2 0h5v1H2zM2 1h1v3H2zM6 1h1v3H6zM1 4h1v1H1zM7 4h1v1H7zM0 5h1v6H0zM8 5h1v6H8zM1 11h7v1H1z"
           />
-          <path class="flask-liquid" d="M2 8h8v3H2zM5 6h1v1H5zM6 3h1v1H6z" />
+          <path class="flask-liquid" d="M1 7h7v4H1z" />
         </svg>
         <span class="brand-name">claude-mod-lab</span>
       </a>
@@ -52,6 +54,7 @@
           <span id="reference"></span>
         </span>
       </span>
+      <button id="connection-help" type="button" aria-haspopup="dialog">Help</button>
     </header>
     <div class="layout">
       <nav id="nav" aria-label="Reference">
@@ -85,29 +88,31 @@
             Intercepted
           </button>
         </div>
-        <p id="feed-caption" class="feed-caption"></p>
-        <div id="feed-body"></div>
-        <details id="feed-legend" class="legend">
-          <summary>How to read a row</summary>
+        <div class="feed-intro">
+          <p id="feed-caption" class="feed-caption"></p>
+          <div id="feed-help"></div>
+        </div>
+        <template id="feed-legend">
           <dl>
             <dt><i class="mark ok"></i></dt>
-            <dd>a run that returned; a square in red failed</dd>
+            <dd>A successful run. A red square indicates failure.</dd>
             <dt><i class="mark request"></i></dt>
-            <dd>a model request; hollow, a tool call; a dash, a command</dd>
+            <dd>A model request. A hollow marker indicates a tool call; a dash indicates a command.</dd>
             <dt><i class="mark ix acted"></i></dt>
-            <dd>an intercept of yours: filled where it acted, hollow where it watched</dd>
+            <dd>Your intercept. Filled when it changed a call; hollow when it only watched.</dd>
             <dt>
               <span class="strip"
                 ><i class="from"></i><i class="w"></i><i class="k passed"></i><i class="w"></i><i class="k returned"></i
               ></span>
             </dt>
-            <dd>the chain: the caller, then a cell a hook; filled where it answered</dd>
+            <dd>The call chain: the caller first, followed by each hook. Filled cells returned a result.</dd>
             <dt>
               <span class="strip"><i class="k rejected"></i><i class="w"></i><i class="k skipped"></i></span>
             </dt>
-            <dd>a hook that rejected; dashed, one skipped or out of time</dd>
+            <dd>A hook that rejected the call, followed by a skipped or timed-out hook.</dd>
           </dl>
-        </details>
+        </template>
+        <div id="feed-body"></div>
       </aside>
     </div>
   </body>

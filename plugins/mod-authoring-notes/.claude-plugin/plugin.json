@@ -1,9 +1,0 @@
-{
-  "name": "mod-authoring-notes",
-  "version": "0.2.0-beta.1",
-  "description": "A skill of notes for writing Claude Code mods: what the validator refuses, how the test kit behaves, and engine constraints the plugin-authoring skill does not state",
-  "license": "MIT",
-  "author": {
-    "name": "Really Him"
-  }
-}

@@ -299,12 +299,13 @@ function sessionProject(folder) {
   return realpathSync(requested)
 }
 
-function sessionEnvironment(connection, options, lessons, isInteractive, componentDirs) {
+function sessionEnvironment(connection, options, lessons, isInteractive, componentDirs, lessonCollection) {
   return {
     MOD_LAB_NODE: process.execPath,
     MOD_LAB_PACKAGE_ROOT: PACKAGE_ROOT,
     MOD_LAB_WORKSPACE: '',
     MOD_LAB_LESSONS: lessons ?? '',
+    MOD_LAB_LESSON_COLLECTION: lessonCollection,
     MOD_LAB_COMPONENT_DIRS: JSON.stringify(componentDirs),
     MOD_LAB_BRIDGE_FILE: connection?.bridgeFile ?? '',
     MOD_LAB_OPEN: isInteractive && connection === null ? '1' : '',
@@ -344,11 +345,12 @@ async function startSession(args) {
   const connection = await connectionFor(options)
   const folders = await sessionPlugins(project, lessons)
   const componentDirs = projectComponents(project)
+  const lessonCollection = lessons !== null && folders.includes(componentFolder(project)) ? componentFolder(project) : ''
   const isInteractive = !options.passed.some(arg => arg === '-p' || arg === '--print')
   announceConnection(connection, options, isInteractive)
-  return run('claude', [...[...folders, ...componentDirs].flatMap(dir => ['--plugin-dir', dir]), ...options.passed], {
+  return run('claude', [...[...new Set([...folders, ...componentDirs])].flatMap(dir => ['--plugin-dir', dir]), ...options.passed], {
     cwd: project,
-    env: sessionEnvironment(connection, options, lessons, isInteractive, componentDirs),
+    env: sessionEnvironment(connection, options, lessons, isInteractive, componentDirs, lessonCollection),
   })
 }
 

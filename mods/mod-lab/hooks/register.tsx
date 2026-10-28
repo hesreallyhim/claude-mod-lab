@@ -8,6 +8,7 @@ import type { EngineInterface, Register } from 'claude-code'
 import type { LabArgText, LabRun } from '../types'
 import { noteAgentEnd, registerAgents } from './agents'
 import { labCommand } from './commands'
+import { initLessonsCommand } from './lessons'
 import { ARGUMENT_HINT, drawHelpBox, HELP_INTRO } from './help'
 import { registerExplorer } from './explorer'
 import { checkVersion } from './compat'
@@ -126,6 +127,9 @@ export const register: Register = (on, options) => {
         argumentHint: ARGUMENT_HINT,
       }),
     )
+    await startStep($, 'the /init-lessons command', () =>
+      $.command.register({ name: 'init-lessons', description: 'Enable lessons in this project without leaving the session' }),
+    )
     await startStep($, "the model's tools", () => registerTools($))
     await startStep($, 'the version check', () => checkVersion($))
     await startStep($, 'tracing', () => startTracing($))
@@ -135,6 +139,7 @@ export const register: Register = (on, options) => {
   })
 
   on('command.run', { command: 'mod-lab' }, async ($, e) => ({ text: await labCommand($, e.args, 'command') }))
+  on('command.run', { command: 'init-lessons' }, async ($, e) => ({ text: await initLessonsCommand($, e.args) }))
 
   // The pane's Run button and Enter in its argument fields.
   on('ui.press', { requestId: 'lab', element: 'run' }, async ($, e, next) => {
@@ -255,6 +260,8 @@ export const register: Register = (on, options) => {
   on('prompt.read', inspected).catch(replay)
   on('prompt.fill', inspected).catch(replay)
   on('prompt.suggest', inspected).catch(replay)
+  // Capture only the lab's explicit probe calls; normal composition passes through without recording.
+  on('prompt.compose', inspected).catch(replay)
   on('tool.list', inspected).catch(replay)
   on('tool.check', inspected).catch(replay)
   on('command.list', inspected).catch(replay)

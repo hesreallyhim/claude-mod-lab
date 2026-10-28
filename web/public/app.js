@@ -6,7 +6,8 @@
 import { agentsPage, refreshAgents } from './agents.js'
 import { api, pageToken } from './api.js'
 import { refreshComponentCommands, resetComponentCommands } from './components.js'
-import { pageHead, renderAreas, routeOf } from './areas.js'
+import { pageHead, renderAreas, routeOf, wireAreaMenus } from './areas.js'
+import { openConnectionHelp } from './connection-help.js'
 import { galleryPage } from './gallery.js'
 import { el } from './view.js'
 import { refreshWorkbench, workbenchPage } from './workbench.js'
@@ -18,7 +19,7 @@ import { sandboxPage } from './sandbox.js'
 import { workshopPage } from './workshop.js'
 import { refreshXray, xrayPage } from './xray.js'
 import { homePage } from './home.js'
-import { controls, lede, notes } from './page.js'
+import { controls, helpButton, lede, notes } from './page.js'
 import { apiPage, eventPage, manLine, memberPage, renderTree, seenOnLine, typePage, usesLine } from './reference.js'
 import { probeForm, probesHint, queueRun, runRow, sendCommand, updateJob } from './runs.js'
 import { refreshCensus, refreshInterceptState, refreshInterceptStatus, tapRow } from './intercepts.js'
@@ -60,7 +61,7 @@ const state = {
 const ctx = {
   state,
   queueRun: (probe, args, target) => queueRun(state, probe, args, target),
-  sendCommand: (text, target) => sendCommand(state, text, target),
+  sendCommand: (text, target, renderAnswer = undefined) => sendCommand(state, text, target, renderAnswer),
 }
 
 // Header
@@ -130,11 +131,16 @@ function renderEngine(session) {
 }
 
 function ledgerPage() {
-  const result = el('div', { class: 'result' })
+  const result = el('div', { class: 'result ledger-result' })
   return el(
     'div',
-    { class: 'page' },
-    pageHead('Context ledger'),
+    { class: 'page ledger' },
+    pageHead(
+      'Context ledger',
+      notes(
+        "The lab reads plugins' additions off the chains beneath it, so it can name the plugin each came from; the parts it has seen grow as the session runs. Plugins loaded above the lab are not in the chains it reads.",
+      ),
+    ),
     lede('What the model reads in this session, and where each part of it comes from.'),
     probesHint(state),
     controls(
@@ -149,11 +155,8 @@ function ledgerPage() {
         { type: 'button', onclick: () => void sendCommand(state, 'ledger', result) },
         'Measure in the session',
       ),
-      result,
     ),
-    notes(
-      "The lab reads plugins' additions off the chains beneath it, so it can name the plugin each came from; the parts it has seen grow as the session runs. Plugins loaded above the lab are not in the chains it reads.",
-    ),
+    result,
   )
 }
 
@@ -232,7 +235,7 @@ async function renderMain() {
   if (asked !== renderAsked) return
   // The link across areas: a Session page's parts of $, or the Session pages that show a method or event.
   const cross = kind === '$' || kind === 'event' ? seenOnLine(target) : usesLine(state, kind)
-  if (cross !== null) page.querySelector('h1')?.after(cross)
+  if (cross !== null) (page.querySelector('.page-title-row') ?? page.querySelector('h1'))?.after(cross)
   main.replaceChildren(page)
 }
 
@@ -360,6 +363,13 @@ function connect() {
 }
 
 async function start() {
+  wireAreaMenus()
+  const help = document.getElementById('connection-help')
+  help.addEventListener('click', () => openConnectionHelp(help))
+  const legend = /** @type {HTMLTemplateElement} */ (document.getElementById('feed-legend'))
+  document
+    .getElementById('feed-help')
+    .append(helpButton('How to read a row', el('div', { class: 'feed-legend' }, legend.content.cloneNode(true))))
   await loadCatalog()
   document.getElementById('search').addEventListener('input', event => {
     state.filter = /** @type {HTMLInputElement} */ (event.currentTarget).value.trim().toLowerCase()

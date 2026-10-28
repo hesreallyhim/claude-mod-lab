@@ -5,7 +5,7 @@
 import { api } from './api.js'
 import { pageHead } from './areas.js'
 import { controls, lede, notes } from './page.js'
-import { el } from './view.js'
+import { el, textPreview } from './view.js'
 import { lessonLocation, lessonSetup } from './lesson-setup.js'
 
 const ROLES = [
@@ -54,7 +54,11 @@ function checkReport({ validation, types }) {
           'div',
           {},
           el('p', { class: 'error' }, 'The validator refuses it:'),
-          el('ul', {}, ...validation.errors.map(error => el('li', { class: 'error' }, error))),
+          el(
+            'ul',
+            {},
+            ...validation.errors.map(error => el('li', { class: 'error' }, textPreview('Validation error', error))),
+          ),
         ),
     el(
       'table',
@@ -76,14 +80,25 @@ function checkReport({ validation, types }) {
             'ul',
             {},
             ...types.errors.map(error =>
-              el('li', { class: 'error' }, `${error.file}:${error.line}:${error.column} ${error.message}`),
+              el(
+                'li',
+                { class: 'error' },
+                el('code', {}, `${error.file}:${error.line}:${error.column}`),
+                textPreview(`TypeScript error · ${error.file}:${error.line}`, error.message),
+              ),
             ),
           ),
   )
 }
 
 function testReport({ results, output }) {
-  if (results.length === 0) return el('pre', { class: 'error' }, output || 'No test ran.')
+  if (results.length === 0)
+    return el(
+      'div',
+      { class: 'error' },
+      el('p', {}, 'No test ran.'),
+      output ? textPreview('Test output', output) : null,
+    )
   return el(
     'ul',
     { class: 'tests' },
@@ -92,7 +107,7 @@ function testReport({ results, output }) {
         'li',
         { class: result.status === 'pass' ? 'ok' : 'error' },
         `${result.status === 'pass' ? '✓' : '✗'} ${result.name}`,
-        result.detail.length === 0 ? null : el('pre', {}, result.detail.join('\n')),
+        result.detail.length === 0 ? null : textPreview(`${result.name} · Details`, result.detail.join('\n')),
       ),
     ),
   )
@@ -133,7 +148,12 @@ export async function sandboxPage() {
   return el(
     'div',
     { class: 'page sandbox' },
-    pageHead('Sandbox'),
+    pageHead(
+      'Sandbox',
+      notes(
+        "Save writes the files with a manifest naming the plugin sandbox-mod. The lab's session loads it from workshop/ once it is saved, and reloads it after each save, so a change shows in the session as soon as it is written.",
+      ),
+    ),
     lessonLocation(info.lessonWorkspace),
     lede(`One mod, ${info.dir}, edited here: its hooks module, its state contract and a test.`),
     controls(
@@ -174,8 +194,5 @@ export async function sandboxPage() {
       report,
     ),
     ...ROLES.map(([role]) => editors[role].view),
-    notes(
-      "Save writes the files with a manifest naming the plugin sandbox-mod. The lab's session loads it from workshop/ once it is saved, and reloads it after each save, so a change shows in the session as soon as it is written.",
-    ),
   )
 }

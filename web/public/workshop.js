@@ -63,10 +63,11 @@ function modRow(mod, lessonWorkspace) {
 }
 
 export async function workshopPage() {
+  const heading = pageHead('Workshop')
   const page = el(
     'div',
     { class: 'page' },
-    pageHead('Workshop'),
+    heading,
     lede(
       'Mods in your lesson workspace, including those you build in ',
       el('a', { href: '#/learn' }, 'Lessons'),
@@ -81,6 +82,22 @@ export async function workshopPage() {
       page.append(lessonSetup())
       return page
     }
+    heading.replaceWith(
+      pageHead(
+        'Workshop',
+        notes(
+          el(
+            'p',
+            {},
+            'A switch turns a mod off for this workspace, with ',
+            el('code', {}, '"<name>@inline": false'),
+            ' in ',
+            el('code', {}, settings),
+            ', and has the session reload. Turned on again, the setting is removed.',
+          ),
+        ),
+      ),
+    )
     page.append(
       lessonLocation(lessonWorkspace),
       readings(
@@ -102,17 +119,6 @@ export async function workshopPage() {
                 mods.map(mod => modRow(mod, lessonWorkspace)),
               ),
             ),
-      ),
-      notes(
-        el(
-          'p',
-          {},
-          'A switch turns a mod off for this workspace, with ',
-          el('code', {}, '"<name>@inline": false'),
-          ' in ',
-          el('code', {}, settings),
-          ', and has the session reload. Turned on again, the setting is removed.',
-        ),
       ),
     )
   } catch (error) {

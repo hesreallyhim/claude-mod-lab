@@ -18,6 +18,44 @@ dialog.detail[open] {
   flex-direction: column;
 }
 
+dialog.detail.help-reader {
+  max-width: 720px;
+}
+
+.agent-transcript > section {
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+}
+
+.agent-transcript > section + section {
+  margin-top: var(--space-3);
+}
+
+.agent-transcript .transcript-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+dialog.detail .transcript-header h3 {
+  margin: 0;
+  font-size: var(--size-md);
+}
+
+.agent-transcript > .transcript-call {
+  border-left: 2px solid var(--accent);
+}
+
+.agent-transcript > .transcript-result {
+  border-left: 2px solid var(--line-strong);
+}
+
+.agent-transcript > .hint {
+  margin-top: var(--space-4);
+}
+
 dialog.detail::backdrop {
   background: rgb(0 0 0 / 0.6);
 }
@@ -256,4 +294,21 @@ table.links :is(.tier, .num) {
     color: var(--muted);
     font-weight: 400;
   }
+}
+
+/* Connection help uses the same reading surface as run details. */
+dialog.connection-help {
+  width: min(680px, calc(100vw - 32px));
+}
+
+.connection-help .help-command {
+  padding: var(--space-3);
+  border-left: 3px solid var(--accent);
+  background: var(--code-bg);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.connection-help .help-docs {
+  margin-top: var(--space-5);
 }

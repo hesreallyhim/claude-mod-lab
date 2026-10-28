@@ -2,23 +2,34 @@
    Gallery pages. */
 
 .component {
-  margin-top: var(--space-2);
-  padding-top: var(--space-2);
+  min-width: 0;
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
   border-top: 1px dashed var(--line);
+  overflow-wrap: anywhere;
 }
 
 .component p {
   margin: 0 0 var(--space-2);
+  font-size: var(--size-sm);
+  line-height: var(--leading);
+}
+
+.component code {
+  font-size: inherit;
+  white-space: normal;
 }
 
 .component-actions {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .component-try {
-  padding: var(--space-2) var(--space-2);
+  padding: var(--space-3);
   border-radius: var(--radius);
   background: var(--ok-wash);
 }

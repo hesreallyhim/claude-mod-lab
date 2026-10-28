@@ -395,6 +395,56 @@ test("a command job's text reaches $.lab.command, and its answer goes back on th
   expect(answered?.body).toMatchObject({ job: 'job-c5', text: 'did intercept fs.read refuse, from explorer' })
 })
 
+test('enabling lessons refreshes the connected session before polling without resending captured state', { plugins: [labStandIn] }, async ($, on) => {
+  const clock = mock.clock(on)
+  let lessons: string | undefined
+  let collection: string | undefined
+  let reads = 0
+  on('env.get', { name: 'MOD_LAB_LESSONS' }, () => {
+    reads += 1
+    return { value: lessons }
+  })
+  on('env.get', { name: 'MOD_LAB_LESSON_COLLECTION' }, () => ({ value: collection }))
+  session(on)
+  on('state.get', { plugin: 'mod-lab', key: 'runs' }, () => ({ value: { value: [{ seq: 1, probe: 'session.cwd', ok: true }] as never, version: 1 } }))
+  on('state.get', { plugin: 'mod-lab', key: 'traces' }, () => ({ value: { value: [{ seq: 1, event: 'session.start' }] as never, version: 1 } }))
+  on('state.get', { plugin: 'mod-lab', key: 'taps' }, () => ({ value: { value: [{ seq: 1, event: 'fs.read' }] as never, version: 1 } }))
+  on('state.get', { plugin: 'mod-lab', key: 'intercepts' }, () => ({ value: { value: [], version: 1 } }))
+  const jobs: unknown[] = []
+  const explorerServer = serving(on, jobs)
+  mcpServer(on, explorerServer)
+
+  await $.session.start(START)
+  await clock.advance(TICK * 2)
+  const readsAfterConnection = reads
+  expect(readsAfterConnection).toBeGreaterThan(0)
+  await clock.advance(TICK * 7)
+  expect(reads).toBe(readsAfterConnection)
+  expect(hellos(explorerServer.requests)).toHaveLength(1)
+
+  lessons = '/work/q1'
+  collection = '/work/q1/.claude/mod-lab'
+  jobs.push({ id: 'after-init', kind: 'command', text: 'list' })
+  await clock.advance(TICK)
+
+  const greetings = hellos(explorerServer.requests)
+  expect(greetings).toHaveLength(2)
+  expect(greetings[1]?.body).toMatchObject({ lab: { lessons, lessonCollection: collection } })
+  const changedAt = explorerServer.requests.indexOf(greetings[1]!)
+  const client = `client-${changedAt + 1}`
+  expect(explorerServer.requests[changedAt + 1]?.path).toBe(`/bridge/next?client=${client}`)
+  expect(explorerServer.requests.find(request => request.path === '/bridge/answer')?.body).toMatchObject({ client, job: 'after-init', text: 'did list, from explorer' })
+  for (const path of ['/bridge/runs', '/bridge/traces', '/bridge/taps']) {
+    expect(explorerServer.requests.filter(request => request.path === path)).toHaveLength(1)
+  }
+  expect(explorerServer.requests.filter(request => request.path === '/bridge/mirror' && (request.body as { key: string }).key === 'intercepts')).toHaveLength(1)
+
+  collection = undefined
+  await clock.advance(TICK * 8)
+  expect(hellos(explorerServer.requests)).toHaveLength(3)
+  expect(hellos(explorerServer.requests).at(-1)?.body).toMatchObject({ lab: { lessons, lessonCollection: null } })
+})
+
 test('a command job is answered with text, here that the absent lab did not answer', async ($, on) => {
   const clock = mock.clock(on)
   session(on)
@@ -406,6 +456,32 @@ test('a command job is answered with text, here that the absent lab did not answ
 
   const answered = explorerServer.requests.find(request => request.path === '/bridge/answer')
   expect(answered?.body).toMatchObject({ job: 'job-c4', text: expect.stringContaining('the lab did not answer') })
+})
+
+test('a pending reload answers with the refreshed client after lessons are enabled', async ($, on) => {
+  const clock = mock.clock(on)
+  let lessons: string | undefined
+  on('env.get', { name: 'MOD_LAB_LESSONS' }, () => ({ value: lessons }))
+  session(on)
+  const explorerServer = serving(on, [{ id: 'pending-reload', kind: 'reload' }])
+  mcpServer(on, explorerServer)
+  let finishReload!: () => void
+  const reload = new Promise<void>(done => { finishReload = done })
+  on('command.run', { command: 'reload-plugins' }, async () => {
+    await reload
+    return { text: 'reloaded' }
+  })
+
+  await $.session.start(START)
+  await clock.advance(TICK * 2)
+  lessons = '/work/q1'
+  await clock.advance(TICK * 8)
+  const refreshed = hellos(explorerServer.requests)[1]!
+  expect(refreshed).toBeDefined()
+  const client = `client-${explorerServer.requests.indexOf(refreshed) + 1}`
+  finishReload()
+  await clock.advance(TICK)
+  expect(explorerServer.requests.find(request => request.path === '/bridge/answer')?.body).toMatchObject({ client, job: 'pending-reload', text: 'reloaded' })
 })
 
 test('a reload job mirrors refreshed command availability before answering the reload', async ($, on) => {

@@ -38,7 +38,12 @@ const checked = {
 }
 
 function answer(path) {
-  if (path === '/api/lessons') return { lessons: [lesson], index: '# Lessons', ...context }
+  if (path === '/api/lessons')
+    return {
+      lessons: [lesson],
+      index: '# Lessons\n\nWork through each tutorial in order.\n\nOpen [A stopwatch](tutorials/0a-tick) to begin.',
+      ...context,
+    }
   if (path === '/api/lesson')
     return {
       ...lesson,
@@ -66,7 +71,7 @@ function answer(path) {
   }
   if (path === '/api/check') return { report: 'Checks passed.', progress: null }
   if (path === '/api/sandbox/save') return checked
-  if (path === '/api/sandbox/test') return { results: [], output: 'No test ran.' }
+  if (path === '/api/sandbox/test') return { results: [], output: 'No output was captured.' }
   if (path === '/api/workshop/switch') return { mod: { ...workshopMod, isOn: false }, reload: { note: 'Updated.' } }
   return null
 }
@@ -153,10 +158,23 @@ try {
     assert.equal(await page.getByRole('button').count(), view === 'lessons' ? 1 : 0)
     if (view === 'lessons') {
       const url = page.url()
-      await page.getByRole('button', { name: 'How lessons work ↓', exact: true }).click()
-      assert.equal(await page.locator('#lessons-guide').getAttribute('open'), '')
-      assert.equal(await page.locator('#lessons-guide summary').evaluate(node => node === document.activeElement), true)
-      assert.equal(page.url(), url, 'jumping to the guide does not change the app route')
+      const help = page.getByRole('button', { name: 'How lessons work', exact: true })
+      let contents
+      for (let opened = 0; opened < 2; opened++) {
+        await help.click()
+        const dialog = page.getByRole('dialog', { name: 'How lessons work', exact: true })
+        await dialog.waitFor()
+        assert.equal(await dialog.getByRole('heading').evaluate(node => node === document.activeElement), true)
+        assert.match(await dialog.innerText(), /Work through each tutorial in order\./)
+        assert.equal(await dialog.getByRole('link', { name: 'A stopwatch' }).getAttribute('href'), '#/learn/tick')
+        const currentContents = await dialog.locator('.help-content').innerHTML()
+        if (opened === 0) contents = currentContents
+        else assert.equal(currentContents, contents, 'reopening retains every guide paragraph and link')
+        assert.equal(page.url(), url, 'opening the guide does not change the app route')
+        await page.keyboard.press('Escape')
+        await dialog.waitFor({ state: 'detached' })
+        assert.equal(await help.evaluate(node => node === document.activeElement), true, 'Escape restores focus')
+      }
     }
     if (view === 'lesson')
       assert.ok((await page.textContent('body')).includes('Read this lesson before setting up a workspace.'))

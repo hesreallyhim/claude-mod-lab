@@ -38,6 +38,8 @@ A command's output and a tool's result are read by the model; the pane and the t
 
 55 probes cover the nouns of `$`. Most only read. The rest say so with an effect label: `ui` draws (a toast, the status line, the prompt box), `write` changes something (the lab's store and state, the clipboard, a file under `~/.claude-mod-lab/scratch/`), `network` fetches an https URL, `spend` makes a model request, `dialog` opens the question dialog, and `tool` runs the Read tool. `/mod-lab list` marks each.
 
+The `prompt.compose` probe keeps each returned section's full text alongside its ID, scope, and character count. Its dispatch record includes the composition input, returned sections, and downstream hook chain. Ordinary prompt composition outside a lab probe is not added to the run log. Composition is available for inspection, but the lab does not expose intercept controls that could rewrite the session's system prompt.
+
 ## Intercepts
 
 An intercept makes the lab one of the hooks on an op event, with behaviour chosen from a fixed list. It is a way to see what a hook can do to a call before writing one.

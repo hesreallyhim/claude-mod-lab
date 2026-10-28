@@ -199,7 +199,7 @@ export async function promptSuggest($: Dollar, a: ProbeArgs) {
 
 export async function promptCompose($: Dollar) {
   const { sections } = await $.prompt.compose()
-  return sections.map(section => ({ id: section.id, scope: section.scope, characters: section.text.length }))
+  return sections.map(section => ({ id: section.id, scope: section.scope, characters: section.text.length, text: section.text }))
 }
 
 // tool
@@ -564,7 +564,7 @@ export const PROBES: readonly LabProbe[] = [
   probe('prompt.suggest', 'ui', 'Displays a prompt suggestion that the user can accept with Tab.', promptSuggest, [
     text('text', 'explain what the last probe returned', 'the suggestion'),
   ]),
-  probe('prompt.compose', 'read', 'Lists system prompt sections with their scope and character count.', promptCompose),
+  probe('prompt.compose', 'read', 'Returns system prompt sections with their scope, character count, and full text.', promptCompose),
   probe('tool.list', 'read', 'Lists the tools available to the model.', toolList),
   probe('tool.check', 'read', 'Checks whether a tool call is permitted without executing it.', toolCheck, [
     choice('call', ['Read README.md', 'Bash ls', 'Bash rm -rf build'], 'which call to ask about'),

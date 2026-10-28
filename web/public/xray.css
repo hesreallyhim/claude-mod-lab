@@ -34,7 +34,7 @@
 .xray-summary h3 {
   margin: 0 0 var(--space-2);
   color: var(--ink);
-  font-size: var(--size-sm);
+  font-size: var(--size-md);
 }
 
 .xray-summary table.xray-counts {
@@ -45,7 +45,7 @@
 }
 
 .xray-counts :is(th, td) {
-  padding: var(--space-1) 0;
+  padding: var(--space-2) 0;
   border-bottom: 1px dashed var(--line);
 }
 
@@ -100,7 +100,7 @@ table.xray-rows :is(th, td):last-child {
   display: block;
   margin-top: var(--space-1);
   color: var(--muted);
-  font-size: var(--size-xs);
+  font-size: var(--size-sm);
 }
 
 .xray-source-kind {
@@ -140,7 +140,7 @@ table.xray-rows tbody tr:is(:hover, :focus-within) {
   width: fit-content;
   margin-top: var(--space-2);
   color: var(--accent);
-  font-size: var(--size-xs);
+  font-size: var(--size-sm);
   text-decoration: underline;
   text-underline-offset: 3px;
 }

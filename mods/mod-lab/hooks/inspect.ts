@@ -2,7 +2,7 @@ import type { EngineInterface, HookStream } from 'claude-code'
 
 import type { LabDispatch, LabIntercept, LabJson, LabLink, LabTap } from '../types'
 import { interceptFor, interpose, isDelaying } from './intercept'
-import { summarize, TRACE_LIMITS } from './json'
+import { summarize, summarizeResult, TRACE_LIMITS } from './json'
 
 type Dollar = EngineInterface
 
@@ -19,11 +19,6 @@ export type Chain = {
     readonly received?: unknown
     readonly chunks?: number
   }[]
-}
-
-/** Calls a probe makes that the lab leaves uninspected, and why. */
-export const UNINSPECTED: Readonly<Record<string, string>> = {
-  'prompt.compose': 'its hooks run for every system prompt the engine renders',
 }
 
 let capture: LabDispatch[] | null = null
@@ -111,7 +106,7 @@ export async function inspect<R>($: Dollar, e: unknown, next: ((e: never) => Pro
   next.signal?.addEventListener('abort', abandoned, { once: true })
   try {
     const result = intercept === undefined ? await next(e as never) : await interpose($, e, next, intercept, origin)
-    if (dispatch.returned === 'pending') dispatch.returned = summarize(result)
+    if (dispatch.returned === 'pending') dispatch.returned = summarizeResult(result, next.event)
     return result
   } catch (error) {
     if (dispatch.returned === 'pending') dispatch.returned = { rejected: error instanceof Error ? error.message : String(error) }

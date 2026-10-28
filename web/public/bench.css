@@ -14,7 +14,6 @@
   padding: 0 var(--space-4) var(--space-4);
   border-left: 1px solid var(--line-strong);
   background-color: var(--bg);
-  background-image: repeating-linear-gradient(to bottom, transparent 0 2px, var(--scan) 2px 3px);
 }
 
 @media (min-width: 1201px) {
@@ -110,46 +109,43 @@ body[data-area='api'] .bench h2::before {
   color: var(--muted);
 }
 
-/* Forms that run something in the session: a frame with its title in the top edge. */
+/* Forms keep the title, explanation, fields and actions on one consistent inset. */
 
 form.probe {
   position: relative;
-  margin: var(--space-4) 0;
-  padding: var(--space-4) var(--space-3) var(--space-3);
+  margin: var(--space-5) 0;
+  padding: var(--space-4);
   border: 1px solid var(--line-strong);
   background: transparent;
 }
 
 .bench form.probe {
-  margin: var(--space-3) 0 var(--space-3);
+  margin: var(--space-4) 0;
 }
 
 .probe-head {
-  position: absolute;
-  top: -0.8em;
-  left: var(--space-2);
-  right: var(--space-2);
-  flex-wrap: nowrap;
-  gap: 0;
-  margin: 0;
+  position: static;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line);
 }
 
 .probe-head > * {
-  padding: 0 var(--space-1);
-  background: var(--bg);
-  line-height: 1.5;
+  line-height: var(--leading);
 }
 
 .probe-label {
   font: 600 var(--size-xs) var(--mono);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
   color: var(--muted);
 }
 
 .probe-head strong {
-  font-size: var(--size-md);
-  color: var(--prompt);
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--size-body);
+  color: var(--ink);
 }
 
 .probe-head .effect {
@@ -157,12 +153,26 @@ form.probe {
 }
 
 form.probe > p {
-  margin: 0 0 var(--space-3);
+  margin: 0 0 var(--space-4);
   font-size: var(--size-body);
 }
 
 form.probe .fields {
-  margin: 0 0 var(--space-3);
+  margin: 0 0 var(--space-4);
+}
+
+form.probe label {
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+form.probe label:last-child {
+  margin-bottom: 0;
+}
+
+form.probe label small {
+  font-size: var(--size-sm);
+  line-height: var(--leading);
 }
 
 .bench form.probe label {
@@ -174,7 +184,7 @@ form.probe label > span {
 }
 
 form.probe label > span::after {
-  content: ':';
+  content: none;
 }
 
 form.probe label input,
@@ -192,19 +202,10 @@ form.probe .actions {
   gap: var(--space-3);
 }
 
-form.probe details.source summary {
-  font: var(--size-sm) var(--mono);
-  min-height: var(--target);
-  display: flex;
-  align-items: center;
-}
-
-form.probe details.source[open] {
-  flex-basis: 100%;
-}
-
-form.probe details.source pre {
-  margin: var(--space-1) 0 0;
+form.probe .actions > button.source:not(:disabled) {
+  background: transparent;
+  border-color: var(--line-strong);
+  color: var(--muted);
 }
 
 .run-glyph::before {
@@ -215,12 +216,12 @@ form.probe details.source pre {
 
 /* The form's echo: the same call as a command typed in Claude Code, kept in step with the fields. */
 form.probe > .echo {
-  display: block;
-  margin: 0 0 var(--space-3);
-  padding: var(--space-1) 0;
-  border-top: 1px dashed var(--line);
-  border-bottom: 1px dashed var(--line);
-  font: var(--size-xs) var(--mono);
+  display: grid;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--line);
+  font: var(--size-sm) / var(--leading) var(--mono);
   color: var(--muted);
   overflow-wrap: anywhere;
 }
@@ -230,6 +231,8 @@ form.probe > .echo {
 }
 
 .echo code {
+  display: block;
+  padding: var(--space-2) var(--space-3);
   font-size: var(--size-sm);
   color: var(--ink);
 }
@@ -245,6 +248,7 @@ form.probe > .echo {
 .in-force {
   position: relative;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
@@ -277,6 +281,9 @@ form.probe > .echo {
 }
 
 .in-force-text {
+  flex: 1 1 12em;
+  min-width: 0;
+  overflow-wrap: anywhere;
   font: 600 var(--size-sm) var(--mono);
   color: var(--warn);
 }
@@ -374,6 +381,7 @@ form.intercept .stub-doc[hidden] {
 article.run {
   border: 0;
   border-left: var(--rule) solid var(--ok);
+  padding: var(--space-4);
   background: var(--panel);
 }
 
@@ -382,9 +390,9 @@ article.run.failed {
 }
 
 article.run header {
-  gap: var(--space-1) var(--space-2);
-  padding-bottom: var(--space-1);
-  border-bottom: 1px dashed var(--line);
+  gap: var(--space-2) var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line);
 }
 
 .entry-no {
@@ -396,45 +404,36 @@ article.run header > a {
   font-weight: 600;
 }
 
-/* The stamp, as a boot log prints one: [  OK  ], [FAILED]. */
+/* Identity and status lead; duration and origin form a quieter second row. */
 article.run .status {
+  margin-left: auto;
   font-size: var(--size-sm);
   font-weight: 600;
-  text-transform: uppercase;
-  white-space: pre;
+  text-transform: none;
 }
 
-article.run .status::before {
-  content: '[ ';
-  color: var(--ink);
-}
-
-article.run .status::after {
-  content: ' ]';
-  color: var(--ink);
-}
-
-article.run.ok .status::before {
-  content: '[  ';
-}
-
-article.run.ok .status::after {
-  content: '  ]';
+article.run .run-meta {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  color: var(--muted);
+  font-size: var(--size-sm);
 }
 
 article.run .reading {
-  margin-left: auto;
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
-article.run header .muted {
-  font-size: var(--size-xs);
+article.run .run-time {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
 }
 
 article.run .outcome {
-  margin: var(--space-2) 0;
-  font: var(--size-sm) var(--mono);
+  margin: var(--space-4) 0;
+  font: var(--size-md) / var(--leading) var(--mono);
 }
 
 article.run .outcome .error,
@@ -455,20 +454,25 @@ article.run .outcome .error::before,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-2);
-  margin: var(--space-2) 0 var(--space-1);
-  padding-top: var(--space-2);
-  border-top: 1px dashed var(--line);
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  margin: var(--space-4) 0 var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
 }
 
 article.run .dispatch-head h4 {
   margin: 0;
+  font-size: var(--size-sm);
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--ink);
 }
 
 .dispatch-head button.quiet {
-  min-height: var(--target);
-  padding: 0 var(--space-2);
-  font-size: var(--size-xs);
+  min-height: 32px;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--size-sm);
 }
 
 ol.dispatches li::marker {
@@ -482,24 +486,56 @@ ol.dispatches .call code {
   color: var(--muted);
 }
 
-ol.dispatches details summary {
-  font: var(--size-xs) var(--mono);
+ol.dispatches > li {
+  margin-bottom: var(--space-4);
+  padding-left: var(--space-1);
 }
 
-/* A link of the chain as a bracketed cell. */
+ol.dispatches > li:last-child {
+  margin-bottom: 0;
+}
+
+ol.dispatches .call {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+  font-size: var(--size-md);
+}
+
+ol.dispatches .chain {
+  margin: var(--space-2) 0;
+}
+
+ol.dispatches details > summary {
+  padding: var(--space-1) 0;
+  font: var(--size-sm) / var(--leading) var(--mono);
+}
+
+ol.dispatches details[open] > summary {
+  margin-bottom: var(--space-2);
+}
+
+article.run .json-nested {
+  margin-left: var(--space-3);
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--line);
+}
+
+/* Chain metadata is secondary to the call and its result. */
 .chain .link {
+  padding: var(--space-1) var(--space-2);
   border: 0;
   background: var(--code-bg);
+  color: var(--muted);
 }
 
 .chain .link::before {
-  content: '[';
-  color: var(--muted);
+  content: none;
 }
 
 .chain .link::after {
-  content: ']';
-  color: var(--muted);
+  content: none;
 }
 
 .chain .link.intercept {
@@ -589,4 +625,37 @@ article.run.folded > details > summary > header {
 article.run.folded > details[open] > summary > header {
   padding-bottom: var(--space-1);
   border-bottom: 1px dashed var(--line);
+}
+
+/* Shared action treatment keeps forms legible in both schemes. */
+form.probe .actions > button {
+  min-height: 36px;
+  padding: var(--space-2) var(--space-3);
+}
+
+form.probe .actions > button:not(:disabled) {
+  background: var(--accent-wash);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+form.probe .actions > button:hover:not(:disabled) {
+  background: var(--code-bg);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+form.probe > .result:not(:empty) {
+  margin-top: var(--space-4);
+}
+
+@media (max-width: 600px) {
+  form.probe label,
+  .bench form.probe label,
+  form.intercept .fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  form.probe label small {
+    grid-column: 1;
+  }
 }

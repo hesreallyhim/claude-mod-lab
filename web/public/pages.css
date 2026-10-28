@@ -11,6 +11,45 @@
   margin: 0;
 }
 
+.page-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.page-title-row h1 {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+}
+
+button.help-button {
+  flex: none;
+  max-width: 100%;
+  min-height: var(--target);
+  padding: var(--space-2) var(--space-3);
+  font: 600 var(--size-sm) / 1.4 var(--mono);
+  white-space: normal;
+}
+
+.help-content {
+  font: var(--size-body) / 1.65 var(--mono);
+  overflow-wrap: anywhere;
+}
+
+.help-content > p + p {
+  margin-top: var(--space-4);
+}
+
+.help-content dl {
+  margin: 0;
+}
+
+.help-content dd {
+  margin-bottom: var(--space-4);
+}
+
 /* A lesson's head: its line back to the lessons is the kicker, and the
    README's own title the page's, over the same rule. */
 .lesson > .kicker {
@@ -33,55 +72,37 @@ table.workshop .effects {
   color: var(--warn);
 }
 
-/* Section headings: capitals in ink at the margin over a dashed rule, as the
-   first page's (overview.css). A card's title is set in its edge instead. */
-body:not([data-area='api']) .page h2:not(.card h2) {
+/* Section headings establish the same reading rhythm across Session and Build. */
+body:not([data-area='api']) .page h2:not(.card h2, .home-connect h2, .readings-head h2) {
   margin: var(--space-6) 0 var(--space-3);
-  padding-bottom: var(--space-1);
-  border-bottom: 1px dashed var(--line-strong);
-  font: 600 var(--size-md) var(--mono);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
-  color: var(--ink);
-}
-
-/* A heading under a section is a comment line, as the index's and the catalogue's are. */
-.lesson > h3 {
-  margin: var(--space-5) 0 var(--space-2);
-  font: 600 var(--size-sm) var(--mono);
-  color: var(--ink);
-}
-
-.lesson > h3::before {
-  content: '# ';
-  color: var(--prompt);
-  white-space: pre;
-}
-
-/* A framed box's title, set into its top edge as a text interface draws a
-   frame (lab.css .framed): a card's title, a technique's head, an editor's
-   file. Its ground is the paper above the edge and the box's own below it,
-   so the edge reads as broken where the title sits. */
-.card,
-.technique,
-.editor {
-  position: relative;
-}
-
-.card > :is(h2, h3):first-child,
-.technique > header,
-.editor > .muted:first-child {
-  position: absolute;
-  top: -0.75em;
-  left: var(--space-2);
-  z-index: 1;
-  margin: 0;
-  padding: 0 var(--space-1);
-  font: 600 var(--size-md) / 1.5 var(--mono);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line);
+  font: 600 var(--size-h3) / var(--leading) var(--mono);
   text-transform: none;
   letter-spacing: normal;
   color: var(--ink);
-  background: linear-gradient(to bottom, var(--bg) 50%, var(--frame-ground, var(--panel)) 50%);
+}
+
+/* Subsections remain smaller than section headings, with a readable line height. */
+.lesson > h3 {
+  margin: var(--space-5) 0 var(--space-2);
+  font: 600 var(--size-md) / var(--leading) var(--mono);
+  color: var(--ink);
+}
+
+/* Card and editor headings stay in the content flow, including when names wrap. */
+.card > :is(h2, h3):first-child,
+.technique > header,
+.editor > .muted:first-child {
+  position: static;
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  font: 600 var(--size-md) / var(--leading) var(--mono);
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--ink);
+  background: none;
+  overflow-wrap: anywhere;
 }
 
 .card {
@@ -89,24 +110,20 @@ body:not([data-area='api']) .page h2:not(.card h2) {
 }
 
 .cards {
-  row-gap: var(--space-5);
+  row-gap: var(--space-4);
 }
 
-.home .areas-grid {
-  row-gap: var(--space-5);
+/* Shared content tracks align titles, descriptions and trial dividers across each row of cards. */
+.home .areas-grid > .card {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 3;
+  row-gap: 0;
+  min-width: 0;
+  padding: var(--space-5);
 }
 
-/* The home page's three cards: numbered, titled in the display face inside the card rather than in its edge, each ending on one thing to try. */
-.home .areas-grid {
-  counter-reset: home-card;
-}
-
-.home .card {
-  counter-increment: home-card;
-  padding: var(--space-4) var(--space-5) var(--space-4);
-}
-
-.home .card > h2:first-child {
+.home .areas-grid > .card > h2:first-child {
   position: static;
   margin: 0 0 var(--space-3);
   padding: 0;
@@ -115,34 +132,23 @@ body:not([data-area='api']) .page h2:not(.card h2) {
   text-shadow: var(--glow);
 }
 
-.home .card > h2:first-child::before {
-  content: counter(home-card) '. ';
-  color: var(--muted);
-}
-
-.home .card > h2:first-child a {
+.home .areas-grid > .card > h2:first-child a {
   color: var(--ink);
 }
 
-.home .card > p {
-  margin: 0 0 var(--space-3);
-}
-
-.home .card ul {
-  margin: 0 0 var(--space-4);
+.home .areas-grid > .card > p {
+  margin: 0 0 var(--space-5);
 }
 
 .home .try {
-  margin-top: auto;
-  padding-top: var(--space-3);
+  margin-top: 0;
+  padding-top: var(--space-4);
   border-top: 1px dashed var(--line-strong);
 }
 
 .home .try-label {
   margin: 0 0 var(--space-1);
   font: 600 var(--size-xs) var(--mono);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
   color: var(--prompt);
 }
 
@@ -153,6 +159,10 @@ body:not([data-area='api']) .page h2:not(.card h2) {
 
 .home .try .result:empty {
   display: none;
+}
+
+.home .try > :last-child {
+  margin-bottom: 0;
 }
 
 /* Every lesson uses the same tracks; long identifiers wrap without moving the title. */
@@ -167,8 +177,8 @@ ul.lessons > li {
   grid-template-columns: 18ch 10ch minmax(0, 1fr) 19ch;
   column-gap: var(--space-3);
   align-items: baseline;
-  padding: var(--space-2) 0;
-  border-bottom: 1px dashed var(--line);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
   overflow-wrap: anywhere;
 }
 
@@ -196,9 +206,7 @@ ul.lessons > li > a {
 }
 
 .lesson-kind {
-  font: 500 var(--size-xs) var(--mono);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
+  font: 500 var(--size-sm) / var(--leading) var(--mono);
   color: var(--muted);
 }
 
@@ -227,17 +235,18 @@ ul.lessons > li.challenge .lesson-kind {
 
 .controls {
   margin: var(--space-5) 0 var(--space-6);
-  padding: var(--space-4) var(--space-4) var(--space-3);
+  padding: var(--space-4);
   background: var(--panel);
 }
 
-/* The box's title sits in its edge; the section-heading rule above would pull it down onto its own line. */
+/* The title and description lead directly into the controls within one padded surface. */
 body:not([data-area='api']) .page .controls > h2.frame-title {
-  margin: 0;
-  padding: 0 var(--space-1);
+  position: static;
+  margin: 0 0 var(--space-3);
+  padding: 0;
   border: 0;
-  background: linear-gradient(to bottom, var(--bg) 50%, var(--panel) 50%);
-  font: 600 var(--size-xs) / 1.5 var(--mono);
+  background: none;
+  font: 600 var(--size-h3) / var(--leading) var(--mono);
   color: var(--ink);
 }
 
@@ -261,7 +270,7 @@ body:not([data-area='api']) .page .controls > h2.frame-title {
 }
 
 .controls .inline-form {
-  margin: 0 0 var(--space-2);
+  margin: 0 0 var(--space-3);
 }
 
 .controls > .result:not(:empty) {
@@ -281,14 +290,18 @@ body:not([data-area='api']) .page .controls > h2.frame-title {
   justify-content: space-between;
   gap: var(--space-2) var(--space-4);
   margin: var(--space-6) 0 var(--space-3);
-  padding-bottom: var(--space-1);
-  border-bottom: 1px dashed var(--line-strong);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line);
 }
 
 body:not([data-area='api']) .page .readings-head h2 {
   margin: 0;
   padding: 0;
   border: 0;
+  font: 600 var(--size-h3) / var(--leading) var(--mono);
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--ink);
 }
 
 .readings-head .readings-filter {
@@ -297,23 +310,17 @@ body:not([data-area='api']) .page .readings-head h2 {
 }
 
 .readings-head .readings-filter select {
-  min-height: var(--target);
-  padding: 0 var(--space-1);
+  min-height: 36px;
+  margin-left: var(--space-2);
+  padding: var(--space-1) var(--space-2);
 }
 
-/* A heading within the readings, a comment line as the Mod API's sub-sections are. */
+/* Nested report headings are distinct from their data without extra ornament. */
 .readings h3,
 .report h3 {
   margin: var(--space-4) 0 var(--space-2);
-  font: 600 var(--size-sm) var(--mono);
+  font: 600 var(--size-md) / var(--leading) var(--mono);
   color: var(--ink);
-}
-
-.readings h3::before,
-.report h3::before {
-  content: '# ';
-  color: var(--prompt);
-  white-space: pre;
 }
 
 .readings > p.muted:first-of-type,
@@ -322,10 +329,17 @@ body:not([data-area='api']) .page .readings-head h2 {
   margin: 0 0 var(--space-3);
 }
 
+.page .readings [data-live='workbench'] > p.readings-summary {
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
 /* The notes: folded at the foot, their summary set as a section heading. */
 details.notes {
   max-width: var(--measure);
-  margin: var(--space-7) 0 0;
+  margin: var(--space-6) 0 0;
   padding-top: var(--space-3);
   border-top: 1px dashed var(--line-strong);
 }
@@ -333,9 +347,9 @@ details.notes {
 details.notes > summary {
   list-style: none;
   cursor: pointer;
-  font: 600 var(--size-sm) var(--mono);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
+  font: 500 var(--size-md) / var(--leading) var(--mono);
+  text-transform: none;
+  letter-spacing: normal;
   color: var(--muted);
 }
 
@@ -385,13 +399,13 @@ details.notes > p {
 
 .report p {
   max-width: var(--measure);
-  margin: 0 0 var(--space-1);
+  margin: 0 0 var(--space-2);
 }
 
 .report .items {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1) 0;
+  gap: var(--space-2) 0;
   max-width: none;
 }
 
@@ -410,14 +424,14 @@ details.notes > p {
 }
 
 .report table.facts td {
-  padding: var(--space-1) var(--space-3) var(--space-1) 0;
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
   vertical-align: top;
   border-bottom: 1px dashed var(--line);
   overflow-wrap: anywhere;
 }
 
 .report table.facts td:first-child {
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .result.brief .answer.report {
@@ -430,7 +444,7 @@ details.notes > p {
   flex-wrap: wrap;
   gap: var(--space-1) var(--space-4);
   margin: 0 0 var(--space-2);
-  font: var(--size-xs) var(--mono);
+  font: var(--size-sm) / var(--leading) var(--mono);
   color: var(--muted);
 }
 
@@ -475,14 +489,21 @@ table.calls tr.unsent td.sent {
 
 /* The line under the feed's tabs saying what the shown tab holds. */
 .feed-caption {
-  margin: calc(-1 * var(--space-1)) 0 var(--space-3);
-  font: var(--size-xs) / 1.5 var(--mono);
+  margin: 0;
+  font: var(--size-sm) / var(--leading) var(--mono);
   color: var(--muted);
+}
+
+.feed-intro {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
 .technique {
   margin-bottom: var(--space-5);
-  padding-top: var(--space-5);
+  padding-top: var(--space-4);
 }
 
 .technique > header {
@@ -510,9 +531,9 @@ table.calls tr.unsent td.sent {
   color: var(--ink);
 }
 
-/* The first line clears the title in the edge. */
+/* The file heading and editor content share one inset. */
 .editor > .muted:first-child + .editor-body {
-  padding-top: var(--space-2);
+  padding-top: 0;
 }
 
 /* A row of controls that is not a form spaces them as a form's row does (style.css form.inline-form). */
@@ -521,15 +542,15 @@ div.inline-form {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-  margin: var(--space-1) 0;
+  margin: var(--space-3) 0;
 }
 
-/* Column heads, as a listing's (ps, ls -l): capitals over a rule. The rows are split by dashed hairlines. */
+/* Table headings share a readable weight and size; boundaries group rather than decorate. */
 .page :is(thead th, table.md tr:first-child > th),
 #feed .census tr:first-child > th {
-  font: 600 var(--size-xs) var(--mono);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
+  font: 500 var(--size-sm) / var(--leading) var(--mono);
+  text-transform: none;
+  letter-spacing: normal;
   color: var(--muted);
   border-bottom: 1px solid var(--line-strong);
 }
@@ -576,6 +597,8 @@ form.probe label.check {
   align-items: center;
   gap: var(--space-2);
   padding-left: calc(120px + var(--space-3));
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
 form.probe label.check input {
@@ -598,12 +621,7 @@ form.probe label.check > span::after {
   margin-top: var(--space-2);
 }
 
-/* The Mod API card's intercept state: the in-force line and its Clear, but not the "no intercept" line, which the button's text covers. */
-.home .try .no-intercept {
-  display: none;
-}
-
-/* The Mod API card's steps: a line each, the call on its own line, the in-force line between. */
+/* The Session card's example call, on its own line. */
 .home .try p.step-code {
   margin: var(--space-1) 0 var(--space-2);
 }
@@ -613,13 +631,6 @@ form.probe label.check > span::after {
   padding: var(--space-0) var(--space-1);
   background: var(--code-bg);
   overflow-wrap: anywhere;
-}
-
-/* The intercept as a word in the sentence: a button that reads as a link-like control. */
-.home .try p.step > button.quiet {
-  min-height: 0;
-  padding: 0 var(--space-1);
-  vertical-align: baseline;
 }
 
 /* The Build card's preview: the first lesson's pane as a framed box, its title in the edge, the drawing in the card's own ink. */
@@ -635,7 +646,7 @@ form.probe label.check > span::after {
   top: -0.75em;
   left: var(--space-2);
   padding: 0 var(--space-1);
-  background: var(--bg);
+  background: var(--panel);
   font: 600 var(--size-xs) / 1.5 var(--mono);
   color: var(--muted);
 }
@@ -656,6 +667,7 @@ form.probe label.check > span::after {
 }
 
 table.config-rows :is(th, td) {
+  padding: var(--space-3) var(--space-2);
   white-space: normal;
   overflow-wrap: anywhere;
   vertical-align: top;
@@ -688,7 +700,7 @@ table.config-rows td > code,
 
 .config-description,
 .config-options {
-  margin-top: var(--space-1);
+  margin-top: var(--space-2);
   font-size: var(--size-sm);
 }
 
@@ -725,7 +737,14 @@ table.config-rows td > code,
     content: attr(data-label);
     display: block;
     color: var(--muted);
-    font-size: var(--size-xs);
-    text-transform: uppercase;
+    margin-bottom: var(--space-1);
+    font-size: var(--size-sm);
+    font-weight: 500;
+  }
+}
+
+@media (max-width: 640px) {
+  form.probe label.check {
+    padding-left: 0;
   }
 }

@@ -26,10 +26,10 @@ import { findTypes, missingTypes, SKILL_BASES } from './lib/types-path.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const PUBLIC = join(HERE, 'public')
-const STATIC = /^\/([a-z0-9-]+)\.(js|css)$/
+const STATIC = /^\/([a-z0-9-]+)\.(js|css|svg)$/
 // Fonts the page carries itself, in web/public/fonts/, so it needs no network.
 const FONT = /^\/fonts\/([a-z0-9-]+)\.woff2$/
-const TYPES = { js: 'text/javascript', css: 'text/css' }
+const TYPES = { js: 'text/javascript', css: 'text/css', svg: 'image/svg+xml' }
 const MAX_BODY = 4 * 1024 * 1024
 const CONTENT_SECURITY_POLICY = [
   "default-src 'none'",

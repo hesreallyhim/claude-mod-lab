@@ -20,8 +20,8 @@
 //    loads from its copies under ~/.claude-mod-lab/plugins/<version>/; the
 //    session's own explorer, in the bridge's MCP server, serves from the
 //    installed package, which only MOD_LAB_PACKAGE_ROOT names to it; the
-//    bridge connects, a probe from the page answers the workspace, and both
-//    bundled authoring skills appear in the session's command list.
+//    bridge connects, a probe from the page answers the workspace, and the
+//    bundled authoring skill appears in the session's command list.
 // 5. In that workspace, a lesson's solution is checked with `learn <id>
 //    --once`, TypeScript step included. That step needs the engine's
 //    declarations: MOD_LAB_TYPES, or a plugin-authoring copy under the temp

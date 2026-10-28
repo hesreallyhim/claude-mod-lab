@@ -3,7 +3,7 @@
   "owner": {
     "name": "Really Him"
   },
-  "description": "Mods for learning the Claude Code mod API by running it: the mod-lab and its explorer bridge, a gallery of rendering techniques, small mods to start from, a skill that scaffolds a new mod, and a skill of notes for writing mods",
+  "description": "Mods for learning the Claude Code mod API by running it: the mod-lab and its explorer bridge, a gallery of rendering techniques, small mods to start from, and a skill that scaffolds a new mod",
   "plugins": [
     {
       "name": "mod-lab",
@@ -99,11 +99,6 @@
       "name": "mod-bootstrap",
       "source": "./plugins/mod-bootstrap",
       "description": "A skill that scaffolds a new mod: its manifest, hooks.json, a hooks module with one command, a type contract, a test and a README"
-    },
-    {
-      "name": "mod-authoring-notes",
-      "source": "./plugins/mod-authoring-notes",
-      "description": "A skill of notes for writing Claude Code mods: what the validator refuses, how the test kit behaves, and engine constraints the plugin-authoring skill does not state"
     }
   ]
 }

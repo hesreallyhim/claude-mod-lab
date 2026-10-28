@@ -5,7 +5,7 @@ import { isAbsolute } from 'node:path'
 import { isWorkspace } from './roots.mjs'
 
 export const LESSON_SETUP =
-  'Create a lesson workspace with npx claude-mod-lab init-lessons <directory>, then connect it with npx claude-mod-lab run <directory>.'
+  'Run /init-lessons in a session started by npx claude-mod-lab run, or create a dedicated workspace with npx claude-mod-lab init-lessons <directory>.'
 
 function directory(path) {
   if (typeof path !== 'string' || !isAbsolute(path)) return null

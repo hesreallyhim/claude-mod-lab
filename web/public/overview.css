@@ -2,67 +2,46 @@
    catalogue; and All probes. lab.css draws the index and the manual page
    these pages share. Scoped to body[data-area='api']. */
 
+/* The introduction leads; its counts sit together below it instead of squeezing the prose. */
 .overview .sheet-head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content;
-  column-gap: var(--space-6);
+  grid-template-columns: minmax(0, 1fr);
 }
 
-.overview .sheet-head > :not(.readouts) {
-  grid-column: 1;
-}
-
-/* The counts, as a system monitor's readouts: a figure over its label. */
 .readouts {
-  grid-column: 2;
-  grid-row: 1 / span 3;
-  align-self: end;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 1px;
-  margin: 0;
-  border: 1px solid var(--line-strong);
-  /* The cells wrap where the figure is narrow; the ground shows through the gaps as the lines between them. */
-  background: var(--line-strong);
+  width: 100%;
+  max-width: 720px;
+  margin: var(--space-5) 0 0;
+  border: 1px solid var(--line);
+  background: var(--line);
 }
 
 .readouts > div {
   display: flex;
   flex-direction: column-reverse;
-  flex: 1 0 auto;
-  padding: var(--space-1) var(--space-3) var(--space-2);
-  background: var(--bg);
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background: var(--panel);
 }
 
 .readouts dt {
-  font: 500 var(--size-xs) var(--mono);
+  font: 400 var(--size-sm) / var(--leading) var(--mono);
   color: var(--muted);
 }
 
 .readouts dd {
   margin: 0;
-  font: var(--size-vt-readout) / 1 var(--display);
+  font: var(--size-vt-card) / 1 var(--display);
   color: var(--prompt);
-  text-shadow: var(--glow);
-}
-
-@media (max-width: 1320px) {
-  .overview .sheet-head {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .readouts {
-    grid-column: 1;
-    grid-row: auto;
-    justify-self: start;
-    margin-top: var(--space-4);
-  }
 }
 
 .overview .lede {
   max-width: var(--measure);
   margin: var(--space-1) 0 0;
-  font-size: var(--size-lead);
+  font-size: var(--size-body);
   line-height: 1.6;
 }
 
@@ -72,8 +51,6 @@
   padding: var(--space-5) var(--space-5) var(--space-4);
   border: 1px solid var(--line-strong);
   background-color: var(--panel);
-  background-image: radial-gradient(var(--grid) 1px, transparent 1.5px);
-  background-size: var(--space-2) var(--space-4);
 }
 
 .path {
@@ -310,35 +287,29 @@
 }
 
 body[data-area='api'] .overview h2 {
-  margin: var(--space-6) 0 var(--space-2);
-  padding-bottom: var(--space-1);
-  border-bottom: 1px dashed var(--line-strong);
+  margin: var(--space-6) 0 var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line);
 }
 
 .catalogue h3 {
-  margin: var(--space-4) 0 var(--space-2);
-  font: 500 var(--size-xs) var(--mono);
+  margin: var(--space-5) 0 var(--space-3);
+  font: 500 var(--size-sm) / var(--leading) var(--mono);
   color: var(--muted);
-}
-
-.catalogue h3::before {
-  content: '# ';
-  color: var(--prompt);
-  white-space: pre;
 }
 
 .tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
+  gap: var(--space-3);
 }
 
 button.tile {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: var(--space-0);
-  padding: var(--space-2) var(--space-3);
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
   border: 1px solid var(--line-strong);
   background: var(--panel);
   color: var(--ink);
@@ -361,7 +332,7 @@ button.tile:hover > * {
 }
 
 .tile-line {
-  font: var(--size-xs) var(--mono);
+  font: var(--size-sm) / var(--leading) var(--mono);
   color: var(--muted);
 }
 
@@ -370,10 +341,11 @@ button.tile:hover > * {
 }
 
 .colophon {
+  overflow-wrap: anywhere;
   margin-top: var(--space-6);
-  padding-top: var(--space-2);
-  border-top: 1px dashed var(--line-strong);
-  font: var(--size-xs) var(--mono);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+  font: var(--size-sm) / var(--leading) var(--mono);
   color: var(--muted);
 }
 
@@ -387,8 +359,9 @@ button.tile:hover > * {
 .probes details.noun > summary {
   display: flex;
   align-items: baseline;
-  gap: var(--space-3);
-  min-height: 36px;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  min-height: 44px;
   padding: var(--space-2) 0;
 }
 
@@ -402,12 +375,12 @@ button.tile:hover > * {
 }
 
 .noun-probes {
-  font: 400 var(--size-xs) var(--mono);
+  font: 400 var(--size-sm) / var(--leading) var(--mono);
   color: var(--muted);
 }
 
 body[data-area='api'] .sheet-head .lede {
   max-width: var(--measure);
   margin: 0;
-  font-size: var(--size-lead);
+  font-size: var(--size-body);
 }

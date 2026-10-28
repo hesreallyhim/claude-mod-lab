@@ -1,6 +1,6 @@
 /* The log (view.js logRow, feed.js, intercepts.js): the rows the session's events and the calls intercepts
    acted on are listed in, on the feed's tabs and the bench; the dialog a row opens; the intercepts in force
-   and the census over the Intercepted tab; and the legend under the feed. bench.css draws the pane these
+   and the census over the Intercepted tab; and the feed's help legend. bench.css draws the pane these
    rows sit in. */
 
 /* An entry of the log, wherever the session's events and the calls intercepts acted on are
@@ -226,6 +226,11 @@ details.trace .line2 {
   color: var(--muted);
 }
 
+.force .rule > button {
+  display: block;
+  margin-top: var(--space-2);
+}
+
 .force .tally {
   grid-column: 3;
   font: var(--size-xs) var(--mono);
@@ -274,47 +279,21 @@ details.trace .line2 {
   margin: var(--space-1) 0 0;
 }
 
-/* The legend under the feed: the marks and the strip's cells, folded. */
-#feed-legend {
-  margin-top: var(--space-5);
-  padding-top: var(--space-2);
-  border-top: 1px dashed var(--line-strong);
-  font: var(--size-xs) / 1.5 var(--mono);
-  color: var(--muted);
-}
-
-#feed-legend > summary {
-  list-style: none;
-  cursor: pointer;
-}
-
-#feed-legend > summary::-webkit-details-marker {
-  display: none;
-}
-
-#feed-legend > summary::before {
-  content: '+ ';
-  color: var(--prompt);
-}
-
-#feed-legend[open] > summary::before {
-  content: '- ';
-}
-
-#feed-legend dl {
+/* Visual examples in the feed's help dialog. */
+.feed-legend dl {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr);
-  gap: var(--space-2) var(--space-2);
+  gap: var(--space-4) var(--space-3);
   align-items: center;
-  margin: var(--space-2) 0 0;
+  margin: 0;
 }
 
-#feed-legend dt {
+.feed-legend dt {
   display: flex;
   justify-content: center;
 }
 
-#feed-legend dd {
+.feed-legend dd {
   margin: 0;
 }
 
@@ -455,6 +434,8 @@ details.turn > summary .row-name {
 /* The JSON view (view.js jsonTree): fields as a list, keys dim before their values, nested values under a guide line. */
 .json-rows {
   font: var(--size-xs) / 1.6 var(--mono);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .json-row {
@@ -463,6 +444,15 @@ details.turn > summary .row-name {
   column-gap: var(--space-2);
   align-items: baseline;
   overflow-wrap: anywhere;
+}
+
+.json-row > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.json-row > :is(pre, .text-preview-block) {
+  flex-basis: 100%;
 }
 
 .json-row > .json-key {
@@ -513,4 +503,58 @@ details.json > .json-rows {
 
 .json-inline {
   color: var(--ink);
+}
+
+.prompt-section-content {
+  margin: var(--space-2) 0 var(--space-3);
+}
+
+.text-reader .text-reader-content {
+  margin: 0;
+  padding: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: transparent;
+  font: var(--size-sm) / 1.6 var(--mono);
+  color: var(--ink);
+}
+
+/* On reading pages, distinguish keys and values by hierarchy; data values are not links or success states.
+   Compact feed previews and the detail dialog keep their own established layout. */
+.page :is(.json-rows, details.json, pre.json-text):not(dialog *) {
+  font-size: var(--size-sm);
+  line-height: 1.6;
+}
+
+.page .json-row:not(dialog *) {
+  padding-left: 0;
+  gap: var(--space-1) var(--space-2);
+}
+
+.page .json-row + .json-row:not(dialog *) {
+  margin-top: var(--space-1);
+}
+
+.page .json-key:not(dialog *) {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.page :is(.json-string, .json-number, .json-boolean):not(dialog *) {
+  color: var(--ink);
+}
+
+.page .json-number:not(dialog *) {
+  font-variant-numeric: tabular-nums;
+}
+
+.page :is(.json-nested, details.json > .json-rows):not(dialog *) {
+  margin-top: var(--space-1);
+  padding-left: var(--space-3);
+}
+
+.page details.json > summary:not(dialog *) {
+  display: list-item;
+  padding: var(--space-1) 0;
+  color: var(--accent);
 }

@@ -5,7 +5,7 @@
 // package is on npm. Node 22, git, npm and claude on the PATH; nothing outside a temp folder changes
 // but npm's cache.
 //
-//   node scripts/install-check.temp.mjs [--keep]
+//   node scripts/install-check.mjs [--keep]
 //
 // 1. packs HEAD (git archive, npm pack --ignore-scripts), as pack-check does;
 // 2. serves that tarball from a local npm registry on 127.0.0.1, every other package's

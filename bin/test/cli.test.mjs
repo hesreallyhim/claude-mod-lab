@@ -5,7 +5,7 @@
 
 import assert from 'node:assert/strict'
 import { spawn, spawnSync } from 'node:child_process'
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
@@ -115,9 +115,7 @@ test('init-lessons scaffolds explicitly without starting Claude, and run loads i
     assert.equal(session.cwd, workspace)
     const folders = pluginDirs(session.args)
     assert.deepEqual(folders.slice(0, 3), ['mod-lab', 'mod-lab-bridge', 'mod-lab-target'].map(name => join(PACKAGE_ROOT, 'mods', name)))
-    for (const name of ['mod-bootstrap', 'mod-authoring-notes']) {
-      assert.ok(folders.includes(join(PACKAGE_ROOT, 'plugins', name)), `${name} is loaded without a marketplace install`)
-    }
+    assert.ok(folders.includes(join(PACKAGE_ROOT, 'plugins', 'mod-bootstrap')), 'mod-bootstrap is loaded without a marketplace install')
     assert.ok(folders.includes(join(workspace, 'workshop')))
     assert.equal(folders.at(-1), join(workspace, '.claude', 'mod-lab'))
     assert.deepEqual(JSON.parse(session.env.MOD_LAB_COMPONENT_DIRS), [folders.at(-1)])
@@ -134,7 +132,7 @@ test('run prepares only the component collection in an ordinary project and neve
     const project = join(dir, 'project')
     mkdirSync(join(project, 'workshop'), { recursive: true })
     writeFileSync(join(project, 'README.md'), 'Their project.\n')
-    const result = lab(['run'], { cwd: project, env: { MOD_LAB_WORKSPACE: '/old/lesson/path', MOD_LAB_COMPONENT_DIRS: '["/old/components"]' } })
+    const result = lab(['run'], { cwd: project, env: { MOD_LAB_WORKSPACE: '/old/lesson/path', MOD_LAB_LESSON_COLLECTION: '/old/lesson/collection', MOD_LAB_COMPONENT_DIRS: '["/old/components"]' } })
     assert.equal(result.status, 0, result.err)
     assert.deepEqual(readdirSync(project).sort(), ['.claude', 'README.md', 'workshop'])
     const collection = join(project, '.claude', 'mod-lab')
@@ -144,6 +142,7 @@ test('run prepares only the component collection in an ordinary project and neve
     assert.equal(readFileSync(join(project, 'README.md'), 'utf8'), 'Their project.\n')
     assert.ok(!pluginDirs(sessions()[0].args).some(path => path.endsWith('/workshop')))
     assert.equal(sessions()[0].env.MOD_LAB_LESSONS, '')
+    assert.equal(sessions()[0].env.MOD_LAB_LESSON_COLLECTION, '')
     assert.equal(sessions()[0].env.MOD_LAB_WORKSPACE, '')
     assert.equal(lab(['run'], { cwd: project }).status, 0)
     assert.equal(sessions()[1].env.MOD_LAB_LESSONS, '')
@@ -199,6 +198,7 @@ test('a home directory with application state is not mistaken for a lesson works
     const result = lab(['run'], { cwd: home })
     assert.equal(result.status, 0, result.err)
     assert.equal(sessions()[0].env.MOD_LAB_LESSONS, '')
+    assert.equal(sessions()[0].env.MOD_LAB_LESSON_COLLECTION, '')
     assert.deepEqual(JSON.parse(sessions()[0].env.MOD_LAB_COMPONENT_DIRS), [])
     assert.ok(!existsSync(join(home, '.claude', 'mod-lab')))
     assert.ok(!pluginDirs(sessions()[0].args).some(path => path.endsWith('/workshop')))
@@ -468,4 +468,29 @@ test('the default opens from HOME, and explicit ports select separate discovery 
       assert.equal(sessions()[0].env.MOD_LAB_BRIDGE_FILE, endpoint)
       for (const port of ['bad', '-1', '65536']) assert.equal(lab(['serve', '--port', port]).status, 2)
     } finally { server.stop() }
+  }))
+
+
+test('run reuses lesson links without loading the same workshop plugins twice', () =>
+  inTemp(dir => {
+    const { lab, sessions } = standIns(dir)
+    const project = join(dir, 'linked-lessons')
+    const collection = join(project, '.claude', 'mod-lab')
+    mkdirSync(collection, { recursive: true })
+    mkdirSync(join(project, '.claude-mod-lab'))
+    for (const name of ['tick', 'another']) {
+      const manifest = join(project, 'workshop', name, '.claude-plugin')
+      mkdirSync(manifest, { recursive: true })
+      writeFileSync(join(manifest, 'plugin.json'), JSON.stringify({ name, version: '0.1.0' }))
+    }
+    symlinkSync('../../workshop/tick', join(collection, 'tick'), 'dir')
+    const started = lab(['run', project])
+    assert.equal(started.status, 0, started.err)
+    const [session] = sessions()
+    const folders = pluginDirs(session.args)
+    assert.equal(folders.filter(path => path === collection).length, 1)
+    assert.equal(folders.includes(join(project, 'workshop')), false)
+    assert.equal(session.env.MOD_LAB_LESSON_COLLECTION, collection)
+    assert.equal(session.env.MOD_LAB_LESSONS, project)
+    assert.equal(realpathSync(join(collection, 'another')), join(project, 'workshop', 'another'))
   }))

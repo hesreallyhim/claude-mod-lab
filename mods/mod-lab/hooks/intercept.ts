@@ -7,7 +7,7 @@ import { summarize } from './json'
 
 type Dollar = EngineInterface
 
-/** The op events the lab hooks with `inspect` (`inspectStream` for process.spawn), in the order register.tsx registers them; each can be intercepted. */
+/** Events exposed by the intercept controls; prompt.compose is captured for probe runs only. */
 export const INTERCEPTABLE: readonly string[] = [
   'session.cwd',
   'session.root',
@@ -102,7 +102,7 @@ export function interceptFor(event: string, isLab: boolean, now: number): LabInt
 /** Reads an intercept from the form or a command, checking each field. */
 export function makeIntercept(draft: LabInterceptDraft, now: number): Parsed<LabIntercept> {
   const { event, behavior, scope } = draft
-  if (!INTERCEPTABLE.includes(event)) return { ok: false, error: `the lab does not hook ${event}; /mod-lab intercept events lists those it does` }
+  if (!INTERCEPTABLE.includes(event)) return { ok: false, error: `the lab does not support intercepts for ${event}; /mod-lab intercept events lists supported events` }
   if (!BEHAVIORS.includes(behavior)) return { ok: false, error: `behavior must be one of ${BEHAVIORS.join(', ')}` }
   const streamed = STREAMING[event]
   if (streamed !== undefined && !streamed.includes(behavior)) return { ok: false, error: `${event} streams: the lab can ${streamed.join(' or ')} it` }

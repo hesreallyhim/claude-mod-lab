@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { logRow, payloadView } from '../public/view.js'
+import { jsonTree, logRow, openDataDialog, payloadView, textPreview } from '../public/view.js'
 
 class Element {
   constructor(tag) {
@@ -19,6 +19,12 @@ class Element {
   }
   set className(value) {
     this.attrs.class = value
+  }
+  get id() {
+    return this.attrs.id
+  }
+  remove() {
+    this.removed = true
   }
   addEventListener(name, handler) {
     this.events.set(name, handler)
@@ -53,9 +59,86 @@ function install(t) {
   const scope = /** @type {Record<string, unknown>} */ (/** @type {unknown} */ (globalThis))
   const previous = { Node: scope.Node, document: scope.document }
   scope.Node = Element
-  scope.document = { createElement: tag => new Element(tag), createTextNode: text => String(text) }
+  const body = new Element('body')
+  scope.document = { body, createElement: tag => new Element(tag), createTextNode: text => String(text) }
   t.after(() => Object.assign(scope, previous))
+  return body
 }
+
+test('long text uses bounded previews without losing any content in the reader', t => {
+  const body = install(t)
+  for (const text of ['literal <script> text '.repeat(100), 'line\n'.repeat(20)]) {
+    const view = jsonTree({ result: { answer: text } })
+    assert.ok(view.text.length < text.length + 100)
+    const button = view.find(node => node.tag === 'button')[0]
+    assert.equal(button.attrs['aria-label'], 'View full text: answer')
+    assert.equal(button.attrs['aria-haspopup'], 'dialog')
+    button.events.get('click')()
+    assert.equal(body.children.at(-1).querySelector('pre').text, text)
+  }
+  const short = 'First paragraph.\n\nSecond paragraph.'
+  assert.equal(textPreview('Output', short).text, short)
+  assert.equal(jsonTree({ answer: short }).find(node => node.tag === 'button').length, 0)
+})
+
+test('data readers preserve structured values including null replacement values', t => {
+  const body = install(t)
+  for (const value of [null, { headers: { 'x-fixture': 'value' }, code: 0 }]) {
+    openDataDialog('Replacement value', value)
+    const dialog = body.children.at(-1)
+    assert.ok(dialog.open)
+    assert.equal(dialog.querySelector('h2').text, 'Replacement value')
+    assert.equal(dialog.find(node => node.attrs.class === 'json-inline').length, 0)
+    assert.match(dialog.text, value === null ? /null/ : /headers.*x-fixture.*value.*code.*0/)
+  }
+})
+
+test('result records keep separate field rows regardless of their text length', t => {
+  install(t)
+  const records = ['short', 'a_much_longer_prompt_section_identifier', 'last'].map(id => ({
+    id,
+    scope: 'session',
+    characters: 123,
+  }))
+  const view = jsonTree(records)
+  assert.equal(view.find(node => node.attrs.class === 'json-inline').length, 0)
+  for (const row of view.children) {
+    const fields = row.find(node => node.attrs.class === 'json-rows')[0].children
+    assert.deepEqual(
+      fields.map(field => field.children[0].text),
+      ['id', 'scope', 'characters'],
+    )
+  }
+  const primitiveList = jsonTree({ values: [1, 2, 3] })
+  assert.equal(primitiveList.find(node => node.attrs.class === 'json-inline')[0].text, '[1,2,3]')
+})
+
+test('prompt sections open full text in named modals from results and dispatch details', t => {
+  const body = install(t)
+  const text = '<instruction>literal text</instruction>\n' + 'A long section. '.repeat(400)
+  const sections = [
+    { id: 'core', scope: 'shared', characters: text.length, text },
+    { id: 'plugin:empty', scope: 'session', characters: 0, text: '' },
+  ]
+  for (const view of [jsonTree(sections), payloadView(sections), payloadView({ sections })]) {
+    const contents = view.find(node => node.attrs.class === 'prompt-section-content quiet')
+    assert.equal(contents.length, 2)
+    assert.ok(!view.text.includes(text))
+    contents[0].events.get('click')()
+    const dialog = body.children.at(-1)
+    assert.ok(dialog.open)
+    assert.equal(dialog.attrs['aria-labelledby'], dialog.querySelector('h2').id)
+    assert.ok(dialog.querySelector('h2').focused)
+    assert.equal(dialog.querySelector('pre').text, text)
+    dialog.events.get('close')()
+    assert.ok(dialog.removed)
+    contents[1].events.get('click')()
+    assert.equal(body.children.at(-1).querySelector('pre').text, '(Empty section)')
+    assert.ok(view.text.includes('plugin:empty'))
+    assert.ok(view.text.includes('shared'))
+    assert.ok(view.text.includes('session'))
+  }
+})
 
 test('dialog payloads show all content blocks before optional raw data', t => {
   install(t)

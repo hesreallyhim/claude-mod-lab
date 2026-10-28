@@ -4,7 +4,18 @@
 
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
-import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  chmodSync,
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import { createServer as createHttpServer } from 'node:http'
 import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -270,5 +281,97 @@ test('without the package it still answers MCP, and says it cannot serve', async
     } finally {
       await entry.stop()
     }
+  }
+})
+
+test('init-lessons preserves project files and works with a separately served explorer', async () => {
+  const project = mkdtempSync(join(dir, 'lesson-project-'))
+  const originals = {
+    'README.md': '# My project\n',
+    '.gitignore': 'private/\n',
+    'source.js': 'export const value = 1\n',
+  }
+  for (const [name, contents] of Object.entries(originals)) writeFileSync(join(project, name), contents)
+  const workspace = realpathSync(project)
+  const collection = join(workspace, '.claude', 'mod-lab')
+  mkdirSync(collection, { recursive: true })
+  const entry = startEntry({ MOD_LAB_PACKAGE_ROOT: REPO, MOD_LAB_BRIDGE_FILE: join(dir, 'external-bridge.json') })
+  try {
+    await entry.initialize()
+    const listed = await entry.request('tools/list')
+    assert.ok(
+      listed.result.tools.some(tool => tool.name === 'init-lessons' && tool.inputSchema.required.includes('cwd')),
+    )
+    const initialized = await entry.call('init-lessons', { cwd: workspace, collection })
+    assert.equal(initialized.isError, false, initialized.content[0].text)
+    assert.deepEqual(JSON.parse(initialized.content[0].text), { workspace })
+    assert.equal(existsSync(join(project, '.claude-mod-lab')), true)
+    assert.equal(existsSync(join(project, 'workshop')), true)
+    writeFileSync(join(project, '.claude-mod-lab', 'progress.json'), '{"tick":"done"}\n')
+    writeFileSync(join(project, 'workshop', 'notes.txt'), 'my notes\n')
+    assert.equal((await entry.call('init-lessons', { cwd: project })).isError, false)
+    assert.equal(readFileSync(join(project, '.claude-mod-lab', 'progress.json'), 'utf8'), '{"tick":"done"}\n')
+    assert.equal(readFileSync(join(project, 'workshop', 'notes.txt'), 'utf8'), 'my notes\n')
+    for (const [name, contents] of Object.entries(originals))
+      assert.equal(readFileSync(join(project, name), 'utf8'), contents)
+    assert.equal((await entry.endpoint()).state, 'override')
+  } finally {
+    await entry.stop()
+  }
+})
+
+test('init-lessons rejects unsafe or unrelated collections before creating lesson folders', async () => {
+  const entry = startEntry()
+  const outside = mkdtempSync(join(dir, 'foreign-collection-'))
+  try {
+    await entry.initialize()
+    for (const kind of ['foreign', 'missing', 'file', 'symlink', 'parent-symlink', 'parent-file']) {
+      const project = realpathSync(mkdtempSync(join(dir, `collection-${kind}-`)))
+      const parent = join(project, '.claude')
+      let collection = join(parent, 'mod-lab')
+      if (kind === 'parent-symlink') symlinkSync(outside, parent, 'dir')
+      else if (kind === 'parent-file') writeFileSync(parent, 'keep this file')
+      else {
+        mkdirSync(parent)
+        if (kind === 'foreign') collection = outside
+        if (kind === 'file') writeFileSync(collection, 'keep this file')
+        if (kind === 'symlink') symlinkSync(outside, collection, 'dir')
+      }
+      const result = await entry.call('init-lessons', { cwd: project, collection })
+      assert.equal(result.isError, true, kind)
+      assert.match(result.content[0].text, /collection/)
+      assert.equal(existsSync(join(project, '.claude-mod-lab')), false, kind)
+      assert.equal(existsSync(join(project, 'workshop')), false, kind)
+    }
+    assert.equal(existsSync(join(outside, 'workshop')), false)
+  } finally {
+    await entry.stop()
+  }
+})
+
+test('init-lessons reports invalid arguments and unavailable packages without initializing a folder', async () => {
+  const project = mkdtempSync(join(dir, 'refused-lessons-'))
+  const entry = startEntry()
+  try {
+    await entry.initialize()
+    for (const args of [{}, { cwd: '.' }, { cwd: 42 }, { cwd: join(project, 'missing') }, { cwd: REPO }]) {
+      const result = await entry.call('init-lessons', args)
+      assert.equal(result.isError, true, JSON.stringify(args))
+      assert.ok(result.content[0].text.length > 0)
+    }
+    assert.equal(existsSync(join(project, 'missing')), false)
+  } finally {
+    await entry.stop()
+  }
+  const unavailable = startEntry({ MOD_LAB_PACKAGE_ROOT: join(dir, 'missing-package') })
+  try {
+    await unavailable.initialize()
+    const result = await unavailable.call('init-lessons', { cwd: project })
+    assert.equal(result.isError, true)
+    assert.match(result.content[0].text, /does not hold the claude-mod-lab package/)
+    assert.equal(existsSync(join(project, '.claude-mod-lab')), false)
+    assert.equal(existsSync(join(project, 'workshop')), false)
+  } finally {
+    await unavailable.stop()
   }
 })

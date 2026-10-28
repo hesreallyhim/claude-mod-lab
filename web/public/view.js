@@ -66,37 +66,160 @@ export function docText(text, typeNames) {
 const INLINE_CHARS = 60
 const FOLD_ENTRIES = 12
 
-function jsonLeaf(value) {
+function jsonLeaf(value, label) {
+  if (typeof value === 'string' && isLongText(value)) return textPreview(label ?? 'Text', value)
   if (typeof value === 'string' && value.includes('\n')) return el('pre', { class: 'json-text' }, value)
   const kind = value === null ? 'null' : typeof value
   return el('span', { class: `json-${kind}` }, kind === 'string' ? value : JSON.stringify(value))
 }
 
+function isInlineList(value, depth, text) {
+  return (
+    depth > 0 &&
+    Array.isArray(value) &&
+    text.length <= INLINE_CHARS &&
+    value.every(item => item === null || typeof item !== 'object')
+  )
+}
+
 /**
  * A value as a reader of it wants it: a leaf on its own, coloured by its type and
  * a string without its quotes; an object or array as a list of its fields, each
- * key dim before its value, nested ones under a guide line. A nested value that
- * is short stays on its key's line; one with many entries is folded under a
+ * key dim before its value, nested ones under a guide line. Short lists of
+ * primitive values stay inline; objects always show one field per row, so
+ * records keep the same layout regardless of text length. Many entries fold under a
  * summary that says how many, and opens on request. File contents and command
  * output keep their line breaks.
+ * @param {unknown} value
+ * @param {number} [depth]
+ * @param {boolean} [expanded]
+ * @param {string} [label]
  */
-export function jsonTree(value, depth = 0, expanded = false) {
-  if (value === null || typeof value !== 'object') return jsonLeaf(value)
+export function jsonTree(value, depth = 0, expanded = false, label) {
+  if (value === null || typeof value !== 'object') return jsonLeaf(value, label)
+  if (isPromptSection(value)) return promptSectionTree(value, depth, expanded)
   const isList = Array.isArray(value)
   const entries = isList ? value.map((item, index) => [index, item]) : Object.entries(value)
   if (entries.length === 0) return emptyJson(isList)
   const text = JSON.stringify(value)
-  if (depth > 0 && text.length <= INLINE_CHARS) return inlineJson(text, isList)
+  if (isInlineList(value, depth, text)) return el('span', { class: 'json-inline' }, text)
   const rows = jsonRows(entries, isList, depth, expanded)
   return depth === 0 ? rows : nestedJson(rows, entries.length, isList, expanded)
 }
 
-function emptyJson(isList) {
-  return el('span', { class: 'json-empty' }, isList ? 'empty list' : 'empty object')
+function isPromptSection(value) {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    typeof value.id === 'string' &&
+    typeof value.text === 'string' &&
+    (value.scope === 'shared' || value.scope === 'session')
+  )
 }
 
-function inlineJson(text, isList) {
-  return el('span', { class: 'json-inline' }, isList ? text : text.slice(1, -1).replace(/"(\w+)":/g, '$1: '))
+function isPromptComposition(value) {
+  const sections = Array.isArray(value) ? value : value?.sections
+  return Array.isArray(sections) && sections.length > 0 && sections.every(isPromptSection)
+}
+
+let textDialogSequence = 0
+
+function isLongText(text) {
+  return text.length > 800 || text.split('\n').length > 12
+}
+
+/** Short output stays readable in place; lengthy output has a preview and a complete reader. */
+export function textPreview(label, text) {
+  if (!isLongText(text)) return el('pre', { class: 'text-preview' }, text)
+  const preview = text.slice(0, 240).split('\n').slice(0, 3).join('\n')
+  return el(
+    'div',
+    { class: 'text-preview-block' },
+    el('pre', { class: 'text-preview' }, `${preview}…`),
+    el(
+      'button',
+      {
+        type: 'button',
+        class: 'quiet',
+        'aria-haspopup': 'dialog',
+        'aria-label': `View full text: ${label}`,
+        onclick: () => openTextDialog(label, text),
+      },
+      'View full text',
+    ),
+  )
+}
+
+/** A shared reading dialog for complete prompt text, output, and source code. */
+export function openTextDialog(label, text, closeLabel = 'Close contents') {
+  openReaderDialog(label, el('pre', { class: 'text-reader-content' }, text), closeLabel)
+}
+
+/** Inspect arbitrary values with the same structured fields used in run results. */
+export function openDataDialog(label, value) {
+  openReaderDialog(label, jsonTree(value, 0, true), 'Close details')
+}
+
+/** A reading dialog for guidance that includes links, lists, and visual examples. */
+export function openContentDialog(label, content) {
+  openReaderDialog(label, content, 'Close help', 'help-reader')
+}
+
+export function openReaderDialog(label, content, closeLabel, extraClass = '') {
+  const title = el('h2', { class: 'detail-title', id: `text-dialog-${++textDialogSequence}`, tabindex: '-1' }, label)
+  const dialog = el(
+    'dialog',
+    { class: `detail text-reader ${extraClass}`.trim(), 'aria-labelledby': title.id },
+    el(
+      'header',
+      {},
+      title,
+      el(
+        'button',
+        { type: 'button', class: 'quiet close', 'aria-label': closeLabel, onclick: () => dialog.close() },
+        'Close',
+      ),
+    ),
+    el('div', { class: 'detail-body' }, content),
+  )
+  dialog.addEventListener('close', () => dialog.remove())
+  dialog.addEventListener('click', event => {
+    if (event.target.closest?.('a[href^="#/"]')) {
+      dialog.close()
+      return
+    }
+    if (event.target !== dialog) return
+    const box = dialog.getBoundingClientRect()
+    if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom)
+      dialog.close()
+  })
+  document.body.append(dialog)
+  dialog.showModal()
+  title.focus({ preventScroll: true })
+}
+
+/** Keep section metadata scannable and open the complete text in a reading dialog. */
+function promptSectionTree(value, depth, expanded) {
+  const fields = Object.entries(value).filter(([key]) => key !== 'text')
+  const rows = jsonRows(fields, false, depth, expanded)
+  rows.append(
+    el(
+      'button',
+      {
+        type: 'button',
+        class: 'prompt-section-content quiet',
+        'aria-haspopup': 'dialog',
+        'aria-label': `View contents of ${value.id}`,
+        onclick: () => openTextDialog(value.id, value.text === '' ? '(Empty section)' : value.text),
+      },
+      'View contents',
+    ),
+  )
+  return depth === 0 ? rows : nestedJson(rows, fields.length + 1, false, expanded)
+}
+
+function emptyJson(isList) {
+  return el('span', { class: 'json-empty' }, isList ? 'empty list' : 'empty object')
 }
 
 function jsonRows(entries, isList, depth, expanded) {
@@ -108,7 +231,7 @@ function jsonRows(entries, isList, depth, expanded) {
         'div',
         { class: 'json-row' },
         el('span', { class: 'json-key' }, String(key)),
-        jsonTree(item, depth + 1, expanded),
+        jsonTree(item, depth + 1, expanded, String(key)),
       ),
     ),
   )
@@ -186,6 +309,7 @@ function readableText(value) {
 
 /** Full readable output, with structured diagnostics kept separate from the content. */
 export function payloadView(value) {
+  if (isPromptSection(value) || isPromptComposition(value)) return jsonTree(value, 0, true)
   if (typeof value === 'string') return readableText(value)
   const pieces = readablePieces(value)
   if (pieces.length === 0) return jsonTree(value, 0, true)

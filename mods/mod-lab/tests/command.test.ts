@@ -23,6 +23,44 @@ test('a probe answers with its value, the dispatch it made and its source', asyn
   expect(run?.dispatches[0]?.chain.map(link => link.plugin)).toEqual(['test'])
 })
 
+// The kit has no session defaults for compose(); a real engine resolves these before hooks run.
+const composeDefaults: Plugin = {
+  name: 'compose-defaults',
+  tier: 'prepend',
+  register(on) {
+    on('prompt.compose', ($, e, next) => next({
+      ...e,
+      promptModel: e.promptModel ?? 'test',
+      surfaces: e.surfaces ?? [],
+      tools: e.tools ?? [],
+      outputStyle: e.outputStyle ?? null,
+      traits: e.traits ?? [],
+    }))
+  },
+}
+
+test('prompt composition retains every section and its full text in the probe and dispatch', { plugins: [composeDefaults] }, async ($, on) => {
+  const sections = Array.from({ length: 65 }, (_, index) => ({ id: `section-${index}`, scope: 'session' as const, text: `section ${index}\n${'x'.repeat(4100)}` }))
+  on('prompt.compose', () => ({ sections }))
+  const recorded = recordState(on)
+
+  await $.command.run(lab('prompt.compose'))
+
+  const run = lastRun(recorded)
+  expect(run?.ok).toBe(true)
+  expect(run?.value).toEqual(sections.map(section => ({ ...section, characters: section.text.length })))
+  expect(run?.dispatches).toHaveLength(1)
+  expect(run?.dispatches[0]?.event).toBe('prompt.compose')
+  expect(run?.dispatches[0]).toMatchObject({ event: 'prompt.compose', returned: { sections } })
+  expect(run?.dispatches[0]?.chain.map(link => link.plugin)).toEqual(['test'])
+
+  // A composition outside a probe still runs normally, without creating log records.
+  expect(await $.prompt.compose({ model: 'test', promptModel: 'test', surfaces: [], tools: [], outputStyle: null, traits: [] })).toEqual({ sections })
+  expect(recorded.runs).toHaveLength(1)
+  expect(recorded.taps).toEqual([])
+  expect(recorded.traces).toEqual([])
+})
+
 test('named arguments reach the probe and each call shows in order', async ($, on) => {
   mock.store(on)
   const recorded = recordState(on)

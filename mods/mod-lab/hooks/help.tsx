@@ -57,6 +57,14 @@ export const SUBCOMMANDS = [
     box: { typed: '/mod-lab list', says: 'the probes you can run' },
   },
   {
+    name: 'init-lessons',
+    args: '',
+    kind: 'start',
+    does: 'enable lessons in the current project without leaving the session',
+    box: { typed: '/init-lessons', says: 'start learning in this project' },
+    details: ['Also available as /init-lessons. Existing project files are preserved. Requires a session started with the lab launcher.'],
+  },
+  {
     name: '<probe>',
     args: '[value]',
     kind: 'start',

@@ -133,7 +133,7 @@ test('a malformed intercept is refused with the reason, and nothing is set', asy
   const unknown = await $.command.run(lab('intercept prompt.compose watch'))
 
   expect(rewrite.text).toContain('rewrite takes a JSON object')
-  expect(unknown.text).toContain('the lab does not hook prompt.compose')
+  expect(unknown.text).toContain('the lab does not support intercepts for prompt.compose')
   expect(recorded.intercepts).toEqual([])
 })
 

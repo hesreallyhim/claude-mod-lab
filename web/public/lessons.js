@@ -8,9 +8,10 @@ import { pageHead } from './areas.js'
 import { markdown } from './markdown.js'
 import { lessonCatalog, lessonProgress, lessonsGuide } from './lesson-catalog.js'
 import { lessonLocation, lessonSetup } from './lesson-setup.js'
+import { helpButton } from './page.js'
 import { probesHint, queueInline } from './runs.js'
 import { needsNewer, sessionVersion } from './versions.js'
-import { clockTime, el } from './view.js'
+import { clockTime, el, textPreview } from './view.js'
 import { perCall } from './workbench.js'
 
 let lessonsList = []
@@ -81,37 +82,20 @@ export async function lessonsPage(ctx) {
   const { state } = ctx
   const { lessons, index, lessonWorkspace } = await api('/api/lessons')
   lessonsList = lessons
-  const guideSummary = el('summary', {}, 'How lessons work')
-  const guide = el(
-    'details',
-    { class: 'notes lesson-guide', id: 'lessons-guide' },
-    guideSummary,
-    markdown(lessonsGuide(index), { link: lessonLink('learn'), code: text => liveCommand(state, text) }),
-  )
-  const guideLink = el(
-    'button',
-    {
-      type: 'button',
-      class: 'link',
-      'aria-controls': 'lessons-guide',
-      onclick: () => {
-        guide.setAttribute('open', '')
-        guideSummary.focus({ preventScroll: true })
-        guide.scrollIntoView({ block: 'start' })
-      },
-    },
-    'How lessons work ↓',
+  const guide = helpButton(
+    'How lessons work',
+    ...markdown(lessonsGuide(index), { link: lessonLink('learn'), code: text => liveCommand(state, text) }),
   )
   return el(
     'div',
     { class: 'page' },
-    pageHead('Lessons'),
+    pageHead('Lessons', guide),
     el(
       'p',
       { class: 'lede' },
       'Build mods step by step in the tutorials, then try a challenge on its own. Checks update as you save.',
     ),
-    el('p', { class: 'muted' }, 'Take the tutorials in order; the challenges assume them. ', guideLink),
+    el('p', { class: 'muted' }, 'Take the tutorials in order; the challenges assume them.'),
     el(
       'p',
       {},
@@ -122,7 +106,6 @@ export async function lessonsPage(ctx) {
     lessonWorkspace ? lessonLocation(lessonWorkspace) : lessonSetup(),
     lessonProgress(lessons, sessionVersion(state.session)),
     lessonCatalog(lessons, sessionVersion(state.session)),
-    guide,
   )
 }
 
@@ -130,7 +113,8 @@ export async function lessonsPage(ctx) {
 function reportView(check, note) {
   return [
     note === null ? null : el('p', { class: 'muted' }, note),
-    check === null ? null : el('pre', { class: 'answer' }, check.report),
+    check?.progress ? el('p', {}, `${check.progress.passed} of ${check.progress.total} checked steps pass.`) : null,
+    check === null ? null : el('div', { class: 'answer' }, textPreview('Lesson check report', check.report)),
   ]
 }
 

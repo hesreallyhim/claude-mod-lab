@@ -1,6 +1,5 @@
 import { el } from './view.js'
 
-/** Lesson files are created only after the user chooses a dedicated workspace. */
 export function lessonSetup() {
   return el(
     'section',
@@ -9,8 +8,9 @@ export function lessonSetup() {
     el(
       'p',
       {},
-      'You can read the lessons here. To work through them or use the Sandbox, create a dedicated folder and start a session in it:',
+      'In a session started with npx claude-mod-lab run, type /init-lessons to work through lessons here without leaving the session. Existing project files are preserved.',
     ),
+    el('p', {}, 'Or create a dedicated lesson folder from your terminal:'),
     el('pre', {}, 'npx claude-mod-lab init-lessons ~/mod-lessons\nnpx claude-mod-lab run ~/mod-lessons'),
     el(
       'p',

@@ -138,7 +138,13 @@ export function turnsPage(ctx) {
   return el(
     'div',
     { class: 'page', 'data-live': 'turns' },
-    pageHead('Turn timeline'),
+    pageHead(
+      'Turn timeline',
+      notes(
+        "The turns are the main loop's and those of the agents it or a plugin spawned; an agent's turn is marked with its id. A model request is the turn's turn.step row and a tool call its tool.call row, each drawn from when it started to when it settled.",
+        'Open a timeline row to read its summary, exact timing and trace data. The shaded bars inside a model request are its chunks per slice of time, as Streams draws them.',
+      ),
+    ),
     lede("Each turn's model requests and tool calls on one time axis, newest first, from the lab's trace."),
     readings(
       'Turns',
@@ -146,10 +152,6 @@ export function turnsPage(ctx) {
       turns.length === 0
         ? el('p', { class: 'muted' }, 'No turn traced yet: send the session a prompt.')
         : turns.map(turn => turnView(state, turn, opened)),
-    ),
-    notes(
-      "The turns are the main loop's and those of the agents it or a plugin spawned; an agent's turn is marked with its id. A model request is the turn's turn.step row and a tool call its tool.call row, each drawn from when it started to when it settled.",
-      'Open a timeline row to read its summary, exact timing and trace data. The shaded bars inside a model request are its chunks per slice of time, as Streams draws them.',
     ),
   )
 }

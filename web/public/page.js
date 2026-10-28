@@ -1,9 +1,9 @@
 // The anatomy every page outside the Mod API shares:
 // a lede saying what the page shows, a framed box of controls that act on the
-// session, readings under a heading, and the mechanism folded under notes at
-// the foot. A command's text answer is drawn as a report rather than raw text.
+// session, readings under a heading, and guidance beside the relevant title.
+// A command's text answer is drawn as a report rather than raw text.
 
-import { el } from './view.js'
+import { el, openContentDialog } from './view.js'
 
 /** The models a call can name, as the lab's probes offer them; the forms that take a model pick from this list. */
 export const MODELS = ['haiku', 'sonnet', 'opus']
@@ -28,12 +28,31 @@ export function readings(title, { aside = null } = {}, ...children) {
   )
 }
 
-/** The mechanism behind a page, folded at its foot: paragraphs as strings or nodes. */
+/** Page guidance, placed beside its heading. */
 export function notes(...paragraphs) {
-  return titledNotes('How it works', ...paragraphs)
+  return helpButton('How it works', ...paragraphs)
 }
 
-/** Notes under a title of their own, for a section with a mechanism of its own. */
+/** Guidance opens separately so reading it never moves the controls or data. */
+export function helpButton(title, ...paragraphs) {
+  const content = el(
+    'div',
+    { class: 'help-content' },
+    paragraphs.map(paragraph => (typeof paragraph === 'string' ? el('p', {}, paragraph) : paragraph)),
+  )
+  return el(
+    'button',
+    {
+      type: 'button',
+      class: 'quiet help-button',
+      'aria-haspopup': 'dialog',
+      onclick: () => openContentDialog(title, content),
+    },
+    title,
+  )
+}
+
+/** Optional working sections, including forms, stay in the normal page flow. */
 export function titledNotes(title, ...paragraphs) {
   return el(
     'details',

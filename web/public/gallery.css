@@ -30,7 +30,7 @@ table.matrix td:first-child {
 }
 
 table.matrix td {
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--line);
   font-family: var(--mono);
 }
@@ -55,10 +55,10 @@ table.matrix td.no {
 
 .technique {
   display: grid;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  scroll-margin-top: var(--space-4);
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  scroll-margin-top: calc(var(--bar-h) + var(--space-4));
 }
 
 .technique header {
@@ -79,17 +79,19 @@ table.matrix td.no {
 
 .technique .source {
   display: grid;
-  gap: var(--space-0);
+  gap: var(--space-2);
 }
 
-.technique details.excerpt summary {
-  font: var(--size-sm) var(--mono);
+.technique .excerpt {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
-.technique details.excerpt pre,
-.technique details.snippet pre {
-  max-height: 32em;
-  overflow: auto;
+.technique .excerpt + .excerpt {
+  margin-top: var(--space-2);
 }
 
 .technique .as-mod p {

@@ -359,7 +359,10 @@ h4 {
   max-width: 60ch;
 }
 
-/* The session's state as a lamp before its text: a lit cell when connected, yellow when not polling, a hollow one otherwise. */
+/*
+ * The session's state as a lamp before its text: a lit cell when connected, yellow when not polling,
+ * and with no session a hollow one, the text red with it, so a newcomer sees they have a step to take.
+ */
 #session {
   position: relative;
   flex: none;
@@ -452,6 +455,14 @@ h4 {
   box-shadow: 0 0 6px var(--ok);
 }
 
+#session[data-state='off'] {
+  color: var(--bad);
+}
+
+#session[data-state='off']::before {
+  border-color: var(--bad);
+}
+
 #session[data-state='stale']::before {
   border-color: var(--warn);
   background: var(--warn);
@@ -459,10 +470,6 @@ h4 {
 
 #session[data-state='stale'] {
   color: var(--warn);
-}
-
-#session[data-state='off'] {
-  color: var(--muted);
 }
 
 .layout {
@@ -513,8 +520,8 @@ h4 {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: var(--target);
-  padding: 0 var(--space-2);
+  min-height: 28px;
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
   font: var(--size-sm) var(--mono);
   color: var(--ink);
@@ -536,6 +543,12 @@ main {
   padding: var(--space-5) var(--space-6) var(--space-7);
   min-width: 0;
   outline: none;
+}
+
+@media (max-width: 600px) {
+  main {
+    padding: var(--space-4) var(--space-4) var(--space-6);
+  }
 }
 
 .page {
@@ -583,12 +596,13 @@ main {
 
 dl {
   display: grid;
-  grid-template-columns: max-content 1fr;
+  grid-template-columns: max-content minmax(0, 1fr);
   gap: var(--space-1) var(--space-4);
 }
 
 dd {
   margin: 0;
+  min-width: 0;
 }
 
 dd p {
@@ -626,23 +640,24 @@ form.probe p {
 form.probe label {
   display: grid;
   grid-template-columns: 120px minmax(0, 1fr);
-  gap: var(--space-0) var(--space-3);
+  gap: var(--space-1) var(--space-3);
   align-items: center;
-  margin-bottom: var(--space-2);
-  font: var(--size-sm) var(--mono);
+  margin-bottom: var(--space-4);
+  font: var(--size-sm) / 1.5 var(--mono);
 }
 
 form.probe label small {
   grid-column: 2;
-  font-size: var(--size-xs);
+  font-size: var(--size-sm);
+  color: var(--muted);
 }
 
 /* A field sits in the well, with the prompt's green caret. */
 input:not([type='checkbox'], [type='radio']),
 select,
 textarea {
-  font: var(--size-sm) var(--mono);
-  min-height: 30px;
+  font: var(--size-sm) / 1.5 var(--mono);
+  min-height: 36px;
   padding: var(--space-1) var(--space-2);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
@@ -666,19 +681,36 @@ form.probe select {
   font: var(--size-sm) var(--mono);
 }
 
-button {
-  font: 500 var(--size-sm) var(--mono);
-  min-height: 30px;
+button,
+a.action-link {
+  font: 500 var(--size-sm) / 1.4 var(--mono);
+  min-height: 36px;
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius);
   border: 1px solid var(--accent);
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--accent-wash);
+  color: var(--accent);
   cursor: pointer;
 }
 
-button:hover {
-  box-shadow: inset 0 0 0 1px var(--accent-ink);
+a.action-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+button:hover:not(:disabled) {
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+button:disabled {
+  border-color: var(--line-strong);
+  background: var(--panel);
+  color: var(--muted);
+  cursor: not-allowed;
 }
 
 .effect {
@@ -1054,33 +1086,24 @@ button.inline {
   color: var(--bad);
 }
 
-details.inline-answer {
-  display: inline;
+.inline-answer {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
-details.inline-answer[open] {
-  display: block;
-}
-
-details.inline-answer summary {
-  cursor: pointer;
-}
-
-details.inline-answer pre {
-  white-space: pre-wrap;
-  max-height: 24em;
-  overflow: auto;
-  margin: var(--space-1) 0;
-  color: var(--ink);
-}
-
-button.quiet {
+button.quiet,
+a.action-link.quiet {
   background: transparent;
   color: var(--ink);
   border-color: var(--line-strong);
 }
 
-button.quiet:hover {
+button.quiet:hover,
+a.action-link.quiet:hover {
   box-shadow: none;
   background: var(--code-bg);
 }
@@ -1129,12 +1152,27 @@ details.json summary {
   color: var(--ink);
 }
 
-pre.json-text {
+pre.json-text,
+pre.text-preview {
   margin: var(--space-0) 0 var(--space-1);
   padding: var(--space-1) var(--space-2);
   max-height: 16em;
   overflow: auto;
   font-size: var(--size-xs);
+  min-width: 0;
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.text-preview-block {
+  min-width: 0;
+  max-width: 100%;
+  margin-block: var(--space-1);
+}
+
+.text-preview-block > button {
+  margin-top: var(--space-1);
 }
 
 details.trace {
@@ -1230,6 +1268,8 @@ article.run.agent.running {
 
 form .buttons {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
 }
 
@@ -1286,12 +1326,14 @@ dialog.record .record-where {
 
 form.inline-form {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
   margin: var(--space-1) 0;
 }
 
 form.inline-form input {
-  flex: 1;
+  flex: 1 1 12ch;
 }
 
 /* A select is as wide as its longest option; in a row it may shrink, so the row stays in its column. */
@@ -1417,8 +1459,18 @@ table.pieces tr.stderr td:nth-child(2) {
   margin-left: 0;
 }
 
+table.pieces {
+  table-layout: fixed;
+  width: 100%;
+}
+
 table.pieces td {
   padding-right: var(--space-3);
+  overflow-wrap: anywhere;
+}
+
+table.pieces td:nth-child(-n + 2) {
+  width: 6em;
 }
 
 .result.brief .answer {

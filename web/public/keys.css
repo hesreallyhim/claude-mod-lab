@@ -2,8 +2,8 @@
    log with its picked row. The lede, panels, cards and pairs are patterns.css. */
 
 .keys-live {
-  margin: var(--space-3) 0 var(--space-1);
-  padding: var(--space-3) var(--space-3) var(--space-1);
+  margin: var(--space-4) 0;
+  padding: var(--space-4);
 }
 
 /* The newest keys at the right; older ones run off the left edge, faded. */
@@ -128,8 +128,13 @@ ol.tries {
 
 ol.tries > li {
   display: flex;
-  gap: var(--space-2);
-  padding: var(--space-1) 0;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+ol.tries > li:last-child {
+  border-bottom: 0;
 }
 
 ol.tries .try-check {
@@ -177,8 +182,8 @@ ol.tries form.inline-form {
 }
 
 .keys-list {
-  max-height: 252px;
-  overflow-y: auto;
+  max-height: 320px;
+  overflow: auto;
 }
 
 .keys-list > p {
@@ -189,7 +194,7 @@ ol.tries form.inline-form {
 .keys-table {
   width: 100%;
   border-collapse: collapse;
-  font: var(--size-xs) var(--mono);
+  font: var(--size-sm) / var(--leading) var(--mono);
 }
 
 .keys-table th {
@@ -205,7 +210,7 @@ ol.tries form.inline-form {
 }
 
 .keys-table td {
-  padding: var(--space-0) var(--space-2);
+  padding: var(--space-2);
   white-space: nowrap;
 }
 
@@ -238,7 +243,7 @@ ol.tries form.inline-form {
 }
 
 .keys-detail {
-  padding: var(--space-3) var(--space-3) var(--space-3);
+  padding: var(--space-4);
   border-top: 1px solid var(--line);
 }
 
@@ -251,13 +256,13 @@ ol.tries form.inline-form {
 }
 
 .keys-detail header strong {
-  color: var(--accent);
+  color: var(--ink);
 }
 
 .keys-detail .following,
 .keys-detail button.quiet {
   margin-left: auto;
-  font: var(--size-xs) var(--mono);
+  font: var(--size-sm) / var(--leading) var(--mono);
 }
 
 .keys-detail .following {
@@ -277,7 +282,7 @@ ol.tries form.inline-form {
 }
 
 .keys-detail p {
-  margin: var(--space-1) 0;
+  margin: var(--space-2) 0;
 }
 
 .keys-detail p.rewritten {

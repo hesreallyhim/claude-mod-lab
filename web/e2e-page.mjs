@@ -226,7 +226,7 @@ try {
   await page.goto(server.url)
   await page.waitForSelector('main .home')
   expect(
-    (await page.locator('#areas a').allTextContents()).join(', ') === 'Mod API, Session, Build' &&
+    (await page.locator('#areas .area-link').allTextContents()).join(', ') === 'Mod API, Session, Build' &&
       (await page.locator('main .home .card').count()) === 3,
     'the home page and the header offer the three areas',
   )
@@ -235,7 +235,7 @@ try {
   await page.goto(`${server.url}/#/$/fs.read`)
   await page.waitForSelector('form.probe')
   expect(
-    (await page.textContent('#areas a[aria-current=page]')) === 'Mod API' && !(await page.isVisible('#feed')),
+    (await page.textContent('#areas .area-link[aria-current=page]')) === 'Mod API' && !(await page.isVisible('#feed')),
     "a method's page is in the Mod API area, which has no feed",
   )
   expect(
@@ -296,7 +296,7 @@ try {
   await page.click('main .cross a')
   await page.waitForFunction(() => document.querySelector('main h1')?.textContent === 'Streams')
   expect(
-    (await page.textContent('#areas a[aria-current=page]')) === 'Session' &&
+    (await page.textContent('#areas .area-link[aria-current=page]')) === 'Session' &&
       (await page.locator('main .cross a').allTextContents()).includes('process.spawn') &&
       (await page.locator('#tree a').allTextContents()).includes('Turn timeline'),
     "a Session page lists the area's pages on the left and links back to the parts of $ it shows",

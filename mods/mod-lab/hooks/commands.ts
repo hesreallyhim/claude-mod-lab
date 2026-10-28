@@ -16,6 +16,7 @@ import { setView } from './pane-state'
 import { freeCommand, interceptCommand, isFree } from './interception'
 import { keysReport } from './keys'
 import { ledgerReport } from './ledger'
+import { initLessonsCommand } from './lessons'
 import { findProbe } from './probes'
 import { addNote, addNotice, rowsReport } from './rows'
 import { ejectCommand, runAndRecord, setTracing } from './runs'
@@ -89,6 +90,8 @@ async function dispatch($: Dollar, head: string, rest: string, from: LabRunSourc
       return helpCommand($, rest)
     case 'explorer':
       return explorerCommand($, rest, from)
+    case 'init-lessons':
+      return initLessonsCommand($, rest)
     case 'verify':
       return verifyCommand($)
     case 'list':

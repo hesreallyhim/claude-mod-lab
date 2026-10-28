@@ -253,7 +253,14 @@ export function workbenchPage(ctx) {
   const page = el(
     'div',
     { class: 'page' },
-    pageHead('Model workbench'),
+    pageHead(
+      'Model workbench',
+      notes(
+        'In free mode, the lab answers its own model calls from an intercept and sends nothing: a hook standing in for the model. The switch above the readings turns it on or off.',
+        "A completion spends the session's tokens. A cached prefix lasts five minutes after its last use, and each read starts the five minutes again; the bar in each row shows how much of the call's input the cache wrote, how much it served, and how much was new.",
+        'A fork runs on the same model with the same tools, all of them denied. Its cache read is the conversation and its new input the question; in a long session that read is large, and free mode answers it without sending.',
+      ),
+    ),
     lede(
       'Completions sent through the lab, and what every model call in this session cost: what the cache served, and what was paid in full.',
     ),
@@ -278,11 +285,6 @@ export function workbenchPage(ctx) {
         ),
         fork,
       ),
-    ),
-    notes(
-      'In free mode, the lab answers its own model calls from an intercept and sends nothing: a hook standing in for the model. The switch above the readings turns it on or off.',
-      "A completion spends the session's tokens. A cached prefix lasts five minutes after its last use, and each read starts the five minutes again; the bar in each row shows how much of the call's input the cache wrote, how much it served, and how much was new.",
-      'A fork runs on the same model with the same tools, all of them denied. Its cache read is the conversation and its new input the question; in a long session that read is large, and free mode answers it without sending.',
     ),
   )
   queueMicrotask(() => refreshWorkbench(state))

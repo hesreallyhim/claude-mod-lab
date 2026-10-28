@@ -57,7 +57,11 @@ function renderCount(state, total, shown) {
   const count = document.getElementById('tree-count')
   if (count === null) return
   if (state.catalog === null) count.replaceChildren(state.catalogError ?? 'loading the reference')
-  else if (state.filter === '') count.replaceChildren(`${total} entries · `, probeMark(), ' runs from its page')
+  else if (state.filter === '')
+    count.replaceChildren(
+      el('span', {}, `${total} entries`),
+      el('span', { class: 'filter-legend' }, probeMark(), 'Probe available'),
+    )
   else count.replaceChildren(`${shown} of ${total} entries match`)
 }
 

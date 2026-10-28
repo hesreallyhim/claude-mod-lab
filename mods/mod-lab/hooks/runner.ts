@@ -4,7 +4,7 @@ import type { LabRun } from '../types'
 import { resolveArgs } from './args'
 import { isAvailable, NEEDS_NEWER } from './compat'
 import { startCapture, stopCapture } from './inspect'
-import { summarize } from './json'
+import { summarizeResult } from './json'
 import { findProbe, runProbe } from './probes'
 
 type Dollar = EngineInterface
@@ -40,7 +40,7 @@ export async function execute($: Dollar, id: string, given: Readonly<Record<stri
   try {
     const value = await runProbe($, id, resolved.value)
     const ms = Date.now() - started
-    return { probe: id, args, ok: true, value: summarize(value), error: null, ms, dispatches: stopCapture() }
+    return { probe: id, args, ok: true, value: summarizeResult(value, id), error: null, ms, dispatches: stopCapture() }
   } catch (error) {
     const ms = Date.now() - started
     return { probe: id, args, ok: false, value: null, error: messageOf(error), ms, dispatches: stopCapture() }

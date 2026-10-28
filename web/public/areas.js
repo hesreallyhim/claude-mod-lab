@@ -83,35 +83,83 @@ export function pagesShowing(name) {
  * (lab.css): a kicker naming the area above it, and the rule beneath. The home
  * page belongs to no area, so its head has the title alone.
  */
-export function pageHead(title) {
+export function pageHead(title, help = null) {
   const area = AREAS.find(one => one.id === areaOf(routeOf(location.hash).kind))
   return el(
     'header',
     { class: 'sheet-head page-head' },
     area === undefined ? null : el('p', { class: 'kicker' }, area.label),
-    el('h1', {}, title),
+    el('div', { class: 'page-title-row' }, el('h1', {}, title), help),
   )
 }
 
 /** The route each area showed last, so its tab returns there. */
 const latest = new Map()
 
+function areaTab(area, current) {
+  const pages =
+    area.id === 'api'
+      ? [
+          ['api', 'What $ is'],
+          ['probes', 'All probes'],
+        ]
+      : area.pages
+  return el(
+    'div',
+    { class: 'area-tab', 'data-active': String(area.id === current) },
+    el(
+      'a',
+      {
+        class: 'area-link',
+        href: area.id === current ? area.home : (latest.get(area.id) ?? area.home),
+        'aria-current': area.id === current ? 'page' : null,
+      },
+      area.label,
+    ),
+    el(
+      'details',
+      { class: 'area-dropdown', name: 'area-sections' },
+      el(
+        'summary',
+        { 'aria-label': `${area.label} sections`, title: `${area.label} sections` },
+        el('span', { 'aria-hidden': 'true' }, '▾'),
+      ),
+      el(
+        'div',
+        { class: 'area-menu' },
+        pages.map(([route, label]) =>
+          el('a', { href: `#/${route}`, 'aria-current': routeOf(location.hash).kind === route ? 'page' : null }, label),
+        ),
+      ),
+    ),
+  )
+}
+
+/** Navigation disclosures use ordinary links and native keyboard activation. */
+export function wireAreaMenus() {
+  const nav = document.getElementById('areas')
+  const closeMenus = () => nav.querySelectorAll('details[open]').forEach(menu => menu.removeAttribute('open'))
+  document.addEventListener('click', event => {
+    const target = /** @type {HTMLElement} */ (event.target)
+    if (!nav.contains(target) || target.closest('a')) closeMenus()
+  })
+  nav.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return
+    const opened = nav.querySelector('details[open]')
+    if (opened === null) return
+    event.preventDefault()
+    opened.querySelector('summary').focus()
+    closeMenus()
+  })
+  nav.addEventListener('focusout', event => {
+    if (!nav.contains(/** @type {Node | null} */ (event.relatedTarget))) closeMenus()
+  })
+}
+
 /** Marks the current area on the page and in the header's tabs, and remembers the route as the area's latest. */
 export function renderAreas() {
   const current = areaOf(routeOf(location.hash).kind)
   if (current !== 'home') latest.set(current, location.hash)
   document.body.dataset.area = current
-  document.getElementById('areas').replaceChildren(
-    ...AREAS.map(area =>
-      el(
-        'a',
-        // The current area's tab goes to the area's first page; another's, back to where it was left.
-        {
-          href: area.id === current ? area.home : (latest.get(area.id) ?? area.home),
-          'aria-current': area.id === current ? 'page' : null,
-        },
-        area.label,
-      ),
-    ),
-  )
+  document.getElementById('areas').replaceChildren(...AREAS.map(area => areaTab(area, current)))
 }

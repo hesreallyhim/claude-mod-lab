@@ -7,7 +7,7 @@
 // A workspace is marked by its .claude-mod-lab/ folder, which holds the lab's
 // state for it. `npx claude-mod-lab init-lessons <folder>` explicitly creates one.
 
-import { existsSync, mkdirSync, readdirSync, realpathSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, lstatSync, mkdirSync, readdirSync, realpathSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -116,4 +116,23 @@ export function makeWorkspace(dir) {
     if (!existsSync(join(dir, name))) writeFileSync(join(dir, name), text)
   }
   return realpathSync(dir)
+}
+
+/** @param {string} dir @param {{ home?: string }} [options] */
+export function initializeProjectLessons(dir, { home = homedir() } = {}) {
+  refuseHome(dir, home, 'Open a project folder before running /init-lessons.')
+  if (!isFolder(dir)) throw new Error(`${dir} is not an existing project folder.`)
+  const project = realpathSync(dir)
+  if (project === realpathSync(PACKAGE_ROOT)) {
+    throw new Error('Open a separate project for lessons; the claude-mod-lab package folder is not a lesson workspace.')
+  }
+  const folders = [STATE_DIR, 'workshop'].map(name => join(project, name))
+  for (const folder of folders) {
+    const stat = lstatSync(folder, { throwIfNoEntry: false })
+    if (stat !== undefined && (!stat.isDirectory() || stat.isSymbolicLink())) {
+      throw new Error(`${folder} must be a directory, not a file or symbolic link. No lesson folders were created.`)
+    }
+  }
+  for (const folder of folders) mkdirSync(folder, { recursive: true })
+  return project
 }

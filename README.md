@@ -1,110 +1,127 @@
-# claude-mod-lab
+<p align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/brand/banner-dark.svg">
+  <img alt="claude-mod-lab" src="assets/brand/banner-light.svg" width="852">
+</picture>
+</p>
 
-A hands-on lab for Claude Code mods. Call anything on `$` in a live session and see exactly what happened, watch your session from the inside, and build mods of your own with lessons that check your work every time you save.
+A comprehensive workbench for Claude Code mods. Explore the mod API, trace the interaction of mods in a live session, and learn how to build your own mods from the ground up. "Developer tools" for Claude Code mods.
 
-This project is in beta and is still being tested.
+## Quickstart
 
-## Get started
+**Requirements:**
 
-Open the explorer from any directory:
+* Claude Code with mod support (minimum version: 2.1.299), with `claude` on your PATH for the launcher
+* Node.js 22 or newer
+* macOS or Linux
+
+From a project folder where you'd like to explore the lab (or a scratch folder you've created), run:
 
 ```sh
-npx claude-mod-lab
-```
-
-This starts the local server and opens the explorer in your browser, or opens the explorer already running. It does not create files in your project. A newly started server stays in this terminal until you press Ctrl-C.
-
-To use the explorer with a project, start Claude Code with the lab loaded:
-
-```sh
-cd ~/code/my-project
 npx claude-mod-lab run
 ```
 
-`run` connects to an available explorer or starts one with the session, so you can use this command on its own. It accepts an existing project directory: `npx claude-mod-lab run ~/code/my-project`. It creates `.claude/mod-lab/` for Gallery and Prompt box mods and passes that collection to Claude with `--plugin-dir`. Lesson workspaces also load `workshop/` through the same mechanism. Claude Code runs normally, with the lab's tools available when you want them.
+This opens an interactive Claude Code session with the lab's plugins loaded and connects it to the explorer in your browser. The plugins are loaded for this session; no marketplace installation is required. Start with the Mod API's **Try it** flow, or type `/mod-lab help` in Claude Code for the command list.
 
-You need Claude Code and Node 22 or newer, on macOS or Linux. The lab is loaded only in the sessions the launcher starts. In the session, `/mod-lab` opens its pane and `/mod-lab help` lists its commands.
+The lab works across the terminal, desktop app, and VS Code, though mod APIs—especially UI features—vary by client and Claude Code version.
 
-An explorer started separately remains open when a session ends. An explorer started by the session ends with that session. Each explorer displays one session at a time; if the shared explorer is occupied, `run` starts a separate one and tells you. `run --new` always uses a separate explorer. `serve` is another spelling of the bare command, and `attach` is an alias for `run`.
+<details>
+<summary>Desktop and marketplace installation</summary>
 
-### Optional: set up the lessons
+To use the lab in the desktop app or sessions started without the launcher, add the marketplace and install the bridge:
 
-You can read the lessons in the explorer without creating a workspace. To build and run their mods, explicitly initialize a dedicated folder:
+```sh
+claude plugin marketplace add hesreallyhim/claude-mod-lab
+claude plugin install mod-lab-bridge@claude-mod-lab
+```
+
+The bridge connects the session to the explorer and installs the lab as a dependency. Enable the plugin in your client and run `/reload-plugins`. `/mod-lab` opens the lab's client pane; `/mod-lab explorer` gives you the browser explorer's address or starts it if needed. Add `--scope local` to the install command to limit installation to the current project.
+
+</details>
+
+## What's Inside
+
+### Mod API Reference and Probes
+
+* A reference for the mod API (`$`), generated from locally available Claude Code TypeScript declarations. The session indicator shows the session and reference versions.
+* Over 50 interactive probes let you invoke API methods with custom inputs and inspect their results, recorded dispatches, and source code. Run them in the explorer or with `/mod-lab <probe>`.
+* Customizable intercepts let you observe, refuse, answer, rewrite, or delay supported calls from the lab and other plugins.
+
+### Session Inspector
+
+A deep dive into how mods interact with a live session.
+
+* **Turn timeline:** Trace each turn's model requests, tool calls, and results.
+* **Streams:** Inspect process output and model-response chunks as they arrive, with timing information.
+* **Conversation X-ray:** Inspect conversation records and their inferred audiences; experiment with notes, notices, and compaction.
+* **Context ledger:** Measure context usage and inspect system-prompt sections, tools, and plugin contributions.
+* **Model workbench:** Try model calls and conversation forks, compare prompt-cache usage, and track plugin model calls and token usage.
+* **Agents:** Register and spawn agents, inspect their answers and tool transcripts, and control which types the model can use.
+* **Prompt box:** Trace prompt-box events and try example mods that change typing, highlighting, and paste behavior.
+* **Settings:** Inspect and change the session settings exposed through the mod API.
+
+### Build
+
+* **Lessons:** Build working mods through tutorials and challenges with step-by-step checks.
+* **Workshop:** Enable or disable mods in your lesson workspace.
+* **Sandbox:** Edit a mod's hooks, types, and tests in the browser, then validate, type-check, and test it.
+* **Gallery:** Explore seven rendering techniques and add editable examples to your project.
+* **Installed mods:** Compare plugins' declared capabilities with their observed activity in the session.
+
+---
+
+## The `mod-lab` server
+
+The local server serves the browser explorer and API reference. The `mod-lab-bridge` plugin connects a running Claude Code session to that server: it carries commands from the explorer into the session and sends results and session events back to the browser. Once connected, you can run probes, inspect activity, and use the lab's controls against that live session. Without a connection, you can still browse the available reference and lesson material.
+
+## Connecting and launch options
+
+> [!TIP]
+> You can use the lab in an existing Claude Code project. For building mods or working through lessons, we recommend a dedicated directory to keep your experiments and lesson files together. See [Setting up lessons](#setting-up-lessons) for the lesson workspace commands.
+
+`run` accepts an existing project directory and forwards Claude Code options after `--`:
+
+```sh
+npx claude-mod-lab run ~/code/my-project -- --model haiku
+```
+
+The launcher supplies the lab and project plugin folders through `--plugin-dir`, alongside your Claude Code flags. It creates `.claude/mod-lab/` in the project for editable Gallery and Prompt box examples. Use `npx claude-mod-lab --help` for launcher options.
+
+To browse before connecting a session, run `npx claude-mod-lab` on its own. This starts or opens an explorer without creating project files. Later, `run` connects a new session to an available explorer or starts one for that session. With the bridge already loaded in an existing session, use `/mod-lab explorer` instead.
+
+Each explorer displays one session at a time. If an explorer is occupied, `run` starts a separate one; `run --new` always requests a separate explorer. An explorer started independently stays running until you stop its server with Ctrl-C; one started for a session stops when that session ends.
+
+## Setting up lessons
+
+You can read the lessons without creating a workspace. In a session started with `run`, type `/init-lessons` to enable them in the current project, preserving existing files. You can continue in the same session.
+
+For a dedicated lesson folder:
 
 ```sh
 npx claude-mod-lab init-lessons ~/mod-lessons
 npx claude-mod-lab run ~/mod-lessons
 ```
 
-Initialization creates `workshop/`, `.claude-mod-lab/`, a README and a `.gitignore`. The directory must be new, empty, or already initialized for lessons. The session loads the workshop's mods and reloads them as you save. To return later, use the same `run` command.
+The terminal initializer accepts a new, empty, or already initialized lesson directory. Working mods go in `workshop/`, reference solutions in `solutions/`, and progress in `.claude-mod-lab/`. Each lesson starts from a working mod; edit it, let the session reload it as you save, and use the lesson page to check your work. Return later with the same `run` command. See the [lesson guide](learn/README.md) for details.
 
-## What you can do
+## Adding and writing mods
 
-### Try the API and see what really happens
+In the Gallery or Prompt box page, **Add to project** copies an example into `.claude/mod-lab/<name>/` in a launcher-started project and requests a plugin reload. The copy is yours to edit and remains in the project. Follow the example's command or interaction instructions to try it. File-copy and reload results are shown separately; if a mod does not appear, check those results and confirm that the session was started with `run` in the intended project. Older copies in `.claude/skills/` are preserved and also loaded by the launcher.
 
-The lab has 55 probes, each a few lines that call a method on `$` in your session. Run one from the explorer or with `/mod-lab <probe>`, and you see the value it returned, each event it dispatched, and the chain of hooks that answered it. Then put the lab's own hook on that event to watch, refuse, answer, rewrite or delay the call, and run it again.
+The launcher includes **`/mod-bootstrap:mod-bootstrap`**, an authoring skill that scaffolds a mod's manifest, hooks, types, test, and README, then validates and tests it. Ask Claude to help write a mod, or invoke the skill directly. For installation outside launcher-started sessions, see [mod-bootstrap](plugins/mod-bootstrap/README.md).
 
-The reference is built from the declarations of the Claude Code you are running, so it always matches your version. Any run can be copied as test hooks, which stand in for the engine in a test of your own mod.
+**Copy as test hooks** turns recorded dispatches into starter hooks for a test of your own mod. Paste them into a `claude-code/testing` test callback, trigger the behavior you want to test, and add assertions. They are not a complete test; streamed or truncated results may need adapting. See [Tests of your own](learn/README.md#tests-of-your-own).
 
-### Watch your session from the inside
+## Updating
 
-The Session area shows what a mod can see and change while you work: each turn's model requests and tool calls on a timeline, the rows the conversation stores and whether the model or you will read them, what each plugin adds to the model's input, agents, the model calls plugins make and the tokens they use, the prompt box key by key, and settings.
-
-### Learn by building
-
-Eleven tutorials and eight challenges, from a stopwatch you can click to a game of Snake. Each lesson starts from a mod that already runs. You fill in what is missing in your lesson workspace’s `workshop/` directory, the session reloads the mod as you save, and the lesson's page checks every step and tells you what the mod did when a step fails.
-
-### Start from something that works
-
-The Gallery has seven ways a mod can draw beyond plain text, from raster graphics and images to SVG charts and hover cards. The Prompt box page has six mods that change how the prompt box behaves: closing brackets, shortcodes, highlighted slash commands, a guard against pasting API keys, and more. In a session started with `run`, Add to project copies the mod into `.claude/mod-lab/<name>/`, the collection already supplied to Claude at startup. The copy is yours to change and stays in that project until you remove it. The explorer asks the connected session to reload the plugins. Existing Gallery and template copies in `.claude/skills/` stay in place, with their edits preserved, and the launcher explicitly loads those too. Each added mod shows the command or interaction to try it.
-
-### Have Claude help you write mods
-
-`npx claude-mod-lab run` includes two authoring skills; no marketplace installation is needed. `mod-bootstrap` scaffolds a new mod with its manifest, hooks, types, a test and a README, and checks it before handing it over. `mod-authoring-notes` gives Claude the practical facts about writing mods: what the validator refuses, how the test kit behaves, and what the engine will and won't do. Ask Claude to help write a mod, or invoke `/mod-bootstrap:mod-bootstrap` or `/mod-authoring-notes:mod-authoring-notes` directly.
-
-To use these skills in sessions started without the lab launcher, install them separately:
-
-```sh
-claude plugin marketplace add hesreallyhim/claude-mod-lab
-claude plugin install mod-bootstrap@claude-mod-lab
-claude plugin install mod-authoring-notes@claude-mod-lab
-```
-
-## Other ways to run it
-
-To load the lab in sessions started with plain `claude`, or in the desktop app, install it as a plugin:
-
-```sh
-claude plugin marketplace add hesreallyhim/claude-mod-lab
-claude plugin install mod-lab-bridge@claude-mod-lab --scope local
-```
-
-The bridge can join a separately running explorer. `/mod-lab explorer` gives the connected explorer’s address or starts one for the session. `--scope local` keeps the lab to the folder you ran the install in; leave it out to have it in every session. For lesson hot reload, use `init-lessons` followed by `run` so the launcher loads the workshop.
-
-To pin a lesson workspace to the current package version, use `npx claude-mod-lab init-lessons <directory> --pin`; this installs that version in the workspace. You can select an exact release with `npx claude-mod-lab@0.2.0-beta.1`. `npx claude-mod-lab --help` lists the commands and options.
-
-## Updating and removing
-
-Use `npx claude-mod-lab` for the current release; a workspace initialized with `--pin` keeps its installed version. An installed lab updates through `/plugin`, where you can turn on auto-update for this marketplace under Marketplaces. By hand, `claude plugin update <name>@claude-mod-lab` updates one plugin at a time, so run it for each of mod-lab-bridge, mod-lab, mod-lab-target and mod-lab-keys, then `/reload-plugins`.
-
-To remove the lab, delete your lab folder and `~/.claude-mod-lab/`, where the launcher keeps its copies. An installed lab comes out with `claude plugin uninstall mod-lab-bridge@claude-mod-lab --prune` (add `--scope local` if you installed it that way).
-
-## If /mod-lab doesn't appear
-
-The usual reason is a Claude Code older than the lab supports: update Claude Code and start again. In a session started with `npx claude-mod-lab run`, a plugin that failed to load says why in the transcript. An installed plugin fails silently, so start Claude Code with `claude --debug-file <path>` and look in that file for "hooks module did not load".
-
-## If an added Gallery or Prompt box mod doesn't appear
-
-Start the lab in the project you want to use (`npx claude-mod-lab run <project>`). In the explorer, choose Add to project, let the session reload, and follow the mod's “try it” instructions. The launcher supplies the component folder through `--plugin-dir`, just as it supplies the lesson Workshop. You do not need a global installation or a manual trust-settings change for this loading route. A session started before this feature needs to be relaunched to receive the collection path.
-
-“Added to project” confirms that the files were copied; the reload result appears separately. For mods with a command, the card also checks the connected session’s command registry and shows whether that command is available from the expected plugin. Prompt-only mods have no command check. If you reconnect the explorer to a session started outside the launcher, copies in `.claude/mod-lab/` show an instruction to start through `run`. Older copies remain editable in `.claude/skills/`; removing one and adding it again puts the new copy in the collection.
-
-In projects that have never used the launcher, the explorer can still copy into `.claude/skills/`. That automatic discovery route requires trust for the exact project folder. A trusted parent folder can suppress the trust prompt without permitting these plugins; see Claude Code's [exact-folder trust instructions](https://code.claude.com/docs/en/permissions#what-runs-before-you-trust-a-folder). The lab reports these loading diagnostics without changing trust settings. Using `run` explicitly loads known lab copies from that older location.
+To request the latest published package explicitly, use `npx claude-mod-lab@latest run`. Unversioned `npx claude-mod-lab` can use a locally installed version. Add `--pin` when initializing a lesson workspace to install that initializer's exact package version there, or use `npx claude-mod-lab@<version>` to select a release explicitly.
 
 ## Contributing
 
-Work on the lab itself happens in a clone. [CONTRIBUTING.md](CONTRIBUTING.md) covers setup, the checks, how the repository is laid out, and releases.
+Contributions are welcome. Open an issue to report a bug or suggest a feature. See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, repository layout, checks, and releases.
 
 ## License
 
-MIT, for everything in this repository. Claude Code itself, including the declarations the explorer reads, belongs to Anthropic and is not covered by this license. claude-mod-lab is an independent project, not made by Anthropic.
+MIT &copy; 2026 Really Him (@hesreallyhim)
+
+This project has no affiliation with Anthropic. Claude Code type declarations are not distributed with this project's source code.

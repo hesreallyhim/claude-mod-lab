@@ -151,8 +151,7 @@ learn/**/tsconfig.json
 /.claude-mod-lab/
 
 # Optional local mod experiments; lesson work normally lives in a dedicated workspace.
-/workshop/*
-!/workshop/README.md
+/workshop/
 
 # Components the explorer adds to a session (Add to session); each is yours to edit.
 /.claude/skills/

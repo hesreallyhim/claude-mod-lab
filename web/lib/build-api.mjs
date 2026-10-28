@@ -7,6 +7,7 @@ import { componentFolder } from './component-folders.mjs'
 import { createComponents } from './components.mjs'
 import { installedCopies, skillsCopyNote } from './installed.mjs'
 import { checkSummary, createLessonChecks } from './lesson-checks.mjs'
+import { prepareLessonLink } from './lesson-loading.mjs'
 import { openLesson, readProgress } from './progress.mjs'
 import { PACKAGE_ROOT } from './roots.mjs'
 import { BLANK, createSandbox, templateFiles, templateNames } from './sandbox.mjs'
@@ -82,6 +83,15 @@ export function createBuildApi({
       : { isReloaded: false, note: 'The session is busy. It reloads once its turn ends.' }
   }
 
+  function lessonLink(root, mod) {
+    const session = hub.snapshot().session
+    const collection = session?.lab?.lessonCollection ?? null
+    if (collection !== null && !session?.lab?.componentDirs?.includes(collection)) {
+      throw new Error('The session is not watching its lesson plugin folder. Run /init-lessons again.')
+    }
+    return prepareLessonLink(root, mod, collection)
+  }
+
   function sandboxInfo() {
     const selected = context.snapshot()
     const own = selected.lessonWorkspace === null ? null : sandbox(selected.lessonWorkspace)
@@ -102,9 +112,12 @@ export function createBuildApi({
     }
     if (req.method !== 'POST') return send(res, 404, { error: 'not found' })
     const body = await readBody(req)
-    const own = sandbox(context.requireLessons(body.lessonWorkspace))
+    const root = context.requireLessons(body.lessonWorkspace)
+    const own = sandbox(root)
     if (url.pathname === '/api/sandbox/save') {
+      const publish = lessonLink(root, 'sandbox-mod')
       own.write(body.files)
+      publish()
       return send(res, 200, await own.check())
     }
     if (url.pathname === '/api/sandbox/test') return send(res, 200, await own.test())
@@ -267,10 +280,12 @@ export function createBuildApi({
   }
 
   function beginLesson(lesson, root) {
+    const publish = lessonLink(root, lesson.mod)
     const folder = join(root, 'workshop', lesson.mod)
     const solutionFolder = join(root, 'solutions', lesson.id)
     copyLessonSolution(lesson, solutionFolder)
     const made = startLesson(lesson, folder)
+    publish()
     openLesson(root, lesson.id)
     if (made !== null) checker().poke(lesson)
     return { folder, made, solutionFolder }

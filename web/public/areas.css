@@ -2,7 +2,7 @@
    the home page, and the line that links a page to the other area. The area is
    body[data-area]: api, session, build, or home. */
 
-/* The header stays one line at any width, its texts cut short, so the sticky columns below it keep their place. */
+/* The header's height follows its responsive rows so sticky columns keep their place. */
 .brand,
 .areas {
   flex: none;
@@ -68,98 +68,261 @@
   fill: currentColor;
 }
 
-/* The areas as a terminal multiplexer's windows: numbered, the current one lit and starred. */
-.areas {
-  counter-reset: area;
-  gap: var(--space-1);
-  padding: 0 var(--space-2);
+/* Header and sidebar share an edge, while the tabs keep their own action rhythm. */
+body {
+  --nav-w: 220px;
+  --bar-h: 56px;
 }
 
-.areas a {
-  counter-increment: area;
-  display: inline-flex;
-  align-items: center;
-  min-height: 32px;
-  padding: 0 var(--space-1) 0 var(--space-2);
+body[data-area='api'] {
+  --nav-w: 272px;
+}
+
+.bar > .brand {
+  width: var(--nav-w);
+  justify-content: center;
+  border-right: 1px solid var(--line-strong);
+}
+
+.bar > .areas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
+.area-tab {
+  position: relative;
+  display: flex;
   border: 1px solid var(--line-strong);
+  background: var(--panel);
+}
+
+.area-link,
+.area-dropdown > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
   color: var(--ink);
-  font: 500 var(--size-sm) var(--mono);
-  text-transform: lowercase;
+  font: 600 var(--size-md) / 1 var(--mono);
 }
 
-.areas a::before {
-  content: counter(area) ':';
-  color: var(--muted);
+.area-link {
+  flex: 1;
+  padding: 0 var(--space-3);
 }
 
-/* A cell kept for the star, so the tabs keep their width as the current one moves. */
-.areas a::after {
-  content: '*';
-  visibility: hidden;
+.area-dropdown > summary {
+  min-width: 30px;
+  height: 100%;
+  border-left: 1px solid var(--line-strong);
+  list-style: none;
 }
 
-.areas a:hover {
-  background: var(--code-bg);
+.area-dropdown > summary::-webkit-details-marker {
+  display: none;
+}
+
+.area-tab[data-active='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.area-tab[data-active='true'] :is(.area-link, summary) {
+  color: var(--accent-ink);
+}
+
+.area-link:hover,
+.area-dropdown > summary:hover {
+  background: var(--accent-wash);
   text-decoration: none;
 }
 
-.areas a[aria-current='page'] {
-  border-color: var(--accent);
-  color: var(--accent-ink);
+.area-tab[data-active='true'] :is(.area-link, summary):hover {
   background: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent-ink);
+}
+
+.area-dropdown[open] > summary span {
+  transform: rotate(180deg);
+}
+
+.area-menu {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  z-index: 4;
+  width: 260px;
+  max-width: calc(100vw - 24px);
+  max-height: min(480px, calc(100dvh - var(--bar-h) - 24px));
+  overflow-y: auto;
+  padding: var(--space-2);
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  box-shadow: 0 8px 24px #0003;
+}
+
+.area-menu a {
+  display: block;
+  padding: var(--space-3);
+  color: var(--ink);
+  font: 500 var(--size-sm) / 1.5 var(--mono);
+  white-space: normal;
+}
+
+.area-menu a:hover,
+.area-menu a[aria-current='page'] {
+  color: var(--accent);
+  background: var(--accent-wash);
+  text-decoration: none;
+}
+
+.bar > #session {
+  font-size: var(--size-sm);
+  overflow: visible;
+}
+
+#session-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar > #connection-help {
+  align-self: center;
+  justify-content: center;
+  flex: none;
+  margin-left: var(--space-2);
+  min-height: 40px;
+  color: var(--ink);
+  background: var(--panel);
+  border-color: var(--line-strong);
+}
+
+#feed > .tabs {
+  display: grid;
+  grid-template-columns: 0.7fr 1.3fr 1.1fr;
+  gap: 0;
+  margin-bottom: var(--space-4);
+}
+
+#feed > .tabs button {
+  min-height: 40px;
+  padding: var(--space-2);
   font-weight: 600;
 }
 
-.areas a[aria-current='page']::before {
-  color: inherit;
+#feed > .tabs button + button {
+  border-left: 0;
 }
 
-.areas a[aria-current='page']::after {
-  visibility: visible;
-}
-
-/* A narrow window gets the status line in two rows: the brand and the areas, then the session's lamp.
-   The bar's height token follows, so the columns still stick under it. */
-@media (max-width: 760px) {
-  :root {
-    --bar-h: 76px;
+/* Once the side columns collapse, the status and Help occupy their own row. */
+@media (max-width: 1100px) {
+  body {
+    --bar-h: 100px;
   }
 
   .bar {
     display: grid;
-    grid-template-columns: max-content minmax(0, 1fr) max-content;
-    grid-template-rows: 40px 36px;
+    grid-template-columns: 220px minmax(0, 1fr) max-content max-content;
+    grid-template-rows: 56px 44px;
     padding: 0;
   }
 
-  .brand {
+  .bar > .brand {
+    width: auto;
     grid-column: 1;
     grid-row: 1;
   }
 
-  .areas {
-    grid-column: 2 / 4;
+  .bar > .areas {
+    grid-column: 2 / 5;
     grid-row: 1;
-    overflow-x: auto;
   }
 
   .bar > #session {
-    grid-column: 1 / 4;
-    grid-row: 2;
-    flex: 0 1 auto;
-    min-width: 0;
-    border-left: 0;
-    border-top: 1px solid var(--line);
-  }
-
-  .bar:has(#intercept-status:not([hidden])) > #session {
     grid-column: 1 / 3;
+    grid-row: 2;
+    border-left: 0;
   }
 
   .bar > #intercept-status {
     grid-column: 3;
     grid-row: 2;
-    border-top: 1px solid var(--line);
+  }
+
+  .bar > #connection-help {
+    grid-column: 4;
+    grid-row: 2;
+    margin: 0 var(--space-2);
+    min-height: 36px;
+  }
+
+  .area-tab:last-child .area-menu {
+    left: auto;
+    right: 0;
+  }
+
+  .area-tab:nth-child(2) .area-menu {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    --bar-h: 140px;
+  }
+
+  body:has(#intercept-status:not([hidden])) {
+    --bar-h: 176px;
+  }
+
+  .bar {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) max-content;
+    grid-template-rows: 40px 56px 44px;
+  }
+
+  .bar > .brand {
+    grid-column: 1 / 5;
+    justify-content: flex-start;
+    border-right: 0;
+  }
+
+  .bar > .areas {
+    grid-column: 1 / 5;
+    grid-row: 2;
+    gap: var(--space-1);
+    padding: var(--space-2);
+  }
+
+  .area-link {
+    padding: 0 var(--space-2);
+    font-size: var(--size-sm);
+  }
+
+  .area-dropdown > summary {
+    min-width: 26px;
+  }
+
+  .bar > #session {
+    grid-column: 1 / 4;
+    grid-row: 3;
+  }
+
+  .bar > #connection-help {
+    grid-row: 3;
+  }
+
+  .bar > #intercept-status {
+    grid-column: 1 / 5;
+    grid-row: 4;
+    min-height: 36px;
+    border-left: 0;
+  }
+
+  body[data-area='home'] main {
+    padding: var(--space-4) var(--space-4) var(--space-6);
   }
 }
 
@@ -171,15 +334,15 @@ body[data-area='home'] #nav {
 }
 
 body[data-area='api'] .layout {
-  grid-template-columns: 272px minmax(0, 1fr);
+  grid-template-columns: var(--nav-w) minmax(0, 1fr);
 }
 
 body[data-area='session'] .layout {
-  grid-template-columns: 200px minmax(0, 1fr) minmax(320px, 420px);
+  grid-template-columns: var(--nav-w) minmax(0, 1fr) minmax(320px, 420px);
 }
 
 body[data-area='build'] .layout {
-  grid-template-columns: 200px minmax(0, 1fr);
+  grid-template-columns: var(--nav-w) minmax(0, 1fr);
 }
 
 body[data-area='home'] .layout {
@@ -244,13 +407,226 @@ body:is([data-area='session'], [data-area='build']) #tree .group a.current::befo
 
 .home .areas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   justify-content: center;
   gap: var(--space-5);
-  margin: var(--space-6) 0;
+  margin: var(--space-5) 0 var(--space-6);
 }
 
-.home .card ul {
+.home .home-connection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3) var(--space-6);
   margin: 0;
-  padding-left: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--line);
+  border-left: var(--rule) solid var(--ok);
+  background: var(--panel);
+  font-size: var(--size-md);
+}
+
+.home-connection > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  min-width: 0;
+}
+
+.home-connection dt {
+  color: var(--muted);
+}
+
+.home-connection dd {
+  overflow-wrap: anywhere;
+}
+
+.home-connection .connection-state {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.home .home-connect {
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+body[data-area='home'] .home-connect h2 {
+  margin-top: 0;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.home-connect > :last-child {
+  margin-bottom: 0;
+}
+
+/* The toast walkthrough is a sequence: numbers orient the reader; each action belongs to one step. */
+.home .try-steps {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-3) 0 var(--space-4);
+  padding-left: var(--space-5);
+}
+
+.home .try-steps > li {
+  padding-left: var(--space-1);
+}
+
+.home .try-steps > li::marker {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.home .try-steps h3 {
+  margin: 0 0 var(--space-1);
+  font: 600 var(--size-body) / var(--leading) var(--prose);
+  color: var(--ink);
+}
+
+.home .try .try-steps > li > p {
+  margin: 0 0 var(--space-2);
+  color: var(--muted);
+}
+
+.home .try .try-action {
+  min-height: 36px;
+  padding: var(--space-2) var(--space-3);
+  border-color: var(--accent);
+  background: var(--accent-wash);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.home .try .try-action:hover:not(:disabled) {
+  background: var(--code-bg);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.home .try .try-action:disabled {
+  border-color: var(--line-strong);
+  background: var(--panel);
+  color: var(--muted);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.home .try .try-footnote,
+.home .try .try-hint {
+  font-size: var(--size-sm);
+  color: var(--muted);
+}
+
+/*
+ * The home page's head, drawn as the README banner is: a matrix of unlit cells, 6px each with a 1px
+ * gap of the page between them, and the brand's flask lit into it. The flask is the first thing in
+ * the padding, both whole cells from the edge, so its cells fall on the matrix's.
+ */
+.home .hero {
+  /* The cells under the pointer (cell-glow.js): a shadow on paper, offset as if cast from the top left. */
+  --glow-cell: var(--ink);
+  --glow-strength: 0.08;
+  --glow-offset: 1;
+  --cell: 6px;
+  --unlit: color-mix(in srgb, var(--ink) 5%, var(--bg));
+  --matrix:
+    linear-gradient(to right, var(--bg) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--bg) 1px, transparent 1px);
+  margin-bottom: var(--space-5);
+  padding: calc(4 * var(--cell));
+  background-color: var(--unlit);
+  background-image: var(--matrix);
+  background-size: var(--cell) var(--cell);
+  position: relative;
+  isolation: isolate;
+}
+
+@media (prefers-color-scheme: dark) {
+  .home .hero {
+    --glow-cell: var(--prompt);
+    --glow-strength: 0.16;
+    --glow-offset: 0;
+  }
+}
+
+.home .hero-glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.home .hero-title {
+  display: flex;
+  align-items: last baseline;
+  gap: calc(3 * var(--cell));
+  margin-bottom: var(--space-4);
+}
+
+.home .hero h1 {
+  min-width: 0;
+  margin: 0;
+  font: var(--size-vt-title) / 1 var(--display);
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+  text-shadow: var(--glow);
+}
+
+/* The flask's own cells are cut by the same gaps, laid over it. */
+.home .hero-flask {
+  position: relative;
+  flex: none;
+  width: calc(9 * var(--cell));
+  height: calc(20 * var(--cell));
+}
+
+.home .hero-flask svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  shape-rendering: crispEdges;
+}
+
+.home .hero-flask::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--matrix);
+  background-size: var(--cell) var(--cell);
+}
+
+.home .hero .flask-glass {
+  fill: var(--ink);
+}
+
+.home .hero .flask-liquid {
+  fill: var(--prompt);
+}
+
+/* A bubble in the liquid is an unlit cell. */
+.home .hero .flask-fizz {
+  fill: var(--unlit);
+}
+
+.home .hero .lede {
+  max-width: var(--measure);
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .home .hero {
+    --cell: 4px;
+  }
+
+  .home .hero-title {
+    align-items: center;
+  }
+
+  .home .hero h1 {
+    font-size: var(--size-vt-card);
+  }
 }

@@ -79,20 +79,11 @@ function benchHead(state) {
   )
 }
 
-/**
- * A manual page's header or footer line: the page's name and section at both
- * ends. The header repeats what the title says, so it is not read out.
- */
-export function manLine(state, name, section, isFoot = false) {
-  const page = `${name}(${section})`
-  const middle = isFoot ? `Claude Code ${state.catalog?.version ?? ''}`.trim() : 'Claude Code Mod API'
-  return el(
-    'p',
-    { class: isFoot ? 'man-line foot' : 'man-line', 'aria-hidden': isFoot ? null : 'true' },
-    el('span', {}, page),
-    el('span', {}, middle),
-    el('span', {}, page),
-  )
+/** The reference's provenance belongs at the foot; its title already identifies the page. */
+export function manLine(state, _name, _section, isFoot = false) {
+  if (!isFoot) return null
+  const version = state.catalog?.version
+  return el('p', { class: 'man-line foot' }, version ? `Reference for Claude Code ${version}` : 'Claude Code reference')
 }
 
 /**

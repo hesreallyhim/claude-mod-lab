@@ -4,7 +4,7 @@
 
 import { pageHead } from './areas.js'
 import { controls, lede, notes, readings } from './page.js'
-import { clockTime, el } from './view.js'
+import { clockTime, el, textPreview } from './view.js'
 
 const SPAWN = 'process.spawn'
 const NEWEST = 5
@@ -45,7 +45,7 @@ function spawnView(run) {
         el('span', {
           class: `tick ${chunk.stream}`,
           style: `left: ${((100 * chunk.ms) / span).toFixed(2)}%`,
-          title: `${chunk.ms} ms, ${chunk.stream}: ${JSON.stringify(chunk.text)}`,
+          title: `${chunk.ms} ms · ${chunk.stream}`,
         }),
       ),
     ),
@@ -62,7 +62,7 @@ function spawnView(run) {
             { class: chunk.stream },
             el('td', {}, `${chunk.ms} ms`),
             el('td', {}, chunk.stream),
-            el('td', {}, el('code', {}, JSON.stringify(chunk.text))),
+            el('td', {}, textPreview(`${chunk.stream} · ${chunk.ms} ms`, chunk.text)),
           ),
         ),
       ),
@@ -134,7 +134,13 @@ export function streamsPage(ctx) {
   return el(
     'div',
     { class: 'page' },
-    pageHead('Streams'),
+    pageHead(
+      'Streams',
+      notes(
+        "A hook on a streaming event is an async generator that passes each piece on as it comes, rewrites it, or drops it. process.spawn hands back a program's output as it comes; the pieces follow the program's own writes rather than its lines, so one line can arrive split across two pieces.",
+        "turn.step is a model request, streamed chunk by chunk: text, thinking, tool calls and their input. The lab's hook keeps when each kind of chunk arrived; the Turn timeline draws the same bars inside each request.",
+      ),
+    ),
     lede("The two events whose results arrive in pieces: a child process's output, and a model request's chunks."),
     controls(
       'Run a child process',
@@ -143,9 +149,5 @@ export function streamsPage(ctx) {
       status,
     ),
     el('div', { 'data-live': 'streams' }),
-    notes(
-      "A hook on a streaming event is an async generator that passes each piece on as it comes, rewrites it, or drops it. process.spawn hands back a program's output as it comes; the pieces follow the program's own writes rather than its lines, so one line can arrive split across two pieces.",
-      "turn.step is a model request, streamed chunk by chunk: text, thinking, tool calls and their input. The lab's hook keeps when each kind of chunk arrived; the Turn timeline draws the same bars inside each request.",
-    ),
   )
 }

@@ -1,9 +1,20 @@
 import assert from 'node:assert/strict'
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  readlinkSync,
+  realpathSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
 import { BRIDGE_PROTOCOL, createHub } from '../lib/hub.mjs'
+import { initializeProjectLessons } from '../lib/roots.mjs'
 import { createWorkspaceContext } from '../lib/workspace-context.mjs'
 import { startServer } from '../server.mjs'
 
@@ -23,7 +34,7 @@ async function fixture(t, options = {}) {
       headers: { 'x-lab-token': server.token, 'content-type': 'application/json' },
       body: JSON.stringify(body),
     })
-  const hello = async (project, lessons = null) => {
+  const hello = async (project, lessons = null, extraLab = {}) => {
     time += 10_000
     const response = await fetch(`${server.url}/bridge/hello`, {
       method: 'POST',
@@ -31,7 +42,7 @@ async function fixture(t, options = {}) {
       body: JSON.stringify({
         protocol: BRIDGE_PROTOCOL,
         session: { id: `session-${time}`, cwd: project },
-        lab: { lessons },
+        lab: { lessons, ...extraLab },
       }),
     })
     assert.equal(response.status, 200)
@@ -223,4 +234,40 @@ test('a lesson watch closes when its connected session expires', async t => {
   expire()
   assert.equal((await reader.read()).done, true)
   assert.deepEqual(readdirSync(join(project, '.claude-mod-lab')), [])
+})
+
+test('a session can enable lessons and load their editable source through its existing collection', async t => {
+  const lessonChecks = { poke() {}, close() {}, watch() {}, check() {} }
+  const { get, post, hello, folder } = await fixture(t, { lessonChecks })
+  const project = folder('in-session')
+  const collection = join(project, '.claude', 'mod-lab')
+  mkdirSync(collection, { recursive: true })
+  writeFileSync(join(project, 'README.md'), 'existing project')
+  await hello(project)
+  assert.equal((await (await get('/api/context')).json()).lessonWorkspace, null)
+  initializeProjectLessons(project)
+  await hello(project, project, { lessonCollection: collection, componentDirs: [collection] })
+  assert.equal((await (await get('/api/context')).json()).lessonWorkspace, project)
+  const response = await post('/api/lesson/start?id=tick', { lessonWorkspace: project })
+  assert.equal(response.status, 200)
+  assert.equal(readlinkSync(join(collection, 'tick')), '../../workshop/tick')
+  assert.equal(realpathSync(join(collection, 'tick')), join(project, 'workshop', 'tick'))
+  assert.equal(readFileSync(join(project, 'README.md'), 'utf8'), 'existing project')
+  assert.equal(existsSync(join(project, 'solutions', 'tick', '.claude-plugin')), false)
+  assert.equal((await post('/api/lesson/start?id=tick', { lessonWorkspace: project })).status, 200)
+})
+
+test('an occupied lesson link refuses Start before copying a starter or solution', async t => {
+  const { post, hello, folder } = await fixture(t)
+  const project = folder('occupied')
+  const collection = join(project, '.claude', 'mod-lab')
+  mkdirSync(collection, { recursive: true })
+  writeFileSync(join(collection, 'tick'), 'keep me')
+  initializeProjectLessons(project)
+  await hello(project, project, { lessonCollection: collection, componentDirs: [collection] })
+  const response = await post('/api/lesson/start?id=tick', { lessonWorkspace: project })
+  assert.equal(response.status, 400)
+  assert.equal(readFileSync(join(collection, 'tick'), 'utf8'), 'keep me')
+  assert.equal(existsSync(join(project, 'workshop', 'tick')), false)
+  assert.equal(existsSync(join(project, 'solutions')), false)
 })

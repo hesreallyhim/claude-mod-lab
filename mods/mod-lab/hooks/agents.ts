@@ -6,6 +6,7 @@ import { atom, read, update } from 'claude-code'
 import type { AgentSpec, EngineInterface, Register } from 'claude-code'
 
 import type { LabAgentRun, LabAgents } from '../types'
+import { formatAgentTranscript, readAgentTranscript } from './agent-transcript'
 import { jsonOrText, splitCommand } from './args'
 import { serial } from './runner'
 
@@ -99,23 +100,6 @@ async function spawnAgent($: Dollar, text: string): Promise<string> {
   return `Spawned ${spawned.agentId} as ${type} on ${spawned.model}. It runs in the background; its answer arrives with its turn.complete, and /mod-lab agent shows it.`
 }
 
-async function transcriptOf($: Dollar, agentId: string): Promise<string> {
-  if (agentId === '') return 'Use /mod-lab agent transcript <agentId>; /mod-lab agent lists the ids.'
-  try {
-    const messages = await $.session.messages({ agentId })
-    if (!Array.isArray(messages)) return `No transcript: ${messages.deny}`
-    if (messages.length === 0) return `${agentId} has no rows yet.`
-    return messages
-      .map(message => {
-        const tools = message.toolUses.length === 0 ? '' : ` [${message.toolUses.map(use => use.tool).join(', ')}]`
-        return `${message.role}${tools}: ${cut(message.text.replace(/\s+/g, ' '), 300)}`
-      })
-      .join('\n')
-  } catch (error) {
-    return `No transcript: ${error instanceof Error ? error.message : String(error)}`
-  }
-}
-
 async function setHidden($: Dollar, agent: string, isHidden: boolean): Promise<string> {
   if (agent === '') return `Use /mod-lab agent ${isHidden ? 'hide' : 'show'} <type>, as /mod-lab agent hide Plan.`
   await serial(() => update($, agents, kept => ({ ...kept, hidden: isHidden ? [...new Set([...kept.hidden, agent])] : kept.hidden.filter(one => one !== agent) })))
@@ -148,7 +132,9 @@ export async function agentCommand($: Dollar, text: string): Promise<string> {
     case 'route':
       return setRoute($, rest)
     case 'transcript':
-      return transcriptOf($, rest)
+      return formatAgentTranscript(await readAgentTranscript($, rest))
+    case 'transcript-json':
+      return JSON.stringify(await readAgentTranscript($, rest))
     default:
       return `No /mod-lab agent ${head}: the words are list, register {json}, spawn <type> <prompt>, hide <type>, show <type>, route <model>|off, transcript <agentId>.`
   }

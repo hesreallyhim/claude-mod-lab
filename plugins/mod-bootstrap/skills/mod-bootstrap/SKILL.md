@@ -133,5 +133,3 @@ The validator holds a hooks module to a few rules that trip up a first edit:
 - The contract exports types and nothing else, and imports nothing.
 
 The plugin-authoring skill that ships with Claude Code maps the rest of the API: the events, the nouns on `$`, drawing, and where this build's declaration file is.
-
-The mod-authoring-notes skill, from the same marketplace as this one, holds what that skill does not say: more of the validator's rules, how the test kit behaves, and engine constraints. Read it before building on the scaffold, where it is installed.

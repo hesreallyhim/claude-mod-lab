@@ -3,13 +3,22 @@
 // from the model, and a route that sends every new spawn to one model.
 
 import { pageHead } from './areas.js'
-import { controls, lede, modelSelect, MODELS, notes, readings, titledNotes } from './page.js'
-import { el, fill } from './view.js'
+import { agentTranscriptView } from './agent-transcript.js'
+import { lede, modelSelect, MODELS, notes } from './page.js'
+import { el, fill, openReaderDialog, openTextDialog, textPreview } from './view.js'
 
 const BUILT_IN = ['general-purpose', 'Explore', 'Plan']
 
+function agentPanel(title, open, ...children) {
+  return el(
+    'details',
+    { class: 'agent-panel', open },
+    el('summary', {}, el('h2', {}, title)),
+    el('div', { class: 'agent-panel-body controls' }, children),
+  )
+}
+
 function runRow(run, sendCommand) {
-  const transcript = el('div', { class: 'result' })
   const took = run.durationMs === null ? '' : ` in ${(run.durationMs / 1000).toFixed(1)} s`
   return el(
     'article',
@@ -21,20 +30,39 @@ function runRow(run, sendCommand) {
       ` ${run.agentId} · by ${run.by} · on ${run.model ?? 'its own model'}${run.isRouted ? ' (routed)' : ''} · `,
       el('span', { class: run.status === 'done' ? 'ok' : 'muted' }, `${run.status}${took}`),
     ),
-    el('p', { class: 'muted' }, run.prompt),
-    run.answer === null
-      ? null
-      : el('details', {}, el('summary', {}, 'its answer'), el('pre', { class: 'answer' }, run.answer)),
+    el('div', { class: 'muted' }, textPreview(`${run.type} · Prompt`, run.prompt)),
     el(
-      'button',
-      {
-        type: 'button',
-        class: 'quiet',
-        onclick: () => void sendCommand(`agent transcript ${run.agentId}`, transcript),
-      },
-      'Its transcript',
+      'div',
+      { class: 'inline-form' },
+      run.answer === null
+        ? null
+        : el(
+            'button',
+            {
+              type: 'button',
+              class: 'quiet',
+              'aria-haspopup': 'dialog',
+              onclick: () => openTextDialog(`${run.type} · ${run.agentId} answer`, run.answer, 'Close answer'),
+            },
+            'View answer',
+          ),
+      el(
+        'button',
+        {
+          type: 'button',
+          class: 'quiet',
+          'aria-haspopup': 'dialog',
+          onclick: () => {
+            const transcript = el('div')
+            openReaderDialog(`${run.type} · ${run.agentId} transcript`, transcript, 'Close transcript')
+            void sendCommand(`agent transcript-json ${run.agentId}`, transcript, answer =>
+              agentTranscriptView(answer, run.agentId),
+            )
+          },
+        },
+        'View transcript',
+      ),
     ),
-    transcript,
   )
 }
 
@@ -147,28 +175,35 @@ export function agentsPage(ctx) {
   const page = el(
     'div',
     { class: 'page' },
-    pageHead('Agents'),
+    pageHead(
+      'Agents',
+      notes(
+        "A spawn's answer arrives with its turn.complete, and the main model also reads it, as a message from the agent. The lab's hook on agent.spawn sees every spawn, the model's own included, and its hook on agent.offer can hide a type from the model while plugins still spawn it.",
+        "The route rewrites each new spawn's model on its way down, a budget a mod can enforce; resumes and forks keep theirs.",
+      ),
+    ),
     lede(
       'Agent types a mod registers, agents spawned through the lab, and every agent the session started, with its answer.',
     ),
-    controls(
-      'Spawn one',
-      el('p', {}, 'A spawn runs in the background and spends tokens; its answer arrives with its turn.'),
-      spawn,
-    ),
-    readings('Agents this session', {}, el('div', { 'data-live': 'agents' })),
-    titledNotes(
-      'Register an agent type',
-      controls(
-        'Register a type',
+    el(
+      'div',
+      { class: 'agent-panels' },
+      agentPanel(
+        'Spawn an agent',
+        true,
+        el('p', {}, 'A spawn runs in the background and spends tokens; its answer arrives with its turn.'),
+        spawn,
+      ),
+      agentPanel('Agents this session', false, el('div', { 'data-live': 'agents' })),
+      agentPanel(
+        'Register an agent type',
+        false,
         el('p', {}, "A type joins the model's Agent tool from its next turn, and a mod can spawn it itself."),
         register,
       ),
-    ),
-    titledNotes(
-      'Hide types and route spawns',
-      controls(
-        'Hide a type, route every spawn',
+      agentPanel(
+        'Hide types and route spawns',
+        false,
         el(
           'p',
           {},
@@ -176,10 +211,6 @@ export function agentsPage(ctx) {
         ),
         switches,
       ),
-    ),
-    notes(
-      "A spawn's answer arrives with its turn.complete, and the main model also reads it, as a message from the agent. The lab's hook on agent.spawn sees every spawn, the model's own included, and its hook on agent.offer can hide a type from the model while plugins still spawn it.",
-      "The route rewrites each new spawn's model on its way down, a budget a mod can enforce; resumes and forks keep theirs.",
     ),
   )
   queueMicrotask(() => refreshAgents(state, sendCommand))

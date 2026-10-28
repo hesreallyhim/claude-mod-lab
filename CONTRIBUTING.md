@@ -6,13 +6,65 @@ This covers working on the lab itself: setting up a clone, the checks, how the r
 
 You need Claude Code and Node 22 or newer. Run `npm ci` to install TypeScript and the development tools (among them playwright-core, which `npm run e2e-page` uses to drive Google Chrome) and set up the git hooks.
 
-In the clone, `npx claude-mod-lab run <folder>` runs the clone's own launcher, which loads the lab from `mods/` instead of copies, so an edit reaches a running session through `/reload-plugins`. `npm run explorer` runs the explorer's server on its own. `claude plugin marketplace add .` adds the marketplace from the clone; plugins installed from it are read from their folders here.
+## Local development
 
-For lessons, create a separate workspace with `npx claude-mod-lab init-lessons <folder>`, then start it with `npx claude-mod-lab run <folder>`. The clone itself is not a lesson workspace. Lesson mods, reference solutions, and progress belong to the initialized folder.
+Run the launcher from the checkout you are editing, and give it a separate project to work in. Use Node 24 for development:
+
+```sh
+cd /path/to/claude-mod-lab
+nvm use 24
+npm ci
+mkdir -p ../mod-lab-dev
+npx claude-mod-lab run ../mod-lab-dev --new
+```
+
+Run `npm ci` when first setting up the checkout or after its dependencies change. Subsequent sessions need only the last command. The launcher uses this checkout's lab plugins and package files; no npm publication, version bump, global installation, or `npm link` is needed. A Git worktree works the same way: run the command from that worktree to test its files.
+
+`--new` starts an Explorer for this session from the same checkout. Without it, the launcher may reuse a compatible, idle Explorer that was started earlier from another checkout or the published package. That can make local changes appear to be missing even when the launcher itself is local.
+
+### Which copy does npx run?
+
+From this repository's root, unversioned `npx claude-mod-lab` resolves the executable declared in the local `package.json`. A published package or an npm cache entry with the same version does not replace the checkout. This was verified with Node 24 and npm 11 using an empty cache in offline mode.
+
+For an explicit path that bypasses npm command resolution entirely, the equivalent is:
+
+```sh
+node bin/claude-mod-lab.mjs run ../mod-lab-dev --new
+```
+
+From another directory, use an absolute path to that file:
+
+```sh
+node /path/to/claude-mod-lab/bin/claude-mod-lab.mjs run . --new
+```
+
+Outside the checkout, bare `npx claude-mod-lab` can resolve a dependency installed in that project or use npm's cached/downloaded package. Do not use it there to select your development checkout. An explicit package tag or version, such as `@latest`, requests npm package resolution rather than this checkout's root executable. See [npm exec's resolution rules](https://docs.npmjs.com/cli/v11/commands/npm-exec/#description).
+
+The printed package version alone does not identify the source: unpublished edits usually retain the last release's version. Use the checkout directory or explicit launcher path to select what you are testing.
+
+### Applying edits
+
+| What changed | How to apply it |
+| --- | --- |
+| Loaded mod hooks | Interactive sessions watch the plugin files. If an edit has not appeared, run `/reload-plugins`. |
+| Explorer HTML, CSS, or browser JavaScript under `web/public/` | Refresh the Explorer page. |
+| Explorer server code or its Node modules | Restart the Explorer process. For the session-owned Explorer above, end and rerun the development session. |
+| Launcher code or launch options | Start a new session with the local launcher. |
+| Lesson starters, solutions, or Gallery templates | Existing workspace copies are preserved. Use a fresh disposable workspace to test the new source. |
+
+`npm run explorer` starts a standalone Explorer from the checkout. For a deliberately separate server/session workflow, run `node bin/claude-mod-lab.mjs serve --port 4980` in one terminal and `node bin/claude-mod-lab.mjs run ../mod-lab-dev --port 4980` in another. Stop the server with Ctrl-C and restart it after server edits; the session can reconnect. Use a port that is free so you do not reuse an older server.
+
+Installing a marketplace copy is a separate installation test. The local development launcher does not require `claude plugin marketplace add .` or a marketplace install. If it reports an already-installed copy of a lab plugin, check the paths it reports before assuming the installed and local copies are interchangeable.
+
+### Developing lessons
+
+In the development session above, run `/init-lessons` to enable lessons in the test project. Alternatively, from the checkout, run `npx claude-mod-lab init-lessons ../mod-lab-dev` before starting the session; the CLI initializer requires a new, empty, or already initialized folder. The clone itself is not a lesson workspace. Lesson mods, reference solutions, and progress belong to the test project.
+
+In an existing project started with `run`, `/init-lessons` enables lessons without restarting the session. Lesson sources stay in `workshop/`; Start adds links in the already watched `.claude/mod-lab/` directory. Later launches reuse that collection to avoid loading each plugin twice. If you manually add a plugin under `workshop/` in such a project, the next launch adds its link; the Lessons page handles this immediately when you use Start.
 
 ## Commands
 
-What a person runs, in a clone or from the package. In a clone, `npx claude-mod-lab` uses the local package. Outside a clone, it selects the default npm release.
+What a person runs, in a clone or from the package. From the clone root, `npx claude-mod-lab` uses the local package. Elsewhere, it may use a project dependency or npm’s cached/downloaded package; use an explicit launcher path when developing from another directory.
 
 | Command | What it does |
 | --- | --- |
@@ -24,6 +76,7 @@ What a person runs, in a clone or from the package. In a clone, `npx claude-mod-
 | `npx claude-mod-lab --help` | the commands and their options |
 | `/mod-lab` | in the session: the lab's pane; `/mod-lab help` lists the subcommands |
 | `/mod-lab explorer` | in the session: the explorer's address, starting it if it waits |
+| `/init-lessons` | in a session started by `run`: enable lessons in the current project, preserving existing files |
 | `claude plugin test mods/scratch-mod` | in a clone, the scratch mod's tests |
 | `claude --plugin-dir mods/scratch-mod` | in a clone, Claude Code with the scratch mod |
 
@@ -53,11 +106,10 @@ mods/scratch-mod     pattern exercises
 mods/gallery-mod     rendering techniques
 templates/           small mods to add to a session or start from
 learn/               tutorials, challenges and the checker
-workshop/            optional local mod experiments (ignored by git)
 web/                 the explorer server, page and tests
 bin/                 the claude-mod-lab command
 scripts/             the npm scripts' code: validation, type-checks, compatibility, packing, releases
-plugins/             plugins that are not mods: mod-bootstrap and mod-authoring-notes, skills
+plugins/             the mod-bootstrap authoring skill plugin
 .claude-plugin/      marketplace.json, which lists the mods and plugins
 ```
 
@@ -76,13 +128,9 @@ A hook on an event the build does not have stops the plugin's whole module from 
 
 The terminal and the desktop app are tested by hand. VS Code and mobile are checked by the test kit against each surface's rules.
 
-## The README's media
-
-Outdated README screenshots and recordings have been removed. The capture scripts remain for a future media update: `scripts/readme-terminal.temp.tape` records a terminal clip with [vhs](https://github.com/charmbracelet/vhs), and `scripts/readme-media.temp.mjs` records the explorer from a running lab session. Review their setup instructions before reuse and use a disposable workspace; the lesson scene deletes and recreates `workshop/tick`.
-
 ## Releasing
 
-Releases are cut from `main`, whose head is what the marketplace serves; work happens on `develop`. A plugin's version lives in its `plugin.json` only, never also in its entry in `marketplace.json`. The npm package, mod-lab, mod-lab-bridge, mod-lab-target and mod-lab-keys share one version and move together, since the bridge protocol couples them. The templates, gallery-mod, scratch-mod, mod-bootstrap and mod-authoring-notes bump only when they change. A plugin that changed without a higher version is not offered by `claude plugin update`.
+Releases are cut from `main`, whose head is what the marketplace serves; work happens on `develop`. A plugin's version lives in its `plugin.json` only, never also in its entry in `marketplace.json`. The npm package, mod-lab, mod-lab-bridge, mod-lab-target and mod-lab-keys share one version and move together, since the bridge protocol couples them. The templates, gallery-mod, scratch-mod and mod-bootstrap bump only when they change. A plugin that changed without a higher version is not offered by `claude plugin update`.
 
 For the initial beta, use `--all-plugins` to give every shipped plugin manifest a fresh version, including lesson starters and solutions. This is an optional exception for replacing previously cached development versions; ordinary releases keep the default policy above. Preview the changes first:
 
@@ -104,6 +152,6 @@ An installed mod-lab-bridge gets the explorer from the npm package: its own `pac
 3. `npm run bridge-lock` writes the bridge's lockfile against the registry, checks it pins the published version with npm's integrity, commits it and tags the bridge.
 4. Once the npm package and bridge lockfile are ready, push `main`, which the marketplace serves, and the release tags to the release repository.
 
-`node scripts/install-check.temp.mjs` checks the installed route before any of this is published: it serves a pack of HEAD from a local npm registry and a clone over a local git server, runs `bridge-lock` there, installs the bridge into a throwaway Claude Code config, and checks that its session serves the explorer from the installed package.
+`node scripts/install-check.mjs` checks the installed route before any of this is published: it serves a pack of HEAD from a local npm registry and a clone over a local git server, runs `bridge-lock` there, installs the bridge into a throwaway Claude Code config, and checks that its session serves the explorer from the installed package.
 
 Generated Claude Code declarations are not distributed. Git and npm exclude `.claude-plugin/types/` and the `claude-code`, `claude-code-tools` and `claude-code-mcp` directories. `pack-check` also rejects copied `.d.ts` files carrying the core generator's version header. The lab's authored `types/index.d.ts` contracts remain included. `scripts/test/distribution.test.mjs` verifies the exclusions with a real npm pack of synthetic fixtures.

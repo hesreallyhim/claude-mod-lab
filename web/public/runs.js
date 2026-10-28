@@ -7,7 +7,7 @@ import { api } from './api.js'
 import { reportView } from './page.js'
 import { hrefFor, memberOf } from './reference.js'
 import { isNotRun } from './versions.js'
-import { chainTable, clockTime, compact, el, jsonTree, logRow, payloadView } from './view.js'
+import { chainTable, clockTime, compact, el, jsonTree, logRow, openTextDialog, payloadView } from './view.js'
 
 /** Where each job's result is drawn once the session answers it. */
 const pending = new Map()
@@ -65,7 +65,7 @@ function dispatchList(state, dispatches) {
           el('code', {}, `(${compact(dispatch.received, 140)})`),
         ),
         chain(dispatch.chain, dispatch.intercepted),
-        el('details', {}, el('summary', {}, 'answered'), jsonTree(dispatch.returned)),
+        el('details', {}, el('summary', {}, 'Result'), jsonTree(dispatch.returned)),
       )
     }),
   )
@@ -166,7 +166,12 @@ export function runRow(state, run) {
       [`API calls (${dispatches.length})`, calls],
       [
         'Reference and testing',
-        el('div', { class: 'actions' }, ejectButton(run), el('a', { href }, `Open ${run.probe} in the reference`)),
+        el(
+          'div',
+          { class: 'actions' },
+          ejectButton(run),
+          el('a', { href, class: 'quiet action-link' }, `Open ${run.probe} in the reference`),
+        ),
       ],
     ],
   })
@@ -223,8 +228,13 @@ export function runCard(state, run) {
       run.seq === undefined ? null : el('span', { class: 'entry-no' }, `#${run.seq}`),
       el('a', { href }, run.probe),
       el('span', { class: 'status' }, status),
-      el('span', { class: 'reading' }, `${run.ms} ms`),
-      el('span', { class: 'muted' }, `${run.from}${run.at ? ` · ${clockTime(run.at)}` : ''}`),
+      el(
+        'span',
+        { class: 'run-meta' },
+        el('span', { class: 'reading' }, `${run.ms} ms`),
+        el('span', {}, `from ${run.from}`),
+        run.at ? el('span', { class: 'run-time' }, clockTime(run.at)) : null,
+      ),
     ),
     el(
       'div',
@@ -249,12 +259,13 @@ function field(param, form) {
     param.type === 'choice'
       ? el(
           'select',
-          { id, name: param.name },
+          { id, name: param.name, 'aria-describedby': `${id}-hint` },
           param.options.map(option => el('option', { value: option, selected: option === param.default }, option)),
         )
       : el('input', {
           id,
           name: param.name,
+          'aria-describedby': `${id}-hint`,
           value: String(param.default),
           type: param.type === 'number' ? 'number' : 'text',
         })
@@ -263,7 +274,7 @@ function field(param, form) {
     { for: id },
     el('span', {}, param.name),
     control,
-    el('small', { class: 'muted' }, param.description),
+    el('small', { id: `${id}-hint`, class: 'muted' }, param.description),
   )
 }
 
@@ -286,7 +297,7 @@ export function echoLine(label) {
 export function probeForm(state, probe) {
   const name = `probe-${(forms += 1)}`
   const result = el('div', { class: 'result' })
-  const echo = echoLine('The same, typed in Claude Code:')
+  const echo = echoLine('Equivalent Claude Code command')
   const update = form => {
     echo.code.textContent = commandFor(probe, Object.fromEntries(new FormData(form).entries()))
   }
@@ -321,7 +332,16 @@ export function probeForm(state, probe) {
       'div',
       { class: 'actions' },
       el('button', { type: 'submit' }, el('span', { class: 'run-glyph', 'aria-hidden': 'true' }), 'Run in the session'),
-      el('details', { class: 'source' }, el('summary', {}, 'Source'), el('pre', {}, el('code', {}, probe.source))),
+      el(
+        'button',
+        {
+          type: 'button',
+          class: 'quiet source',
+          'aria-haspopup': 'dialog',
+          onclick: () => openTextDialog(`${probe.id} source`, probe.source, 'Close source'),
+        },
+        'View source',
+      ),
     ),
     result,
   )
@@ -338,11 +358,25 @@ export function probesHint(state) {
   )
 }
 
-/** A command's answer beside its button: the first line, opening to the whole text. */
+/** A command's answer beside its button: a short summary and a modal for the whole text. */
 function inlineAnswer(answer) {
   const first = answer.split('\n', 1)[0]
   const summary = first.length > 80 ? `${first.slice(0, 79)}…` : first
-  return el('details', { class: 'inline-answer' }, el('summary', {}, summary), el('pre', {}, answer))
+  return el(
+    'span',
+    { class: 'inline-answer' },
+    el('span', {}, summary),
+    el(
+      'button',
+      {
+        type: 'button',
+        class: 'quiet',
+        'aria-haspopup': 'dialog',
+        onclick: () => openTextDialog('Command response', answer),
+      },
+      'View response',
+    ),
+  )
 }
 
 /** Queues a probe run in the session; its run card replaces `target`'s contents once the session answers. */
@@ -350,7 +384,7 @@ export async function queueRun(state, probe, args, target) {
   target.replaceChildren(el('p', { class: 'muted' }, 'queued for the session'))
   try {
     const { job } = await api('/api/run', { method: 'POST', body: JSON.stringify({ probe, args }) })
-    pending.set(job, target)
+    pending.set(job, { target, renderAnswer: reportView })
     const known = state.jobs.get(job)
     if (known !== undefined) updateJob(state, known)
   } catch (error) {
@@ -369,8 +403,9 @@ export function updateJob(state, job) {
       outcome === 'needs a newer Claude Code' ? 'inline-result' : `inline-result ${ok ? 'ok' : 'failed'}`
     inlinePending.delete(job.id)
   }
-  const target = pending.get(job.id)
-  if (target === undefined) return
+  const waiting = pending.get(job.id)
+  if (waiting === undefined) return
+  const { target, renderAnswer } = waiting
   if (job.status === 'sent') target.replaceChildren(el('p', { class: 'muted' }, 'running in the session'))
   if (job.status === 'lost') target.replaceChildren(el('p', { class: 'error' }, job.error))
   if (job.status === 'done' && job.run) {
@@ -378,17 +413,17 @@ export function updateJob(state, job) {
     pending.delete(job.id)
   }
   if (job.status === 'done' && job.kind === 'command') {
-    target.replaceChildren(reportView(job.answer ?? ''))
+    target.replaceChildren(renderAnswer(job.answer ?? ''))
     pending.delete(job.id)
   }
 }
 
 /** Queues what follows `/mod-lab` for the session; its answer replaces `target`'s contents. */
-export async function sendCommand(state, text, target) {
+export async function sendCommand(state, text, target, renderAnswer = reportView) {
   target.replaceChildren(el('p', { class: 'muted' }, 'queued for the session'))
   try {
     const { job } = await api('/api/command', { method: 'POST', body: JSON.stringify({ text }) })
-    pending.set(job, target)
+    pending.set(job, { target, renderAnswer })
     const known = state.jobs.get(job)
     if (known !== undefined) updateJob(state, known)
   } catch (error) {

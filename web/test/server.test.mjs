@@ -97,6 +97,17 @@ test('a font is served by its name alone, from web/public/fonts/', async () => {
   assert.equal((await fetch(`${server.url}/fonts/app.js`)).status, 404)
 })
 
+test("the page's favicon is the brand's icon, served as SVG", async () => {
+  const page = await (await fetch(`${server.url}/`)).text()
+  const href = /<link rel="icon" href="([^"]+)"/.exec(page)?.[1]
+  assert.equal(href, '/icon.svg')
+  const icon = await fetch(`${server.url}${href}`)
+  assert.equal(icon.status, 200)
+  assert.match(icon.headers.get('content-type') ?? '', /^image\/svg\+xml/)
+  const brand = readFileSync(new URL('../../assets/brand/icon.svg', import.meta.url), 'utf8')
+  assert.equal(await icon.text(), brand, 'web/public/icon.svg is rebuilt by assets/brand/src/build.mjs')
+})
+
 test('the page carries the token; the API and the bridge refuse requests without it', async () => {
   const page = await fetch(server.url)
   assert.match(await page.text(), new RegExp(server.token))

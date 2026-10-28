@@ -2,7 +2,6 @@ import type { LabDispatch, LabIntercept, LabLink, LabProbe, LabRun, LabTap } fro
 import { censusLines, censusOf } from './census'
 import { NEEDS_NEWER } from './compat'
 import { describeIntercept, isLapsed } from './intercept'
-import { UNINSPECTED } from './inspect'
 import { compact, pretty } from './json'
 import { availableProbes } from './probes'
 
@@ -13,9 +12,7 @@ const MANAGED = new Set(['session.compact', 'prompt.context', 'prompt.attachment
 export function quietNote(probe: LabProbe | undefined): string {
   const managed = (probe?.calls ?? []).filter(call => MANAGED.has(call))
   if (managed.length > 0) return `none recorded: where an organization manages Claude Code, the lab's hooks on ${managed.join(', ')} do not run in a plugin the person installed`
-  const skipped = (probe?.calls ?? []).filter(call => UNINSPECTED[call] !== undefined)
-  if (skipped.length === 0) return 'none: the probe made no call on $ that dispatches'
-  return `none recorded: the lab does not inspect ${skipped.map(call => `${call}, as ${UNINSPECTED[call]}`).join('; ')}`
+  return 'none: the probe made no call on $ that dispatches'
 }
 
 export function callLine(dispatch: LabDispatch): string {

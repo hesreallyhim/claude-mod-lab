@@ -42,6 +42,8 @@ let sentRun = 0
 let sentTrace = 0
 let sentTap = 0
 let commandTicks = 0
+type LessonSelection = { lessons: string | null; lessonCollection: string | null }
+let sentLessons: LessonSelection = { lessons: null, lessonCollection: null }
 // The lab's state values the explorer mirrors, and each as last sent, as JSON, so it is sent again only when it changed.
 const MIRRORED = ['intercepts', 'spend', 'agents', 'rows', 'compactor', 'keys', 'config'] as const
 let sentMirror = new Map<string, string>()
@@ -105,7 +107,14 @@ async function componentDirsOf($: Dollar): Promise<string[]> {
   }
 }
 
-async function greeting($: Dollar) {
+async function lessonSelection($: Dollar): Promise<LessonSelection> {
+  return {
+    lessons: (await $.env.get('MOD_LAB_LESSONS')) || null,
+    lessonCollection: (await $.env.get('MOD_LAB_LESSON_COLLECTION')) || null,
+  }
+}
+
+async function greeting($: Dollar, selected?: LessonSelection) {
   const { version } = await $.session.version()
   return {
     protocol: PROTOCOL,
@@ -113,7 +122,7 @@ async function greeting($: Dollar) {
     // The explorer looks for the engine's declarations beside mod-lab first, then beside the bridge.
     lab: {
       root: await labRootOf($),
-      lessons: (await $.env.get('MOD_LAB_LESSONS')) || null,
+      ...(selected ?? (await lessonSelection($))),
       componentDirs: await componentDirsOf($),
     },
     session: {
@@ -137,8 +146,9 @@ async function overrideOf($: Dollar): Promise<string | null> {
 }
 
 /** Links this session to an explorer, and says where it is on the status line. */
-function linkTo($: Dollar, connection: Connection): void {
+function linkTo($: Dollar, connection: Connection, selected: LessonSelection): void {
   link = connection
+  sentLessons = { lessons: selected.lessons, lessonCollection: selected.lessonCollection }
   sentRun = 0
   sentTrace = 0
   sentTap = 0
@@ -169,19 +179,19 @@ async function connect($: Dollar): Promise<void> {
   const greet = await greeting($)
   if (override !== null) {
     const named = await readEndpoint($, override)
-    if (named !== null) linkTo($, await hello($, named, greet))
+    if (named !== null) linkTo($, await hello($, named, greet), greet.lab)
     return
   }
   if ((await $.env.get('MOD_LAB_OPEN')) !== '1') {
     const own = await ownNow($)
     if (own !== null) {
-      linkTo($, await hello($, own, greet))
+      linkTo($, await hello($, own, greet), greet.lab)
       return
     }
     const shared = await readEndpoint($, await expandHome($, SHARED_FILE))
     if (shared !== null) {
       try {
-        linkTo($, await hello($, shared, greet))
+        linkTo($, await hello($, shared, greet), greet.lab)
         return
       } catch {
         // Nothing answers behind the file, left by an explorer that has stopped: this session's own, then.
@@ -189,7 +199,16 @@ async function connect($: Dollar): Promise<void> {
     }
   }
   const endpoint = await sessionEndpoint($)
-  if (endpoint !== null) linkTo($, await hello($, endpoint, greet))
+  if (endpoint !== null) linkTo($, await hello($, endpoint, greet), greet.lab)
+}
+
+async function refreshLessons($: Dollar, connection: Connection): Promise<Connection> {
+  const selected = await lessonSelection($)
+  if (selected.lessons === sentLessons.lessons && selected.lessonCollection === sentLessons.lessonCollection) return connection
+  const refreshed = await hello($, connection, await greeting($, selected))
+  sentLessons = selected
+  connection.client = refreshed.client
+  return connection
 }
 
 /** Asks the lab to do what `/mod-lab <text>` does, inside the lab's own hook, and answers its text. */
@@ -312,10 +331,12 @@ async function tick($: Dollar): Promise<void> {
     if (idleTicks++ % IDLE_TICKS === 0) await connect($)
     return
   }
+  const refresh = commandTicks++ % COMMAND_TICKS === 0
+  if (refresh) link = await refreshLessons($, link)
   const job = await poll($, link)
   if (job !== null) await runJob($, link, job)
   await forward($, link)
-  if (commandTicks++ % COMMAND_TICKS === 0) await forwardCommands($, link)
+  if (refresh) await forwardCommands($, link)
 }
 
 function dropLink($: Dollar): void {

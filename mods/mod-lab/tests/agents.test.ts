@@ -1,4 +1,4 @@
-import type { On } from 'claude-code'
+import type { On, SessionMessage } from 'claude-code'
 import type { Plugin } from 'claude-code/testing'
 import { expect, test } from 'claude-code/testing'
 
@@ -88,16 +88,65 @@ test('a hidden type is not offered to the model, and the rest still are', async 
   expect([plan.isOffered, other.isOffered, again.isOffered]).toEqual([false, true, true])
 })
 
-test("an agent's transcript is its own rows, one a line", async ($, on) => {
+test("an agent's transcript shows tool inputs and outputs alongside full message text", async ($, on) => {
+  const output = `first line\n${'tool output '.repeat(500)}\nlast line`
+  const messages: SessionMessage[] = [
+    { role: 'user', text: 'task-t2', toolUses: [] },
+    { role: 'assistant', text: 'reply-t3', toolUses: [{ tool_use_id: 'u1', tool: 'Bash', input: { command: 'find docs -name "*.md" | wc -l' }, text: output }] },
+    { role: 'user', text: '', toolUses: [], toolResults: [{ tool_use_id: 'u1', text: output, isError: false }] },
+  ]
   on('session.messages', ($, e) =>
     (e.agentId === 'agent-t1'
-      ? { value: [{ role: 'user', text: 'task-t2', toolUses: [] }, { role: 'assistant', text: 'reply-t3', toolUses: [{ id: 'u1', tool: 'Read', input: {} }] }] }
+      ? { value: messages }
       : { value: { deny: "not one of this session's agents" } }) as never,
   )
 
   const transcript = await $.command.run(lab('agent transcript agent-t1'))
+  const machine = await $.command.run(lab('agent transcript-json agent-t1'))
   const refused = await $.command.run(lab('agent transcript agent-zz'))
 
-  expect(transcript.text).toBe('user: task-t2\nassistant [Read]: reply-t3')
+  expect(transcript.text).toContain('user: task-t2\n\nassistant: reply-t3')
+  expect(transcript.text).toContain('Tool call · Bash (u1)')
+  expect(transcript.text).toContain(JSON.stringify({ command: 'find docs -name "*.md" | wc -l' }, null, 2))
+  expect(transcript.text).toContain(`Tool result · Bash\n${output}`)
+  expect(transcript.text?.split(output)).toHaveLength(2)
+  expect(JSON.parse(machine.text ?? '')).toEqual({ kind: 'agent-transcript', version: 1, agentId: 'agent-t1', messages })
   expect(refused.text).toContain("not one of this session's agents")
+})
+
+test('a transcript preserves tool-only calls, result-only messages, errors and non-text rows', async ($, on) => {
+  const messages: SessionMessage[] = [
+    { role: 'assistant', text: '', toolUses: [] },
+    { role: 'assistant', text: '', toolUses: [{ tool_use_id: 'u2', tool: 'Read', input: { file_path: 'missing.txt' } }] },
+    { role: 'user', text: '', toolUses: [], toolResults: [{ tool_use_id: 'u2', text: 'File not found.', isError: true }] },
+    { role: 'user', text: '', toolUses: [], toolResults: [{ tool_use_id: 'unpaired', text: '', isError: false, result: { count: 3 } }] },
+    { role: 'assistant', text: '', toolUses: [{ tool_use_id: 'u3', tool: 'Bash', input: {}, text: 'embedded result' }] },
+  ]
+  on('session.messages', () => ({ value: messages }))
+  const transcript = await $.command.run(lab('agent transcript agent-t2'))
+  const machine = await $.command.run(lab('agent transcript-json agent-t2'))
+
+  expect(transcript.text).toContain('assistant: (No text or tool details in this message summary.)')
+  expect(transcript.text).toContain('Tool error · Read\nFile not found.')
+  expect(transcript.text).toContain('Tool result · unpaired\n{\n  "count": 3\n}')
+  expect(transcript.text).toContain('Tool result · Bash\nembedded result')
+  expect(JSON.parse(machine.text ?? '').messages).toEqual(messages)
+})
+
+test('a transcript gives explicit empty, denied and missing-id states', async ($, on) => {
+  on('session.messages', ($, e) => ({ value: e.agentId === 'empty' ? [] : { deny: 'Transcript unavailable.' } }))
+  const empty = await $.command.run(lab('agent transcript-json empty'))
+  const denied = await $.command.run(lab('agent transcript-json denied'))
+  const missing = await $.command.run(lab('agent transcript-json'))
+  const plain = await $.command.run(lab('agent transcript empty'))
+
+  expect(JSON.parse(empty.text ?? '')).toEqual({ kind: 'agent-transcript', version: 1, agentId: 'empty', messages: [] })
+  expect(JSON.parse(denied.text ?? '')).toEqual({ kind: 'agent-transcript', version: 1, agentId: 'denied', error: 'Transcript unavailable.' })
+  expect(JSON.parse(missing.text ?? '').error).toContain('Use /mod-lab agent transcript <agentId>')
+  expect(plain.text).toBe('empty has no rows yet.')
+})
+
+test('an unavailable transcript implementation returns a structured readable error', async $ => {
+  const answer = await $.command.run(lab('agent transcript-json agent-failed'))
+  expect(JSON.parse(answer.text ?? '')).toEqual({ kind: 'agent-transcript', version: 1, agentId: 'agent-failed', error: 'no implementation for session.messages' })
 })

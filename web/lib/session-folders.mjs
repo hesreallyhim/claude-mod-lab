@@ -18,12 +18,13 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:
 import { dirname, join } from 'node:path'
 
 import { filesOf } from './components.mjs'
+import { lessonPluginFolders } from './lesson-loading.mjs'
 
 /** The lab, its bridge and its target, in the order they load. */
 export const LAB = ['mod-lab', 'mod-lab-bridge', 'mod-lab-target']
 
 /** Skill plugins included with every launcher session. */
-export const AUTHORING_PLUGINS = ['mod-bootstrap', 'mod-authoring-notes']
+export const AUTHORING_PLUGINS = ['mod-bootstrap']
 
 function manifestOf(dir) {
   try {
@@ -130,5 +131,5 @@ export function sessionFolders({ packageRoot, home, version, inPlace, workspace 
     refreshCopy(dir, join(copyRoot, name))
     return join(copyRoot, name)
   })
-  return { folders: [...lab, ...(workspace === null ? [] : [join(workspace, 'workshop')])], names, copyRoot, missing }
+  return { folders: [...lab, ...(workspace === null ? [] : lessonPluginFolders(workspace))], names, copyRoot, missing }
 }

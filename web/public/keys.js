@@ -6,6 +6,7 @@
 import { pageHead } from './areas.js'
 import { componentControl, forgetComponents } from './components.js'
 import { capOf, explain, hookLines, kindOf, notesOf, runsOf, shortOf, summaryOf, TRIES } from './keys-rows.js'
+import { helpButton } from './page.js'
 import { sessionVersion } from './versions.js'
 import { clockTime, el } from './view.js'
 
@@ -382,7 +383,7 @@ export function keysPage(ctx) {
   return el(
     'div',
     { class: 'page keys-page' },
-    pageHead('Prompt box'),
+    pageHead('Prompt box', boxHelp()),
     el(
       'p',
       { class: 'lede' },
@@ -440,7 +441,12 @@ export function keysPage(ctx) {
         ),
       ),
     ),
-    el('h2', {}, 'How the box works'),
+  )
+}
+
+function boxHelp() {
+  return helpButton(
+    'How the box works',
     el(
       'dl',
       { class: 'pairs' },

@@ -6,6 +6,13 @@ export const RESULT_LIMITS: Limits = { depth: 8, items: 60, chars: 4000 }
 export const TRACE_LIMITS: Limits = { depth: 4, items: 20, chars: 300 }
 export const SHAPE_LIMITS: Limits = { depth: 6, items: 20, chars: 160 }
 
+/** Composition is inspected for its actual sections; preserve their text and the full section list. */
+const COMPOSITION_LIMITS: Limits = { ...RESULT_LIMITS, chars: Infinity, items: Infinity }
+
+export function summarizeResult(value: unknown, event: string): LabJson {
+  return summarize(value, event === 'prompt.compose' ? COMPOSITION_LIMITS : RESULT_LIMITS)
+}
+
 /** Turns whatever a call answered into JSON that `$.state` can hold and a page can draw. */
 export function summarize(value: unknown, limits: Limits = RESULT_LIMITS, depth = 0): LabJson {
   if (value === null || value === undefined) return null

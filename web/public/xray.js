@@ -293,7 +293,15 @@ export function xrayPage(ctx) {
   const page = el(
     'div',
     { class: 'page xray-page' },
-    pageHead('Conversation X-ray'),
+    pageHead(
+      'Conversation X-ray',
+      notes(
+        'The chat display, saved JSONL, and model input are different views. Claude receives a request assembled from conversation messages, a system prompt, tools, and context. JSONL is a saved session record, not a complete recording of every request.',
+        'This page tracks session.append events while the lab is loaded. A preview may be empty even when its JSONL record contains attachment data or other fields. Open a row for saved content, record metadata, and raw JSON. Some append events have no matching saved record.',
+        'Audience is inferred from row metadata; it does not prove inclusion in a particular model request. “Modified by a hook” means this append hook observed a content rewrite before storage. The rewritten content is stored and, if that row is sent to the model, sent too; the chat display may already show the original.',
+        'Other hooks act during request assembly: prompt.attachment can change what Claude receives while JSONL keeps the engine’s attachment record. The Context ledger shows the system prompt and tool definitions separately from conversation rows.',
+      ),
+    ),
     lede(
       'Append events captured since the lab started. Open a row to look up its saved JSONL record. This is not a capture of the full request sent to Claude.',
     ),
@@ -324,12 +332,6 @@ export function xrayPage(ctx) {
       ),
     ),
     compactionSection(ctx),
-    notes(
-      'The chat display, saved JSONL, and model input are different views. Claude receives a request assembled from conversation messages, a system prompt, tools, and context. JSONL is a saved session record, not a complete recording of every request.',
-      'This page tracks session.append events while the lab is loaded. A preview may be empty even when its JSONL record contains attachment data or other fields. Open a row for saved content, record metadata, and raw JSON. Some append events have no matching saved record.',
-      'Audience is inferred from row metadata; it does not prove inclusion in a particular model request. “Modified by a hook” means this append hook observed a content rewrite before storage. The rewritten content is stored and, if that row is sent to the model, sent too; the chat display may already show the original.',
-      'Other hooks act during request assembly: prompt.attachment can change what Claude receives while JSONL keeps the engine’s attachment record. The Context ledger shows the system prompt and tool definitions separately from conversation rows.',
-    ),
   )
   queueMicrotask(() => refreshXray(state))
   return page

@@ -7,7 +7,7 @@ import { pageHead } from './areas.js'
 import { componentControl, forgetComponents } from './components.js'
 import { markdown } from './markdown.js'
 import { sessionVersion } from './versions.js'
-import { el } from './view.js'
+import { el, openTextDialog } from './view.js'
 
 const SURFACE_LABEL = { terminal: 'terminal', desktop: 'desktop', vscode: 'VS Code', mobile: 'mobile' }
 
@@ -114,7 +114,7 @@ function snippetRow(template) {
           await navigator.clipboard.writeText(template.snippet)
           status.textContent = ` Copied. Paste it in a terminal in your workspace: it writes workshop/${template.name}/.`
         } catch {
-          status.textContent = ' The page cannot reach the clipboard here; copy the snippet below.'
+          status.textContent = ' The page cannot reach the clipboard here. Open View snippet to select and copy it.'
         }
       },
     },
@@ -128,15 +128,23 @@ function snippetRow(template) {
       el('code', {}, `templates/${template.name}`),
       ' into ',
       el('code', {}, `workshop/${template.name}`),
-      ', to paste rather than add: ',
-      copy,
-      status,
+      ', to paste rather than add.',
     ),
     el(
-      'details',
-      { class: 'snippet' },
-      el('summary', {}, 'the snippet'),
-      el('pre', {}, el('code', {}, template.snippet)),
+      'div',
+      { class: 'inline-form' },
+      copy,
+      el(
+        'button',
+        {
+          type: 'button',
+          class: 'quiet',
+          'aria-haspopup': 'dialog',
+          onclick: () => openTextDialog(`${template.name} snippet`, template.snippet, 'Close snippet'),
+        },
+        'View snippet',
+      ),
+      status,
     ),
   ]
 }
@@ -160,10 +168,24 @@ function workings(tab) {
         { class: 'source' },
         ...tab.excerpts.map(excerpt =>
           el(
-            'details',
+            'div',
             { class: 'excerpt' },
-            el('summary', {}, `${excerpt.file}: ${excerpt.label}`),
-            el('pre', {}, el('code', {}, excerpt.text ?? 'not found in the file')),
+            el('p', {}, `${excerpt.file}: ${excerpt.label}`),
+            el(
+              'button',
+              {
+                type: 'button',
+                class: 'quiet',
+                'aria-haspopup': 'dialog',
+                onclick: () =>
+                  openTextDialog(
+                    `${excerpt.file}: ${excerpt.label}`,
+                    excerpt.text ?? 'Source not found in the file.',
+                    'Close source',
+                  ),
+              },
+              'View source',
+            ),
           ),
         ),
       ),

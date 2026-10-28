@@ -165,7 +165,12 @@ export async function modsPage(ctx, fresh = false) {
       'Read again',
     )
     page.replaceChildren(
-      pageHead('Installed mods'),
+      pageHead(
+        'Installed mods',
+        notes(
+          "claude plugin validate reads the mods installed, the repository's own and the workshop's: the hooks each registers, the state it declares and what it calls. Beside each is what this session showed it doing: the events where it was a link in a traced chain, and the calls of its that an intercept recorded.",
+        ),
+      ),
       lede(
         'What the validator reads in each hooks module on this machine, and what this session showed each mod doing.',
       ),
@@ -176,9 +181,6 @@ export async function modsPage(ctx, fresh = false) {
         others.length === 0
           ? null
           : el('p', { class: 'muted' }, `Plugins without a hooks module: ${others.map(mod => mod.id).join(', ')}.`),
-      ),
-      notes(
-        "claude plugin validate reads the mods installed, the repository's own and the workshop's: the hooks each registers, the state it declares and what it calls. Beside each is what this session showed it doing: the events where it was a link in a traced chain, and the calls of its that an intercept recorded.",
       ),
     )
   } catch (error) {

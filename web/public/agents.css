@@ -1,0 +1,66 @@
+/* Four independent tasks share one disclosure treatment. */
+.agent-panels {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.agent-panel {
+  min-width: 0;
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+}
+
+.agent-panel > summary {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  list-style: none;
+  color: var(--ink);
+}
+
+.agent-panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.agent-panel > summary::before {
+  content: '+';
+  flex: 0 0 1ch;
+  color: var(--prompt);
+  font-weight: 600;
+}
+
+.agent-panel[open] > summary::before {
+  content: '−';
+}
+
+body:not([data-area='api']) .page .agent-panel > summary > h2 {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: 600 var(--size-h3) / var(--leading) var(--mono);
+  text-transform: none;
+  letter-spacing: normal;
+  overflow-wrap: anywhere;
+}
+
+.agent-panel > summary:hover {
+  background: var(--code-bg);
+}
+
+.agent-panel > summary:focus-visible {
+  outline-offset: -3px;
+}
+
+.agent-panel[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.agent-panel > .agent-panel-body {
+  margin: 0;
+  padding: var(--space-4);
+}
+
+.agent-panel-body > [data-live='agents'] > :last-child {
+  margin-bottom: 0;
+}

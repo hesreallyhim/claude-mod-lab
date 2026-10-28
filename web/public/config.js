@@ -136,7 +136,13 @@ export function configPage(ctx) {
   return el(
     'div',
     { class: 'page' },
-    pageHead('Settings'),
+    pageHead(
+      'Settings',
+      notes(
+        "Each row has a key, label, kind and value, and may be locked by a trusted source. A plugin's fields arrive in its register(on, options), fixed while it is loaded; changing one reloads the plugin.",
+        'A config.set hook sees each change on its way and may clamp it or refuse it with a reason, and config.describe may relabel or hide a row. The lab reads the rows when asked and after each change it sees.',
+      ),
+    ),
     lede("Every row of the /config menu, the engine's own and each plugin's, as the lab last read them."),
     controls(
       'Read and set',
@@ -151,9 +157,5 @@ export function configPage(ctx) {
       status,
     ),
     readings('Rows, by owner', {}, el('div', { 'data-live': 'config' })),
-    notes(
-      "Each row has a key, label, kind and value, and may be locked by a trusted source. A plugin's fields arrive in its register(on, options), fixed while it is loaded; changing one reloads the plugin.",
-      'A config.set hook sees each change on its way and may clamp it or refuse it with a reason, and config.describe may relabel or hide a row. The lab reads the rows when asked and after each change it sees.',
-    ),
   )
 }

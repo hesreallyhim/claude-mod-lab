@@ -1,7 +1,7 @@
 /* Saved lesson checks, summarized as a compact, linked checklist. */
 .lesson-completion {
   margin: var(--space-4) 0;
-  padding: var(--space-3);
+  padding: var(--space-4);
   border: 1px solid var(--line);
   background: var(--panel);
 }
@@ -24,7 +24,7 @@ body:not([data-area='api']) .page .lesson-completion .completion-head h2 {
   margin: 0;
   padding: 0;
   border: 0;
-  font-size: var(--size-sm);
+  font-size: var(--size-md);
 }
 
 .lesson-completion progress {
@@ -38,7 +38,7 @@ body:not([data-area='api']) .page .lesson-completion .completion-head h2 {
 .completion-lessons {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1);
+  gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -48,11 +48,11 @@ body:not([data-area='api']) .page .lesson-completion .completion-head h2 {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  min-height: var(--target);
-  padding: var(--space-0) var(--space-2);
+  min-height: 32px;
+  padding: var(--space-1) var(--space-2);
   border: 1px solid var(--line);
   color: var(--muted);
-  font-size: var(--size-xs);
+  font-size: var(--size-sm);
   overflow-wrap: anywhere;
 }
 
@@ -68,6 +68,6 @@ body:not([data-area='api']) .page .lesson-completion .completion-head h2 {
 }
 
 .completion-key {
-  margin: var(--space-2) 0 0;
-  font-size: var(--size-xs);
+  margin: var(--space-3) 0 0;
+  font-size: var(--size-sm);
 }

@@ -4,7 +4,7 @@
 
 import { api } from './api.js'
 import { echoLine, sendCommand } from './runs.js'
-import { clockTime, docText, el, logRow, payloadView } from './view.js'
+import { clockTime, docText, el, logRow, openDataDialog, payloadView } from './view.js'
 
 const BEHAVIORS = [
   ['watch', 'watch: record each call and pass it on'],
@@ -266,11 +266,29 @@ function ruleOf(one) {
   const verb = {
     watch: 'Watches',
     refuse: 'Refuses',
-    answer: `Answers ${JSON.stringify(one.value)} to`,
-    rewrite: `Rewrites ${JSON.stringify(one.value)} into`,
+    answer: 'Answers with a replacement value for',
+    rewrite: 'Overwrites input fields for',
     delay: `Delays by ${one.ms} ms`,
   }[one.behavior]
   return `${verb} ${scope}${one.until ? `, until ${clockTime(one.until)}` : ''}.`
+}
+
+function valueButton(one) {
+  if (one.behavior !== 'answer' && one.behavior !== 'rewrite') return null
+  return el(
+    'button',
+    {
+      type: 'button',
+      class: 'quiet',
+      'aria-haspopup': 'dialog',
+      onclick: () =>
+        openDataDialog(
+          `${one.event} · ${one.behavior === 'answer' ? 'Replacement value' : 'Input overrides'}`,
+          one.value,
+        ),
+    },
+    'View value',
+  )
 }
 
 /** The intercepts in force, at the top of the Intercepted tab: each with what it does, how many calls it has seen, and Clear. */
@@ -298,7 +316,7 @@ export function inForceList(state) {
           },
           'Clear',
         ),
-        el('span', { class: 'rule' }, ruleOf(one)),
+        el('span', { class: 'rule' }, ruleOf(one), valueButton(one)),
         el('span', { class: 'tally' }, `${seen} call${seen === 1 ? '' : 's'}`),
       )
     }),
@@ -316,13 +334,9 @@ function fillInterceptState(state, box, event) {
       : el(
           'p',
           { class: 'in-force' },
-          el(
-            'span',
-            { class: 'in-force-text' },
-            `In force: ${one.behavior}${one.behavior === 'delay' ? ` ${one.ms} ms` : one.value === null ? '' : ` ${JSON.stringify(one.value)}`}, ${Object.fromEntries(SCOPES)[one.scope]}`,
-            one.until ? el('span', { class: 'muted' }, ` until ${clockTime(one.until)}`) : null,
-          ),
+          el('span', { class: 'in-force-text' }, ruleOf(one)),
           ' ',
+          valueButton(one),
           el(
             'button',
             {
