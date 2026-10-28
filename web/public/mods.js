@@ -122,7 +122,7 @@ function modCard(state, mod) {
   const enabled = mod.enabled === null ? 'enabled state unknown' : mod.enabled ? 'enabled' : 'disabled'
   return el(
     'article',
-    { class: 'run mod-card' },
+    { class: 'run mod-card', 'data-mod': mod.name },
     el(
       'header',
       { class: 'mod-heading' },

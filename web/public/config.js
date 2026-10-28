@@ -69,7 +69,7 @@ function rowsTables(rows) {
     el('h3', {}, `${provider}: ${owned.length} row${owned.length === 1 ? '' : 's'}`),
     el(
       'table',
-      { class: 'facts rows config-rows' },
+      { class: 'facts rows config-rows', 'data-provider': provider },
       el(
         'thead',
         {},

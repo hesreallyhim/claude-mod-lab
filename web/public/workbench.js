@@ -102,7 +102,7 @@ function callsTable(calls) {
               : `${count(usage.cacheWrite)} written, ${count(usage.cacheRead)} read, ${count(usage.input)} new`
           return el(
             'tr',
-            { class: call.isSent ? '' : 'unsent', title },
+            { class: call.isSent ? '' : 'unsent', title, 'data-call-sent': String(call.isSent) },
             el('td', {}, `#${call.seq}`),
             el('td', {}, call.plugin),
             el('td', {}, `${call.event.slice('model.'.length)}${call.model === null ? '' : ` ${call.model}`}`),
@@ -151,7 +151,10 @@ export function refreshWorkbench(state) {
     callsTable(calls),
   )
   const free = document.querySelector('[data-free]')
-  if (free !== null) free.textContent = isFreeMode(state.mirror.intercepts) ? 'Turn free mode off' : 'Turn free mode on'
+  if (free !== null) {
+    free.textContent = isFreeMode(state.mirror.intercepts) ? 'Turn free mode off' : 'Turn free mode on'
+    free.setAttribute('aria-pressed', String(isFreeMode(state.mirror.intercepts)))
+  }
   ticking ??= setInterval(() => {
     const clock = document.querySelector('[data-clock]')
     if (clock === null) refreshWorkbench(state)
@@ -246,6 +249,7 @@ export function workbenchPage(ctx) {
       type: 'button',
       class: 'quiet',
       'data-free': '',
+      'aria-pressed': String(isFreeMode(state.mirror.intercepts)),
       onclick: () => void sendCommand(isFreeMode(state.mirror.intercepts) ? 'free off' : 'free on', freeStatus),
     },
     isFreeMode(state.mirror.intercepts) ? 'Turn free mode off' : 'Turn free mode on',

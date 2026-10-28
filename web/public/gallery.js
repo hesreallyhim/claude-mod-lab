@@ -81,7 +81,7 @@ function matrix(elements) {
         ...rows.map(({ name, props }) =>
           el(
             'tr',
-            {},
+            { 'data-element': name },
             el(
               'td',
               {},
@@ -91,7 +91,15 @@ function matrix(elements) {
             ),
             ...elements.map(surface => {
               const has = surface.members.some(member => member.name === name)
-              return el('td', { class: has ? 'yes' : 'no', 'aria-label': has ? 'drawn' : 'not drawn' }, has ? '✓' : '·')
+              return el(
+                'td',
+                {
+                  class: has ? 'yes' : 'no',
+                  'data-surface': surface.surface,
+                  'aria-label': has ? 'drawn' : 'not drawn',
+                },
+                has ? '✓' : '·',
+              )
             }),
           ),
         ),
@@ -109,10 +117,13 @@ function snippetRow(example) {
       type: 'button',
       class: 'quiet',
       onclick: async () => {
+        status.dataset.copyState = 'pending'
         try {
           await navigator.clipboard.writeText(example.snippet)
+          status.dataset.copyState = 'copied'
           status.textContent = ` Copied. Paste it in a terminal in your workspace: it writes workshop/${example.name}/.`
         } catch {
+          status.dataset.copyState = 'error'
           status.textContent = ' The page cannot reach the clipboard here. Open View snippet to select and copy it.'
         }
       },

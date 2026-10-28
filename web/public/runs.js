@@ -117,11 +117,13 @@ export function ejectButton(run) {
     {
       type: 'button',
       class: 'quiet',
+      'data-action': 'copy-test-hooks',
       title: 'The calls this run made, as bottom hooks for a test',
       onclick: async event => {
         const button = event.currentTarget
         await navigator.clipboard.writeText(ejectText(run))
         button.textContent = 'Copied'
+        button.dataset.copyState = 'copied'
       },
     },
     'Copy as test hooks',
@@ -215,7 +217,7 @@ export function runCard(state, run) {
   const status = run.ok ? 'ok' : 'failed'
   return el(
     'article',
-    { class: `run ${status}` },
+    { class: `run ${status}`, 'data-probe': run.probe, 'data-status': status },
     el(
       'header',
       {},
@@ -295,6 +297,7 @@ export function probeForm(state, probe) {
     'form',
     {
       class: 'probe',
+      'data-probe': probe.id,
       onsubmit: event => {
         event.preventDefault()
         void queueRun(state, probe.id, Object.fromEntries(new FormData(event.currentTarget).entries()), result)
@@ -371,6 +374,8 @@ function inlineAnswer(answer) {
 
 /** Queues a probe run in the session; its run card replaces `target`'s contents once the session answers. */
 export async function queueRun(state, probe, args, target) {
+  target.dataset.probe = probe
+  target.dataset.status = 'pending'
   target.replaceChildren(el('p', { class: 'muted' }, 'queued for the session'))
   try {
     const { job } = await api('/api/run', { method: 'POST', body: JSON.stringify({ probe, args }) })
@@ -378,6 +383,7 @@ export async function queueRun(state, probe, args, target) {
     const known = state.jobs.get(job)
     if (known !== undefined) updateJob(state, known)
   } catch (error) {
+    target.dataset.status = 'failed'
     target.replaceChildren(el('p', { class: 'error' }, error.message))
   }
 }
@@ -390,11 +396,13 @@ export function updateJob(state, job) {
     if (job.status === 'done' && job.kind === 'command') marker.replaceChildren(' ', inlineAnswer(job.answer ?? ''))
     else marker.textContent = job.status === 'lost' ? ' lost' : ` ${outcome}, see Runs`
     marker.className = `inline-result ${outcome}`
+    marker.dataset.status = ok ? 'done' : 'failed'
     inlinePending.delete(job.id)
   }
   const waiting = pending.get(job.id)
   if (waiting === undefined) return
   const { target, renderAnswer } = waiting
+  target.dataset.status = job.status
   if (job.status === 'sent') target.replaceChildren(el('p', { class: 'muted' }, 'running in the session'))
   if (job.status === 'lost') target.replaceChildren(el('p', { class: 'error' }, job.error))
   if (job.status === 'done' && job.run) {
@@ -409,6 +417,8 @@ export function updateJob(state, job) {
 
 /** Queues what follows `/mod-lab` for the session; its answer replaces `target`'s contents. */
 export async function sendCommand(state, text, target, renderAnswer = reportView) {
+  target.dataset.command = text
+  target.dataset.status = 'pending'
   target.replaceChildren(el('p', { class: 'muted' }, 'queued for the session'))
   try {
     const { job } = await api('/api/command', { method: 'POST', body: JSON.stringify({ text }) })
@@ -416,11 +426,13 @@ export async function sendCommand(state, text, target, renderAnswer = reportView
     const known = state.jobs.get(job)
     if (known !== undefined) updateJob(state, known)
   } catch (error) {
+    target.dataset.status = 'failed'
     target.replaceChildren(el('p', { class: 'error' }, error.message))
   }
 }
 
 export async function queueInline(state, path, body, marker) {
+  marker.dataset.status = 'pending'
   marker.textContent = ' queued'
   try {
     const { job } = await api(path, { method: 'POST', body: JSON.stringify(body) })
@@ -428,6 +440,7 @@ export async function queueInline(state, path, body, marker) {
     const known = state.jobs.get(job)
     if (known !== undefined) updateJob(state, known)
   } catch (error) {
+    marker.dataset.status = 'failed'
     marker.textContent = ` ${error.message}`
   }
 }

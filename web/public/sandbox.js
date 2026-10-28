@@ -44,10 +44,10 @@ function editor(path, text) {
 
 function checkReport({ validation, types }) {
   const row = (label, values) =>
-    values.length === 0 ? null : el('tr', {}, el('th', {}, label), el('td', {}, values.join('; ')))
+    values.length === 0 ? null : el('tr', { 'data-fact': label }, el('th', {}, label), el('td', {}, values.join('; ')))
   return el(
     'div',
-    {},
+    { 'data-validation': validation.ok ? 'passed' : 'failed' },
     validation.ok
       ? el('p', {}, 'The validator passes it.')
       : el(
@@ -105,7 +105,7 @@ function testReport({ results, output }) {
     ...results.map(result =>
       el(
         'li',
-        { class: result.status === 'pass' ? 'ok' : 'error' },
+        { class: result.status === 'pass' ? 'ok' : 'error', 'data-test-status': result.status },
         `${result.status === 'pass' ? '✓' : '✗'} ${result.name}`,
         result.detail.length === 0 ? null : textPreview(`${result.name} · Details`, result.detail.join('\n')),
       ),

@@ -149,7 +149,7 @@ function ledgerPage() {
       ),
       el(
         'button',
-        { type: 'button', onclick: () => void sendCommand(state, 'ledger', result) },
+        { type: 'button', 'data-action': 'measure-ledger', onclick: () => void sendCommand(state, 'ledger', result) },
         'Measure in the session',
       ),
     ),
@@ -234,6 +234,7 @@ async function renderMain() {
   const cross = kind === '$' || kind === 'event' ? seenOnLine(target) : usesLine(state, kind)
   if (cross !== null) (page.querySelector('.page-title-row') ?? page.querySelector('h1'))?.after(cross)
   main.replaceChildren(page)
+  main.dataset.page = kind
 }
 
 function renderAll() {

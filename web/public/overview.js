@@ -49,6 +49,7 @@ function tile(state, prefix, name, line) {
     {
       type: 'button',
       class: 'tile',
+      'data-filter-prefix': prefix,
       title: `Filter the reference to ${prefix}`,
       onclick: () => setFilter(state, prefix),
     },

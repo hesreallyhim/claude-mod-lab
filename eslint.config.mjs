@@ -13,6 +13,6 @@ export default [
   { files: ['web/**/*.mjs', 'mods/mod-lab-bridge/explorer.mjs'], languageOptions: { globals: globals.node } },
   { files: ['web/public/**/*.js'], languageOptions: { globals: globals.browser } },
   // The callbacks e2e-page.mjs hands to page.evaluate and page.waitForFunction run in the page.
-  { files: ['web/e2e-page.mjs'], languageOptions: { globals: { ...globals.node, ...globals.browser } } },
+  { files: ['web/e2e-page*.mjs'], languageOptions: { globals: { ...globals.node, ...globals.browser } } },
   prettier,
 ]

@@ -111,6 +111,7 @@ function areaTab(area, current) {
       'a',
       {
         class: 'area-link',
+        'data-area': area.id,
         href: area.id === current ? area.home : (latest.get(area.id) ?? area.home),
         'aria-current': area.id === current ? 'page' : null,
       },

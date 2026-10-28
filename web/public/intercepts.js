@@ -199,7 +199,7 @@ export function censusView(taps) {
     list.map(census =>
       el(
         'div',
-        { class: 'census-event' },
+        { class: 'census-event', 'data-event': census.event, 'data-calls': census.calls },
         el(
           'p',
           {},
@@ -327,6 +327,8 @@ export function inForceList(state) {
 /** The intercept in force on one event, and the calls intercepts acted on there: redrawn in place as they change. */
 function fillInterceptState(state, box, event) {
   const one = state.mirror.intercepts.find(intercept => intercept.event === event)
+  box.dataset.behavior = one?.behavior ?? 'none'
+  box.dataset.scope = one?.scope ?? ''
   const status = el('div', { class: 'result' })
   const inForce =
     one === undefined
