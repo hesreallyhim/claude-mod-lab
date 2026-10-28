@@ -104,27 +104,27 @@ Lesson `minVersion` metadata is separate. A minimum should be based on a require
 
 Keep each plugin’s description in its `.claude-plugin/plugin.json`. Marketplace entries list the plugin’s name and source; Claude Code reads the description from the plugin manifest for these relative-path sources.
 
-Releases are cut from `main`, whose head is what the marketplace serves; work happens on `develop`. A plugin's version lives in its `plugin.json` only, never also in its entry in `marketplace.json`. The npm package, mod-lab, mod-lab-bridge, mod-lab-target and mod-lab-keys share one version and move together, since the bridge protocol couples them. The examples, gallery-mod, scratch-mod and mod-bootstrap bump only when they change. A plugin that changed without a higher version is not offered by `claude plugin update`.
+Releases are cut from `main`, whose head is what the marketplace serves. Develop changes on feature branches and merge through pull requests after CI and the local checks pass. There is no dedicated development branch.
 
-For the initial beta, use `--all-plugins` to give every shipped plugin manifest a fresh version, including lesson starters and solutions. This is an optional exception for replacing previously cached development versions; ordinary releases keep the default policy above. Preview the changes first:
+A plugin's version lives in its `plugin.json` only, never also in its entry in `marketplace.json`. The npm package, mod-lab, mod-lab-bridge, mod-lab-target and mod-lab-keys share one version and move together, since the bridge protocol couples them. The examples, gallery-mod, scratch-mod and mod-bootstrap bump only when they change. A plugin that changed without a higher version is not offered by `claude plugin update`.
+
+From a clean, up-to-date `main`, preview the next release before preparing it. For example:
 
 ```sh
-npm run release -- 0.2.0-beta.1 --all-plugins --dry-run
-npm run release -- 0.2.0-beta.1 --all-plugins
+npm run release -- 0.2.1 --dry-run
+npm run release -- 0.2.1
 ```
 
-The flag does not add lessons to the marketplace. Plugin tags still cover the marketplace plugins and scratch-mod; mod-lab-bridge waits for its published dependency lockfile.
-
-Prerelease versions are supported, including an initial npm release. Advance `0.2.0-beta.1` to `0.2.0-beta.2` for another beta, then to `0.2.0` when ready for a stable release. The package's `publishConfig.tag` is `latest` so the documented `npx claude-mod-lab` command works. The version suffix marks this release as a beta; the distribution tag chooses the default install. A beta on the public npm registry remains publicly downloadable.
+Use `--all-plugins` only when deliberately assigning the release version to every tracked plugin manifest, including lesson starters and solutions. It does not add lessons to the marketplace. Ordinary releases use the default version policy above; mod-lab-bridge waits for its published dependency lockfile before receiving its tag.
 
 `claude plugin tag <folder>` tags each plugin that changed, as `<name>--v<version>`, after checking that its `plugin.json` and its marketplace entry agree; `--dry-run` shows the tag and the commands without making it.
 
 An installed mod-lab-bridge gets the explorer from the npm package: its own `package.json` names `claude-mod-lab` at the bridge's version, and Claude Code installs it from the bridge's lockfile when it installs the plugin. So a release goes in this order:
 
 1. `npm run release -- <version>` bumps the versions (the bridge's dependency included, dropping its old lockfile), commits, runs `pack-check`, and tags every changed plugin but the bridge.
-2. `npm publish <tarball> --tag latest --access public`, using the tarball `pack-check` printed. Specify the tag explicitly for the initial `0.2.0-beta.1` prerelease; `latest` makes the unqualified install command resolve. A plain `npm publish` from the repository folder is refused.
+2. `npm publish <tarball> --tag latest --access public`, using the tarball `pack-check` printed. The `latest` distribution tag makes the documented `npx claude-mod-lab` command resolve to this release. A plain `npm publish` from the repository folder is refused.
 3. `npm run bridge-lock` writes the bridge's lockfile against the registry, checks it pins the published version with npm's integrity, commits it and tags the bridge.
-4. Once the npm package and bridge lockfile are ready, push `main`, which the marketplace serves, and the release tags to the release repository.
+4. Once the npm package and bridge lockfile are ready, create the signed release tag `v<version>` on the final commit, then push `main`, which the marketplace serves, and the release's plugin tags and release tag.
 
 `node scripts/install-check.mjs` checks the installed route before any of this is published: it serves a pack of HEAD from a local npm registry and a clone over a local git server, runs `bridge-lock` there, installs the bridge into a throwaway Claude Code config, and checks that its session serves the explorer from the installed package.
 
