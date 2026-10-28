@@ -76,6 +76,12 @@ Run these from the repository root.
 | `npm run release -- <version> [--all-plugins]` | on the maintainer's machine: bump the versions, commit them, run `pack-check`, and tag the changed plugins; `--dry-run` writes nothing |
 | `npm run bridge-lock` | after `npm publish`: write, check and commit mod-lab-bridge's lockfile for the published version, and tag the bridge |
 
+## Continuous integration
+
+The [CI workflow](.github/workflows/ci.yml) runs on pull requests and pushes to `main`, and can be started manually. It checks current Node 22.x and 24.x on Ubuntu with `npm ci`, `npm run check:web`, `npm run test:bin`, `npm run test:scripts`, the lesson parsing and start tests, and `npm run lines`.
+
+These checks do not require Claude Code, credentials, or generated engine declarations. The full `npm run check`, live session and browser E2E tests, and installed-package checks still run locally with Claude Code available. Publishing remains a local maintainer operation.
+
 ## Claude Code versions
 
 When validating a change, record the Claude Code version and client you tested; clients can run different engine builds. `/mod-lab verify` checks specific engine behaviors in the running session. The test kit and manual checks provide evidence for the environments exercised; the project does not maintain a supported-version matrix. The explorer and bridge check their shared protocol version before connecting.
