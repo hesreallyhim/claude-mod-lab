@@ -123,7 +123,7 @@ function page({ width, height, body, css }) {
 // is centred; under it, starting under the prompt as a terminal's output does,
 // is a short tagline. The lede that follows the banner says the rest.
 const BANNER = { cols: 142, rows: 36, size: 6 }
-const TAGLINE = 'watch and learn'
+const TAGLINE = 'developer tools for claude code mods'
 
 function bannerPage(palette) {
   const { cols, rows, size } = BANNER

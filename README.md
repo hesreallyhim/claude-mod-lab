@@ -5,7 +5,7 @@
 </picture>
 </p>
 
-A comprehensive workbench for Claude Code mods. Explore the mod API, trace the interaction of mods in a live session, and learn how to build your own mods from the ground up. "Developer tools" for Claude Code mods.
+A comprehensive workbench for Claude Code mods. Explore the mod API, trace the interaction of mods in a live session, and learn how to build your own mods from the ground up.
 
 ## Quickstart
 
