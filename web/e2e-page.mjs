@@ -259,7 +259,12 @@ try {
   expect(true, "the feed has the run on top, for the Session area's pages")
 
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
-  await page.click('form.probe .result article.run button.quiet')
+  const copyHooks = page.locator('form.probe .result article.run').getByRole('button', {
+    name: 'Copy as test hooks',
+    exact: true,
+  })
+  await copyHooks.click()
+  await page.locator('form.probe .result article.run').getByRole('button', { name: 'Copied', exact: true }).waitFor()
   const ejected = await page.evaluate(() => navigator.clipboard.readText())
   expect(
     ejected.includes("on('fs.read', () => (") && ejected.includes('package.json'),
