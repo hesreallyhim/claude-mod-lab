@@ -192,15 +192,15 @@ function socialPage() {
     height: rows * size,
     css: `
   .tagline { left: ${left}px; top: ${30 * size}px; font: 72px/1 'VT323', monospace; color: ${palette.name}; }
-  .what { left: ${left}px; top: ${39 * size}px; font: 500 28px/1.5 'Plex', monospace; color: ${palette.output}; }
+  .what { left: ${left}px; top: ${39 * size}px; font: 600 32px 'Plex', monospace; color: ${palette.liquid}; }
   .what b, .status b { font-weight: 500; color: ${palette.prompt}; }
   .status { left: ${left}px; right: ${left}px; top: ${52 * size}px; height: ${6 * size}px; display: flex; align-items: center;
             justify-content: space-between; padding: 0 ${size * 2}px; background: ${palette.bar}; color: ${palette.name};
             font: 500 26px/1 'Plex', monospace; }`,
     body: `${matrix({ cols, rows, size, lit, palette })}
-  <p class="line tagline">A hands-on lab for Claude Code mods.</p>
-  <p class="line what">Call anything on <b>$</b> and see which hooks answered.<br>Watch a session from the inside. Build mods with lessons.</p>
-  <div class="line status"><span>independent · open source · beta</span><span><b>$</b> npx claude-mod-lab</span></div>`,
+  <p class="line tagline">Developer tools for Claude Code mods.</p>
+  <br>
+  <p class="line what">Explore the complete mod API.<br>Trace mods in a live session.<br>Learn how to build your own mods from the ground up.</p>`,
   })
 }
 
