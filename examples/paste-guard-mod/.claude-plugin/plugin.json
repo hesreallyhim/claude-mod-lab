@@ -1,6 +1,6 @@
 {
   "name": "paste-guard-mod",
-  "version": "0.2.0-beta.1",
+  "version": "0.2.0",
   "description": "Highlights possible API keys in the prompt box and requires a second Enter press before submitting them",
   "author": {
     "name": "Really Him"

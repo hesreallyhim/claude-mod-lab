@@ -1,6 +1,6 @@
 {
   "name": "mod-lab-keys",
-  "version": "0.2.0-beta.2",
+  "version": "0.2.0",
   "description": "Records prompt box changes caused by history recall, clearing the draft, or plugin actions",
   "license": "MIT",
   "author": {

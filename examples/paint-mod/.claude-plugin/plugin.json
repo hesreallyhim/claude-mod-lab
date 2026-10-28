@@ -1,6 +1,6 @@
 {
   "name": "paint-mod",
-  "version": "0.2.0-beta.1",
+  "version": "0.2.0",
   "description": "Highlights recognized slash commands, marks unknown commands, and previews completions in the prompt box",
   "author": {
     "name": "Really Him"

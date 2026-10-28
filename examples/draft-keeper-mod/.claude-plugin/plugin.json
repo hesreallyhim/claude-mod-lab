@@ -1,6 +1,6 @@
 {
   "name": "draft-keeper-mod",
-  "version": "0.2.0-beta.1",
+  "version": "0.2.0",
   "description": "Saves drafts cleared with Ctrl+C so you can restore them with Tab",
   "author": {
     "name": "Really Him"

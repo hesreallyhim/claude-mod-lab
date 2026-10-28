@@ -1,6 +1,6 @@
 {
   "name": "brackets-mod",
-  "version": "0.2.0-beta.1",
+  "version": "0.2.0",
   "description": "Automatically closes brackets in the prompt box and highlights matching pairs",
   "author": {
     "name": "Really Him"

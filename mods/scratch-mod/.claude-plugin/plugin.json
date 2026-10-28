@@ -1,6 +1,6 @@
 {
   "name": "scratch-mod",
-  "version": "0.2.0-beta.1",
+  "version": "0.2.0",
   "description": "Small hook patterns to edit and test: rewrite, guard, act after next, answer a $ call, state, and which hooks see a call",
   "license": "MIT",
   "author": { "name": "Really Him" },
